@@ -653,7 +653,7 @@ def remove_tag(tag):
 
 @app.route("/")
 def index():
-    return flask.render_template("index.html", title = "Online storage")
+    return flask.render_template("index.html", title = "Online storage at your fingertips")
 
 @app.route("/<tag>/")
 @app.route("/<tag>")
