@@ -1,0 +1,23 @@
+{% include "header.html" %}
+
+<div class="hero-unit">
+  <h1>Download</h1>
+  <p>Files are grouped together in tags. To view the content in a tag, please submit the tag below.</p>
+  <p>
+    <form class="form-inline" method="POST" action="">
+      <input type="text" class="input-small" placeholder="tag" name="tag" value=""/>
+      <input type="submit" class="btn btn-success" value="Proceed..."/>
+    </form>
+  </p>
+</div>
+
+{% if tags|count > 0 %}
+  <h6>Public tags</h6>
+  {% for tag in tags %}
+    <a href="http://filebin.net/{{ tag }}">{{ tag }}</a>
+  {% endfor %}
+{% endif %}
+
+
+{% include "footer.html" %}
+

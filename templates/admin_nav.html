@@ -1,0 +1,7 @@
+<p>
+::
+<a href="/{{ tag }}">View tag</a> :: 
+{% if conf['permission'] == 'rw' %}
+  <a href="/upload/{{ tag }}">Upload more files</a> ::
+{% endif %}
+</p>

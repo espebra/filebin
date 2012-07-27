@@ -1,0 +1,101 @@
+{% include "header.html" %}
+
+{% if num_files == 0 %}
+  <div class="hero-unit">
+    <h1>Uh oh,</h1>
+    <p>The tag you are trying to access does not contain any files.
+    
+      {% if conf['permission'] is defined and conf['permission'] != 'rw' %}
+        The tag is read only.
+      {% endif %}
+    </p>
+    <p>
+      <a class="btn btn-primary btn-large" href="/">
+        Go to the front page
+      </a>
+      {% if conf['permission'] == 'rw' or conf['permission'] is not defined %}
+        <a class="btn btn-primary btn-large" href="/upload/{{ tag }}">
+          Upload files to this tag
+        </a>
+      {% endif %}
+    </p>
+  </div>
+{% else %}
+  <div class="hero-unit">
+    {% if conf['expose'] == 'public' %}
+      <h1>Public tag</h1>
+    {% else %}
+      <h1>Private tag</h1>
+    {% endif %}
+
+    <p>The {{ num_files }} files stored in tag {{ tag }} are listed below. Some file types will open directly in the browser, whilst others will open as attachments.
+{% if conf['permission'] == 'rw' %}
+  You may upload more files to the tag.
+{% endif %}
+      </p>
+      <p>
+        <a class="btn btn-primary btn-large" href="/upload/">
+          Upload files to a new tag
+        </a>
+        {% if conf['permission'] == 'rw' %}
+          <a class="btn btn-primary btn-large" href="/upload/{{ tag }}">
+            Upload more files to this tag
+          </a>
+        {% endif %}
+        <a class="btn btn-success btn-large" href="/archive/{{ tag }}">
+          Download {{ num_files }} files in one archive
+        </a>
+      </p>
+  </div>
+
+  {% if conf['preview'] == 'on' %}
+    {% include "pages.html" %}
+    <ul class="thumbnails">
+      {% for file in files %}
+        {% if file.thumbnail %}
+          <li class="span3">
+            <a href="/{{ tag }}/file/{{ file.filename }}">
+              <div class="thumbnail">
+                <img src="/thumbnails/{{ tag }}/{{ file.filename }}"/>
+              </div>
+            </a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <table class="table table-striped">
+  <thead>
+  <tr>
+    <th>File name</th>
+    <th>File type</th>
+    <th>File size</th>
+    <th>Downloads</th>
+    <th>Bandwidth</th>
+    <th>Uploaded at</th>
+  </thead>
+  {% for file in files %}
+    <tr>
+      <td><a href="/{{ tag }}/file/{{ file.filename }}">{{ file.filename }}</a>
+        {% if conf['preview'] == 'on' %}
+          {% if file.thumbnail %}
+            <i class="icon-camera" rel="tooltip" title="This file has a thumbnail."></i>
+          {% endif %}
+        {% endif %}
+      </td>
+      <td>{{ file.mimetype }}</td>
+      <td>{{ file.size }} MB</td>
+      <td>{{ file.downloads }}</td>
+      <td>{{ file.bandwidth }} MB</td>
+      <td>{{ file.uploaded_iso }} UTC</td>
+    </tr>
+  {% endfor %}
+  </table>
+
+  {% include "pages.html" %}
+
+{% endif %}
+
+{% include "footer.html" %}
+

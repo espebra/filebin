@@ -1,0 +1,30 @@
+{% include "header.html" %}
+
+<div class="hero-unit">
+  <h1>Administration</h1>
+  <p>Configuration and statistics for tag {{ tag }}.</p>
+</div>
+
+{% include "admin_nav.html" %}
+
+<fieldset>
+  <legend>Log</legend>
+
+  <table class="table table-striped">
+  <thead>
+  <tr>
+    <th>Timestamp</th>
+    <th>Client</th>
+    <th>Filename</th>
+    <th>Direction</th>
+  </thead>
+  {% for l in log %}
+    <tr>
+      <td>{{ l.time }}</td>
+      <td>{{ l.client }}</td>
+      <td><a href="/{{ tag }}/{{ l.filename }}">{{ l.filename }}</a></td>
+      <td>{{ l.direction }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+</fieldset>

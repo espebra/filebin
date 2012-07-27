@@ -1,0 +1,130 @@
+{% include "header.html" %}
+
+<div class="hero-unit">
+  <h1>Administration</h1>
+  <p>Configuration and statistics for tag {{ tag }}.</p>
+</div>
+
+{% include "admin_nav.html" %}
+
+<!--
+<fieldset>
+  <legend>Statistics</legend>
+  <p>The tag was created at {{ registered_iso }} UTC.</p>
+</fieldset>
+-->
+
+<form class="form-horizontal" method="POST" action="">
+  <fieldset>
+    <legend>Configuration</legend>
+
+    <div class="control-group">
+      <label class="control-label" for="ttl">Time to live</label>
+      <div class="controls">
+        <select name="ttl" class="input-xlarge" id="ttl">
+          <option value="1"
+          {% if conf['ttl'] == 1 %}
+            selected="selected"
+          {% endif %}
+          >One week, until {{ ttl_iso.oneweek }}</option>
+          <option value="2"
+          {% if conf['ttl'] == 2 %}
+            selected="selected"
+          {% endif %}
+          >One month, until {{ ttl_iso.onemonth }}</option>
+          <option value="3"
+          {% if conf['ttl'] == 3 %}
+            selected="selected"
+          {% endif %}
+          >Six months, until {{ ttl_iso.sixmonths }} (default)</option>
+          <option value="4"
+          {% if conf['ttl'] == 4 %}
+            selected="selected"
+          {% endif %}
+          >One year, until {{ ttl_iso.oneyear }}</option>
+          <option value="5"
+          {% if conf['ttl'] == 5 %}
+            selected="selected"
+          {% endif %}
+          >Forever</option>
+        </select>
+        
+        <p class="help-block">The files and the tag will be removed automatically if <i>time to live</i> is exceeded.</p>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <label class="control-label" for="expose">Expose</label>
+      <div class="controls">
+        <label class="radio">
+          <input type="radio" name="expose" value="private" 
+          {% if conf['expose'] == 'private' %}
+            checked="checked"
+          {% endif %}
+          />Private (default)
+        </label>
+        <label class="radio">
+          <input type="radio" name="expose" value="public"
+          {% if conf['expose'] == 'public' %}
+            checked="checked"
+          {% endif %}
+          />Public
+        </label>
+        
+        <p class="help-block">Tags that are publicly exposed will show at the <a href="/download">download</a> page.</p>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label" for="preview">Image thumbnails</label>
+      <div class="controls">
+        <label class="radio">
+          <input type="radio" name="preview" value="on"
+          {% if conf['preview'] == 'on' %}
+            checked="checked"
+          {% endif %}
+          />Show (default)
+        </label>
+        <label class="radio">
+          <input type="radio" name="preview" value="off"
+          {% if conf['preview'] == 'off' %}
+            checked="checked"
+          {% endif %}
+          />Do not show
+        </label>
+ 
+        <p class="help-block">Thumbnails will not show immediately as they are being created in a background process.</p>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label" for="permission">Permissions</label>
+      <div class="controls">
+        <label class="radio">
+          <input type="radio" name="permission" value="rw"
+          {% if conf['permission'] == 'rw' %}
+            checked="checked"
+          {% endif %}
+          />Read/write (default)
+        </label>
+        <label class="radio">
+          <input type="radio" name="permission" value="ro"
+          {% if conf['permission'] == 'ro' %}
+            checked="checked"
+          {% endif %}
+          />Read only
+        </label>
+        
+        <p class="help-block">Permit or deny upload capability for everyone knowing the tag, including you.</p>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+      <button class="btn">Cancel</button>
+    </div>
+  </fieldset>
+</form>
+
+{% include "footer.html" %}
+
