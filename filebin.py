@@ -843,17 +843,16 @@ def archive(tag):
     if not os.path.exists(tag_path):
         flask.abort(404)
 
-    f = get_files_in_tag(tag)
-    files = []
-    for filename in f:
-        filepath = f[filename]['filepath']
-        files.append(filepath)
+    files = get_files_in_tag(tag)
+    files_to_archive = []
+    for f in files:
+        filepath = f['filepath']
+        files_to_archive.append(filepath)
         log("INFO","Zip tag %s, file path %s" % (tag,filepath))
 
-    #command = "/usr/bin/zip -j - %s" % (" ".join(files))
-    command = "/usr/bin/zip - %s" % (" ".join(files))
+    command = "/usr/bin/zip -j - %s" % (" ".join(files_to_archive))
     process = subprocess.Popen(command, stdout=subprocess.PIPE, shell = True)
-    #process = Popen(['zip','-','%s' %(" ".join(files))], stdout=PIPE, shell=True)
+
     h = werkzeug.Headers()
     h.add('Content-Disposition', 'attachment; filename=%s.zip' % (tag))
     return flask.Response(process.stdout, mimetype='application/zip', headers = h, direct_passthrough = True)
