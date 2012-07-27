@@ -43,4 +43,6 @@ TODO
 * Improved archive downloading (streaming).
 * API documentation.
 * Statistics in the admin interface.
+* Proper MD5 checksumming during upload.
+* Client side error handling.
 
