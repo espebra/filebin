@@ -6,6 +6,8 @@ import re
 import sys
 import math
 import magic
+import fcntl
+import select
 import shutil
 import random
 import hashlib
@@ -366,7 +368,6 @@ def get_tag_lifetime(tag):
     registered = datetime.datetime.strptime(str(conf['registered']), \
                                             "%Y%m%d%H%M%S")
     now = datetime.datetime.utcnow()
-
     ttl = int(conf['ttl'])
     if ttl == 1:
         # One week from registered
@@ -386,7 +387,7 @@ def get_tag_lifetime(tag):
 
     elif ttl == 5:
         # Forever
-        to = now
+        to = now + datetime.timedelta(weeks = 52)
 
     if int(to.strftime("%Y%m%d%H%M%S")) > int(now.strftime("%Y%m%d%H%M%S")):
         # TTL not reached
@@ -832,10 +833,33 @@ def admin(tag,key):
         key = key, registered_iso = registered_iso, ttl_iso = ttl_iso, \
         title = "Administration for %s" % (tag))
      
+def nonblocking(pipe, size):
+    f = fcntl.fcntl(pipe, fcntl.F_GETFL)
+ 
+    if not pipe.closed:
+        fcntl.fcntl(pipe, fcntl.F_SETFL, f | os.O_NONBLOCK)
+ 
+    if not select.select([pipe], [], [])[0]:
+        yield ""
+ 
+    while True:
+        data = pipe.read(size)
+        yield data
+        ## Stopper på StopIteration, så på break
+        if len(data) == 0:
+            break
 
 @app.route("/archive/<tag>/")
 @app.route("/archive/<tag>")
 def archive(tag):
+    def stream_archive(files_to_archive):
+        command = "/usr/bin/zip -j - %s" % (" ".join(files_to_archive))
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell = True)
+        while True:
+            data = process.stdout.read(4096)
+            if not data: break
+            yield data
+
     if not verify(tag):
         flask.abort(400)
 
@@ -850,12 +874,10 @@ def archive(tag):
         files_to_archive.append(filepath)
         log("INFO","Zip tag %s, file path %s" % (tag,filepath))
 
-    command = "/usr/bin/zip -j - %s" % (" ".join(files_to_archive))
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, shell = True)
-
     h = werkzeug.Headers()
+    #h.add('Content-Length', '314572800')
     h.add('Content-Disposition', 'attachment; filename=%s.zip' % (tag))
-    return flask.Response(process.stdout, mimetype='application/zip', headers = h, direct_passthrough = True)
+    return flask.Response(stream_archive(files_to_archive), mimetype='application/zip', headers = h, direct_passthrough = True)
 
 @app.route("/upload/<tag>/")
 @app.route("/upload/<tag>")
