@@ -5,6 +5,8 @@ import os
 import re
 import sys
 import math
+import time
+import json
 import magic
 import fcntl
 import select
@@ -30,6 +32,7 @@ logfile = "/var/log/app/filebin/filebin.log"
 file_directory = "/var/www/includes/filebin/files"
 temp_directory = "/var/www/includes/filebin/temp"
 thumbnail_directory = "/var/www/includes/filebin/thumbnails"
+failure_sleep = 3
 
 dbhost = "127.0.0.1"
 dbport = 27017
@@ -369,7 +372,11 @@ def get_tag_lifetime(tag):
                                             "%Y%m%d%H%M%S")
     now = datetime.datetime.utcnow()
     ttl = int(conf['ttl'])
-    if ttl == 1:
+    if ttl == 0:
+        # Expire immediately
+        to = now
+
+    elif ttl == 1:
         # One week from registered
         to = registered + datetime.timedelta(weeks = 1)
         
@@ -402,7 +409,7 @@ def read_tag_log(tag):
     ret = []
     col = dbopen('log')
     try:
-        entries = col.find({'tag' : tag})
+        entries = col.find({'tag' : tag}).sort('time',-1)
 
     except:
         return ret
@@ -513,7 +520,7 @@ def verify_admin_request(req):
     except:
         return False
 
-    if ttl < 1 or ttl > 5:
+    if ttl < 0 or ttl > 5:
         return False
 
     if expose != 'private' and expose != 'public':
@@ -667,6 +674,7 @@ def tag_page(tag,page):
     files = {}
 
     if not verify(tag):
+        time.sleep(failure_sleep)
         flask.abort(400)
 
     conf = read_tag_configuration(tag)
@@ -701,18 +709,27 @@ def tag_json(tag):
     files = {}
 
     if not verify(tag):
+        time.sleep(failure_sleep)
         flask.abort(400)
 
     conf = read_tag_configuration(tag)
     files = get_files_in_tag(tag)
+
     for f in files:
         # Remove some unecessary stuff
         del(f['filepath'])
         del(f['uploaded_iso'])
 
-    # TODO: Verify json format
+    # Verify json format
+    try:
+        ret = json.dumps(files, indent=2)
 
-    return flask.Response(files, mimetype='text/json')
+    except:
+        flask.abort(501)
+
+    #h = werkzeug.Headers()
+    #h.add('Content-Disposition', 'inline' % (tag))
+    return flask.Response(ret, mimetype='text/json')
 
 @app.route("/thumbnails/<tag>/<filename>")
 def thumbnail(tag,filename):
@@ -756,22 +773,22 @@ def file(tag,filename):
 
     flask.abort(404)
 
-#@app.route("/log/<tag>/<key>/")
-#@app.route("/log/<tag>/<key>")
-#def admin_log(tag,key):
-#    if not verify(tag):
-#        flask.abort(400)
-#
-#    # Let's hash the admin key
-#    hashed_key = hash_key(key)
-#
-#    if not authenticate_key(tag,hashed_key):
-#        flask.abort(401)
-#
-#    log = read_tag_log(tag)
-#    conf = read_tag_configuration(tag)
-#
-#    return flask.render_template("log.html", tag = tag, log = log, conf = conf, key = key, title = "Log entries for %s" % (tag))
+@app.route("/log/<tag>/<key>/")
+@app.route("/log/<tag>/<key>")
+def admin_log(tag,key):
+    if not verify(tag):
+        flask.abort(400)
+
+    # Let's hash the admin key
+    hashed_key = hash_key(key)
+
+    if not authenticate_key(tag,hashed_key):
+        flask.abort(401)
+
+    log = read_tag_log(tag)
+    conf = read_tag_configuration(tag)
+
+    return flask.render_template("log.html", tag = tag, log = log, conf = conf, key = key, title = "Log entries for %s" % (tag))
 
 @app.route("/admin/<tag>/<key>/", methods = ['POST', 'GET'])
 @app.route("/admin/<tag>/<key>", methods = ['POST', 'GET'])
@@ -783,6 +800,7 @@ def admin(tag,key):
     hashed_key = hash_key(key)
 
     if not authenticate_key(tag,hashed_key):
+        time.sleep(failure_sleep)
         flask.abort(401)
 
     ttl_iso = {}
@@ -803,6 +821,7 @@ def admin(tag,key):
 
     if flask.request.method == 'POST':
         if not verify_admin_request(flask.request):
+            time.sleep(failure_sleep)
             flask.abort(400)
 
         ttl        = int(flask.request.form['ttl'])
@@ -861,10 +880,12 @@ def archive(tag):
             yield data
 
     if not verify(tag):
+        time.sleep(failure_sleep)
         flask.abort(400)
 
     tag_path = get_path(tag)
     if not os.path.exists(tag_path):
+        time.sleep(failure_sleep)
         flask.abort(404)
 
     files = get_files_in_tag(tag)

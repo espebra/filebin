@@ -22,6 +22,11 @@
       <label class="control-label" for="ttl">Time to live</label>
       <div class="controls">
         <select name="ttl" class="input-xlarge" id="ttl">
+          <option value="0"
+          {% if conf['ttl'] == 0 %}
+            selected="selected"
+          {% endif %}
+          >Now, mark tag as already expired</option>
           <option value="1"
           {% if conf['ttl'] == 1 %}
             selected="selected"
