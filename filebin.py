@@ -748,6 +748,7 @@ def file(tag,filename):
     client = get_client()
     mimetype = False
     if verify(tag,filename):
+        log_prefix = "%s/%s -> %s" % (tag,filename,client)
         file_path = get_path(tag,filename)
         if os.path.isfile(file_path):
             mimetype = get_mimetype(file_path)
@@ -761,13 +762,12 @@ def file(tag,filename):
             # Output image files directly to the client browser
             m = re.match('^image|^video|^audio|^text/plain|^application/pdf',mimetype)
             if m:
-                log("DEBUG","%s -> %s: Delivering file content directly to " \
-                    "the client browser." % (filename,client))
+                log("INFO","%s: Delivering file (%s)" % (log_prefix,mimetype))
                 return flask.send_file(file_path)
 
             # Output rest of the files as attachments
-            log("DEBUG","%s -> %s: Delivering unknown file type (%s) as " \
-                "attachement to the client." % (filename,client,mimetype))
+            log("INFO","%s: Delivering file (%s) as " \
+                "attachement." % (log_prefix,mimetype))
 
             return flask.send_file(file_path, as_attachment = True)
 
@@ -852,32 +852,41 @@ def admin(tag,key):
         key = key, registered_iso = registered_iso, ttl_iso = ttl_iso, \
         title = "Administration for %s" % (tag))
      
-def nonblocking(pipe, size):
-    f = fcntl.fcntl(pipe, fcntl.F_GETFL)
- 
-    if not pipe.closed:
-        fcntl.fcntl(pipe, fcntl.F_SETFL, f | os.O_NONBLOCK)
- 
-    if not select.select([pipe], [], [])[0]:
-        yield ""
- 
-    while True:
-        data = pipe.read(size)
-        yield data
-        ## Stopper på StopIteration, så på break
-        if len(data) == 0:
-            break
+#def nonblocking(pipe, size):
+#    f = fcntl.fcntl(pipe, fcntl.F_GETFL)
+# 
+#    if not pipe.closed:
+#        fcntl.fcntl(pipe, fcntl.F_SETFL, f | os.O_NONBLOCK)
+# 
+#    if not select.select([pipe], [], [])[0]:
+#        yield ""
+# 
+#    while True:
+#        data = pipe.read(size)
+#
+#        ## Stopper på StopIteration, så på break
+#        if len(data) == 0:
+#            break
 
 @app.route("/archive/<tag>/")
 @app.route("/archive/<tag>")
 def archive(tag):
     def stream_archive(files_to_archive):
         command = "/usr/bin/zip -j - %s" % (" ".join(files_to_archive))
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell = True)
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, shell = True)
+        f = fcntl.fcntl(p.stdout, fcntl.F_GETFL)
+ 
         while True:
-            data = process.stdout.read(4096)
-            if not data: break
+            if not p.stdout.closed:
+                fcntl.fcntl(p.stdout, fcntl.F_SETFL, f | os.O_NONBLOCK)
+         
+            if not select.select([p.stdout], [], [])[0]:
+                yield ""
+
+            data = p.stdout.read(4096)
             yield data
+            if len(data) == 0:
+                break
 
     if not verify(tag):
         time.sleep(failure_sleep)
@@ -964,7 +973,6 @@ def uploader():
         flask.abort(400)
 
     # The input values are to be trusted at this point
-
     conf = read_tag_configuration(i['tag'])
     if conf:
         # The tag is read only
@@ -1110,7 +1118,7 @@ def maintenance():
     tags = get_tags()
     for tag in tags:
         if get_tag_lifetime(tag):
-            log("DEBUG","%s: TTL not reached" % (tag))
+            #log("DEBUG","%s: TTL not reached" % (tag))
             generate_thumbnails(tag)
 
         else:
