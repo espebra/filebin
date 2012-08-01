@@ -191,6 +191,7 @@ def get_files_in_tag(tag, page = False, per_page = 100):
             i['downloads'] = int(f['downloads'])
             i['mimetype'] = f['mimetype']
             i['filepath'] = f['filepath']
+            i['size_bytes'] = f['size']
             i['size'] = "%.2f" % (f['size'] / 1024 / round(1024))
             i['bandwidth'] = "%.2f" % ((f['downloads'] * f['size']) / 1024 / round(1024))
             i['uploaded'] = f['uploaded']
@@ -698,6 +699,29 @@ def overview_files():
        files[tag] = get_files_in_tag(tag)
 
     return flask.render_template("overview_files.html", files = files, title = "File overview")
+
+@app.route("/monitor/")
+@app.route("/monitor")
+def monitor():
+    tags = get_tags()
+    num_files = 0
+    size = 0
+    downloads = 0
+    bandwidth = 0
+    for tag in tags:
+        files = get_files_in_tag(tag)
+        for f in files:
+             num_files += 1
+             downloads += int(f['downloads'])
+             size += f['size_bytes']
+             bandwidth += (f['downloads'] * f['size_bytes'])
+
+    response = flask.make_response(flask.render_template('monitor.txt', tags = tags, num_files = num_files, size = size, downloads = downloads, bandwidth = bandwidth))
+
+    response.headers['status'] = '200'
+    response.headers['content-type'] = 'text/plain'
+
+    return response
 
 @app.route("/")
 def index():

@@ -1,0 +1,5 @@
+outband-bandwidth-used-in-bytes: {{ bandwidth }}
+total-number-of-file-downloads: {{ downloads }}
+total-number-of-files: {{ num_files }}
+total-size-in-bytes: {{ size }}
+tags-count: {{ tags|count }}

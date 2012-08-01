@@ -1,0 +1,38 @@
+{% include "header.html" %}
+
+<div class="hero-unit">
+  <h1>Log overview</h1>
+</div>
+
+{% if log|count == 0 %}
+  <p>No log entries found</p>
+{% else %}
+  <table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th>Client</th>
+      <th>Description</th>
+      <th>Links</th>
+    </tr>
+  </thead>
+  {% for l in log %}
+    <tr>
+      <td>{{ l.time }}</td>
+      <td>{{ l.client }}</td>
+      <td>{{ l.description }}</td>
+      <td>
+        {% if l.tag %}
+           [T: <a href="/{{ l.tag }}">{{ l.tag }}</a>]
+        {% endif %}
+        {% if l.filename %}
+           [F: <a href="/{{ l.tag }}/file/{{ l.filename }}">{{ l.filename }}</a>]
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </table>
+{% endif %}
+
+{% include "footer.html" %}
+
