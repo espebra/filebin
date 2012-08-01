@@ -188,7 +188,7 @@ def get_files_in_tag(tag, page = False, per_page = 100):
             filename = f['filename']
             i = {}
             i['filename'] = f['filename']
-            i['downloads'] = f['downloads']
+            i['downloads'] = int(f['downloads'])
             i['mimetype'] = f['mimetype']
             i['filepath'] = f['filepath']
             i['size'] = "%.2f" % (f['size'] / 1024 / round(1024))
@@ -405,11 +405,15 @@ def get_tag_lifetime(tag):
         # TTL reached
         return False
 
-def read_tag_log(tag):
+def read_tag_log(tag = False):
     ret = []
     col = dbopen('log')
     try:
-        entries = col.find({'tag' : tag}).sort('time',-1)
+        if tag:
+            entries = col.find({'tag' : tag}).sort('time',-1)
+
+        else:
+            entries = col.find().sort('time',-1)
 
     except:
         return ret
@@ -423,11 +427,19 @@ def read_tag_log(tag):
     else:
         for entry in entries:
            l = {}
-           l['client']    = entry['client']     
            l['time']      = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
-           #l['time']      = entry['time']
-           l['filename']  = entry['filename']     
-           l['direction'] = entry['direction']     
+           if 'description' in entry:
+               l['description'] = entry['description'] 
+
+           if 'client' in entry:
+               l['client']    = entry['client']     
+
+           if 'tag' in entry:
+               l['tag']       = entry['tag']     
+
+           if 'filename' in entry:
+               l['filename']  = entry['filename']     
+
            ret.append(l)
 
     return ret 
@@ -553,17 +565,24 @@ def increment_download_counter(tag,filename):
         log("ERROR","Unable to increment download counter for " \
             "%s in %s" % (filename,tag))
 
-def dblog(client,tag,filename,direction):
+def dblog(description,client = False,tag = False,filename = False):
     time = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
     col = dbopen('log')
     try:
-        col.insert({
-                     'time'        : time,
-                     'client'      : client,
-                     'tag'         : tag,
-                     'filename'    : filename,
-                     'direction'   : direction
-                   })
+        i = {}
+        i['time'] = time
+
+        if client:
+            i['client'] = client
+
+        if tag:
+            i['tag'] = tag
+
+        if filename:
+            i['filename'] = filename
+
+        i['description'] = description
+        col.insert(i)
                    
     
     except:
@@ -659,6 +678,27 @@ def remove_tag(tag):
 
     return status
 
+@app.route("/overview/")
+@app.route("/overview")
+def overview():
+    return flask.redirect('/overview/log')
+
+@app.route("/overview/log/")
+@app.route("/overview/log")
+def overview_log():
+    log = read_tag_log()
+    return flask.render_template("overview_log.html", log = log, title = "Log overview")
+
+@app.route("/overview/files/")
+@app.route("/overview/files")
+def overview_files():
+    files = {}
+    tags = get_tags()
+    for tag in tags:
+       files[tag] = get_files_in_tag(tag)
+
+    return flask.render_template("overview_files.html", files = files, title = "File overview")
+
 @app.route("/")
 def index():
     return flask.render_template("index.html", title = "Online storage at your fingertips")
@@ -700,6 +740,9 @@ def tag_page(tag,page):
 
     #log("DEBUG","PAGES: Tag %s has %d files, which will be presented in %d pages with %d files per page" % (tag, num_files, pages, per_page))
     files = get_files_in_tag(tag,page,per_page)
+
+    client = get_client()
+    dblog("Show tag %s" % (tag),client,tag)
 
     return flask.render_template("tag.html", tag = tag, files = files, conf = conf, num_files = num_files, pages = pages, page = page, title = "Tag %s" % (tag))
 
@@ -757,7 +800,7 @@ def file(tag,filename):
             increment_download_counter(tag,filename)
 
             # Log the activity
-            dblog(client,tag,filename,'download')
+            dblog('Downloading %s/%s' % (tag,filename),client,tag,filename)
 
             # Output image files directly to the client browser
             m = re.match('^image|^video|^audio|^text/plain|^application/pdf',mimetype)
@@ -871,9 +914,10 @@ def admin(tag,key):
 @app.route("/archive/<tag>/")
 @app.route("/archive/<tag>")
 def archive(tag):
+    client = get_client()
     def stream_archive(files_to_archive):
         command = "/usr/bin/zip -j - %s" % (" ".join(files_to_archive))
-        p = subprocess.Popen(command, stdout=subprocess.PIPE, shell = True)
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, shell = True, close_fds = True)
         f = fcntl.fcntl(p.stdout, fcntl.F_GETFL)
  
         while True:
@@ -897,12 +941,16 @@ def archive(tag):
         time.sleep(failure_sleep)
         flask.abort(404)
 
+    log_prefix = '%s archive -> %s' % (tag,client)
+    log("INFO","%s: Archive download request received" % (log_prefix))
+    dblog("Downloading tag %s as archive" % (tag),client,tag)
+
     files = get_files_in_tag(tag)
     files_to_archive = []
     for f in files:
         filepath = f['filepath']
         files_to_archive.append(filepath)
-        log("INFO","Zip tag %s, file path %s" % (tag,filepath))
+        #log("INFO","Zip tag %s, file path %s" % (tag,filepath))
 
     h = werkzeug.Headers()
     #h.add('Content-Length', '314572800')
@@ -1094,7 +1142,7 @@ def uploader():
 
         else:
             # Log the activity
-            dblog(i['client'],i['tag'],i['filename'],'upload')
+            dblog('Uploaded %s/%s, %sB' % (i['tag'],i['filename'],i['size']),i['client'],i['tag'],i['filename'])
             status = True
 
     # Clean up the temporary file
