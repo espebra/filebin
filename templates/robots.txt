@@ -1,6 +1,6 @@
 User-agent: *
-Disallow: /admin*
-Disallow: /upload*
-Disallow: /log*
-Disallow: /overview*
+Disallow: /admin/
+Disallow: /upload/
+Disallow: /log/
+Disallow: /overview/
 
