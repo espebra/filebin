@@ -22,12 +22,20 @@
       <td>{{ l.client }}</td>
       <td>{{ l.description }}</td>
       <td>
+        <ul>
         {% if l.tag %}
-           [T: <a href="/{{ l.tag }}">{{ l.tag }}</a>]
+           <li>T: <a href="/{{ l.tag }}">{{ l.tag }}</a></li>
         {% endif %}
         {% if l.filename %}
-           [F: <a href="/{{ l.tag }}/file/{{ l.filename }}">{{ l.filename }}</a>]
+           <li>F: <a href="/{{ l.tag }}/file/{{ l.filename }}">{{ l.filename }}</a></li>
         {% endif %}
+        {% if l.referer %}
+           <li>R: {{ l.referer }}</li>
+        {% endif %}
+        {% if l.useragent %}
+           <li>U: {{ l.useragent }}</li>
+        {% endif %}
+        </ul>
       </td>
     </tr>
   {% endfor %}
