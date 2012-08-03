@@ -687,18 +687,29 @@ def overview():
 @app.route("/overview/log/")
 @app.route("/overview/log")
 def overview_log():
+    client = get_client()
+    dblog("Show log overview", client = client)
+
     log = read_tag_log()
-    return flask.render_template("overview_log.html", log = log, title = "Log overview")
+
+    response = flask.make_response(flask.render_template("overview_log.html", log = log, title = "Log overview"))
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
+    return response
 
 @app.route("/overview/files/")
 @app.route("/overview/files")
 def overview_files():
+    client = get_client()
+    dblog("Show files overview", client = client)
+
     files = {}
     tags = get_tags()
     for tag in tags:
        files[tag] = get_files_in_tag(tag)
 
-    return flask.render_template("overview_files.html", files = files, title = "File overview")
+    response = flask.make_response(flask.render_template("overview_files.html", files = files, title = "File overview"))
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
+    return response
 
 @app.route("/monitor/")
 @app.route("/monitor")
@@ -720,12 +731,15 @@ def monitor():
 
     response.headers['status'] = '200'
     response.headers['content-type'] = 'text/plain'
+    response.headers['cache-control'] = 'max-age=60, must-revalidate'
 
     return response
 
 @app.route("/")
 def index():
-    return flask.render_template("index.html", title = "Online storage at your fingertips")
+    response = flask.make_response(flask.render_template("index.html", title = "Online storage at your fingertips"))
+    response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+    return response
 
 @app.route("/<tag>/")
 @app.route("/<tag>")
@@ -768,7 +782,11 @@ def tag_page(tag,page):
     client = get_client()
     dblog("Show tag %s" % (tag),client,tag)
 
-    return flask.render_template("tag.html", tag = tag, files = files, conf = conf, num_files = num_files, pages = pages, page = page, title = "Tag %s" % (tag))
+    response = flask.make_response(flask.render_template("tag.html", \
+        tag = tag, files = files, conf = conf, num_files = num_files, \
+        pages = pages, page = page, title = "Tag %s" % (tag)))
+    response.headers['cache-control'] = 'max-age=120, must-revalidate'
+    return response
 
 @app.route("/<tag>/json/")
 @app.route("/<tag>/json")
@@ -794,9 +812,10 @@ def tag_json(tag):
     except:
         flask.abort(501)
 
-    #h = werkzeug.Headers()
+    h = werkzeug.Headers()
     #h.add('Content-Disposition', 'inline' % (tag))
-    return flask.Response(ret, mimetype='text/json')
+    h.add('cache-control', 'max-age=7200, must-revalidate')
+    return flask.Response(ret, mimetype='text/json', headers = h)
 
 @app.route("/thumbnails/<tag>/<filename>")
 def thumbnail(tag,filename):
@@ -805,7 +824,9 @@ def thumbnail(tag,filename):
         #log("DEBUG","Deliver thumbnail from %s" % (filepath))
         if os.path.isfile(filepath):
             # Output image files directly to the client browser
-            return flask.send_file(filepath)
+            response = flask.make_response(flask.send_file(filepath))
+            response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+            return response
 
     flask.abort(404)
 
@@ -830,13 +851,17 @@ def file(tag,filename):
             m = re.match('^image|^video|^audio|^text/plain|^application/pdf',mimetype)
             if m:
                 log("INFO","%s: Delivering file (%s)" % (log_prefix,mimetype))
-                return flask.send_file(file_path)
+                response = flask.make_response(flask.send_file(file_path))
+                response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+                return response
 
             # Output rest of the files as attachments
             log("INFO","%s: Delivering file (%s) as " \
                 "attachement." % (log_prefix,mimetype))
 
-            return flask.send_file(file_path, as_attachment = True)
+            response = flask.make_response(flask.send_file(file_path, as_attachment = True))
+            response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+            return response
 
     flask.abort(404)
 
@@ -855,7 +880,11 @@ def admin_log(tag,key):
     log = read_tag_log(tag)
     conf = read_tag_configuration(tag)
 
-    return flask.render_template("log.html", tag = tag, log = log, conf = conf, key = key, title = "Log entries for %s" % (tag))
+    response = flask.make_response(flask.render_template("log.html", \
+        tag = tag, log = log, conf = conf, key = key, \
+        title = "Log entries for %s" % (tag)))
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
+    return response
 
 @app.route("/admin/<tag>/<key>/", methods = ['POST', 'GET'])
 @app.route("/admin/<tag>/<key>", methods = ['POST', 'GET'])
@@ -915,9 +944,12 @@ def admin(tag,key):
 
     conf = read_tag_configuration(tag)
 
-    return flask.render_template("admin.html", tag = tag, conf = conf, \
-        key = key, registered_iso = registered_iso, ttl_iso = ttl_iso, \
-        title = "Administration for %s" % (tag))
+    response = flask.make_response(flask.render_template("admin.html", \
+        tag = tag, conf = conf, key = key, registered_iso = registered_iso, \
+        ttl_iso = ttl_iso, title = "Administration for %s" % (tag)))
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
+    return response
+   
      
 #def nonblocking(pipe, size):
 #    f = fcntl.fcntl(pipe, fcntl.F_GETFL)
@@ -979,6 +1011,7 @@ def archive(tag):
     h = werkzeug.Headers()
     #h.add('Content-Length', '314572800')
     h.add('Content-Disposition', 'attachment; filename=%s.zip' % (tag))
+    haddheaders('cache-control', 'max-age=7200, must-revalidate')
     return flask.Response(stream_archive(files_to_archive), mimetype='application/zip', headers = h, direct_passthrough = True)
 
 @app.route("/upload/<tag>/")
@@ -1000,13 +1033,17 @@ def upload_to_tag(tag):
         key = generate_key()
         create_default_tag_configuration(tag,key)
 
-    return flask.render_template("upload.html", tag = tag, key = key, title = "Upload to tag %s" % (tag))
+    response = flask.make_response(flask.render_template("upload.html", tag = tag, key = key, title = "Upload to tag %s" % (tag)))
+    response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+    return response
 
 @app.route("/upload/")
 @app.route("/upload")
 def upload():
     tag = generate_tag()
-    return flask.redirect('/upload/%s' % (tag))
+    response = flask.redirect('/upload/%s' % (tag))
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
+    return response
 
 @app.route("/download/", methods = ['POST', 'GET'])
 @app.route("/download", methods = ['POST', 'GET'])
@@ -1026,8 +1063,9 @@ def download():
             flask.abort(400)
     else:
         tags = get_public_tags()
-        return flask.render_template("download.html" , tags = tags, \
-            title = "Download")
+        response = flask.make_response(flask.render_template("download.html" , tags = tags, title = "Download"))
+        response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+        return response
 
 @app.route("/uploader/", methods = ['POST'])
 @app.route("/uploader", methods = ['POST'])
@@ -1181,6 +1219,7 @@ def uploader():
         response.headers['status'] = '501'
 
     response.headers['content-type'] = 'text/plain'
+    response.headers['cache-control'] = 'max-age=7200, must-revalidate'
 
     return response
 
@@ -1204,12 +1243,15 @@ def maintenance():
                 log("ERROR","%s: Unable to remove." % (tag))
 
             
-    return flask.render_template("maintenance.html", title = "Maintenance")
+    response = flask.make_response(flask.render_template('maintenance.html', title = "Maintenance"))
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
+    return response
 
 @app.route("/robots.txt")
 def robots():
     response = flask.make_response(flask.render_template('robots.txt'))
     response.headers['content-type'] = 'text/plain'
+    response.headers['cache-control'] = 'max-age=7200, must-revalidate'
     return response
 
 if __name__ == '__main__':
