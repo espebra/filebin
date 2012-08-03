@@ -366,6 +366,12 @@ def generate_thumbnails(tag):
                             "in tag %s with mimetype %s" \
                             % (filename,tag,mimetype))
 
+#def generate_download_serial():
+#    now = datetime.datetime.utcnow()
+#    md5 = hashlib.md5()
+#    md5.update(now.strftime("%Y%m%d%H"))
+#    return md5.hexdigest()
+
 def get_tag_lifetime(tag):
     conf = read_tag_configuration(tag)
 
@@ -437,6 +443,12 @@ def read_tag_log(tag = False):
 
            if 'tag' in entry:
                l['tag']       = entry['tag']     
+
+           if 'referer' in entry:
+               l['referer']       = entry['referer']
+
+           if 'useragent' in entry:
+               l['useragent']       = entry['useragent']
 
            if 'filename' in entry:
                l['filename']  = entry['filename']     
@@ -567,6 +579,9 @@ def increment_download_counter(tag,filename):
             "%s in %s" % (filename,tag))
 
 def dblog(description,client = False,tag = False,filename = False):
+    referer = get_header('referer')
+    useragent = get_header('user-agent')
+
     time = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
     col = dbopen('log')
     try:
@@ -581,6 +596,12 @@ def dblog(description,client = False,tag = False,filename = False):
 
         if filename:
             i['filename'] = filename
+
+        if referer:
+            i['referer'] = referer
+
+        if useragent:
+            i['useragent'] = useragent
 
         i['description'] = description
         col.insert(i)
@@ -737,6 +758,8 @@ def monitor():
 
 @app.route("/")
 def index():
+    client = get_client()
+    dblog("Show front page", client = client)
     response = flask.make_response(flask.render_template("index.html", title = "Online storage at your fingertips"))
     response.headers['cache-control'] = 'max-age=7200, must-revalidate'
     return response
@@ -852,15 +875,15 @@ def file(tag,filename):
             if m:
                 log("INFO","%s: Delivering file (%s)" % (log_prefix,mimetype))
                 response = flask.make_response(flask.send_file(file_path))
-                response.headers['cache-control'] = 'max-age=7200, must-revalidate'
-                return response
 
-            # Output rest of the files as attachments
-            log("INFO","%s: Delivering file (%s) as " \
-                "attachement." % (log_prefix,mimetype))
+            else:
+                # Output rest of the files as attachments
+                log("INFO","%s: Delivering file (%s) as " \
+                    "attachement." % (log_prefix,mimetype))
 
-            response = flask.make_response(flask.send_file(file_path, as_attachment = True))
-            response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+                response = flask.make_response(flask.send_file(file_path, as_attachment = True))
+
+            response.headers['cache-control'] = 'max-age=120, must-revalidate'
             return response
 
     flask.abort(404)
@@ -889,6 +912,9 @@ def admin_log(tag,key):
 @app.route("/admin/<tag>/<key>/", methods = ['POST', 'GET'])
 @app.route("/admin/<tag>/<key>", methods = ['POST', 'GET'])
 def admin(tag,key):
+    client = get_client()
+    saved = 0
+
     if not verify(tag):
         flask.abort(400)
 
@@ -925,6 +951,7 @@ def admin(tag,key):
         permission = flask.request.form['permission']
         preview    = flask.request.form['preview']
 
+        dblog("Save administration settings for tag %s" % (tag), client, tag)
         col = dbopen('tags')
         try:
             col.update({'_id' : tag},
@@ -942,11 +969,18 @@ def admin(tag,key):
             log("ERROR","Unable to update configuration for " \
                 "tag %s." % (tag))
 
+        else:
+            saved = 1
+
+    else:
+        dblog('Show administration settings for tag %s' % (tag), client, tag)
+
     conf = read_tag_configuration(tag)
 
     response = flask.make_response(flask.render_template("admin.html", \
         tag = tag, conf = conf, key = key, registered_iso = registered_iso, \
-        ttl_iso = ttl_iso, title = "Administration for %s" % (tag)))
+        ttl_iso = ttl_iso, saved = saved, \
+        title = "Administration for %s" % (tag)))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
    
