@@ -44,7 +44,7 @@ Protect /overview and /monitor using ACL. Otherwise, the web application will pr
       "1.2.3.4";
       "2.3.4.5";
     }
-
+    
     acl monitor {
       "3.4.5.6";
     }
