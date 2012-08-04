@@ -12,9 +12,9 @@ Additional configuration
 Logrotate
 ---------
     /var/log/app/filebin/*.log {
-      weekly
+      daily
       missingok
-      rotate 52
+      rotate 90
       compress
       notifempty
       copytruncate
@@ -34,15 +34,40 @@ Apache
       Allow from all
       AddHandler cgi-script .py
       DirectoryIndex index.py
-      AddHandler default-handler .html .htm
     </Directory>
+
+Varnish
+-------
+Protect /overview and /monitor using ACL. Otherwise, the web application will provide OK cache-control headers.
+
+    acl admins {
+      "1.2.3.4";
+      "2.3.4.5";
+    }
+
+    acl monitor {
+      "3.4.5.6";
+    }
+    
+    sub vcl_recv {
+      # [...]
+      if (req.url ~ "^/overview"){
+        if (!client.ip ~ admins) {
+          error 403 "Forbidden";
+        }
+      }
+      if (req.url ~ "^/monitor"){
+        if (!client.ip ~ monitor) {
+          error 403 "Forbidden";
+        }
+      }
+    }
 
 TODO
 ----
-* Example Varnish configuration.
 * Improved archive downloading (streaming).
 * API documentation.
 * Statistics in the admin interface.
 * Proper MD5 checksumming during upload.
 * Client side error handling.
-
+* PURGE requests to Varnish.
