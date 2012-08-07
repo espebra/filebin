@@ -1045,7 +1045,7 @@ def archive(tag):
     h = werkzeug.Headers()
     #h.add('Content-Length', '314572800')
     h.add('Content-Disposition', 'attachment; filename=%s.zip' % (tag))
-    haddheaders('cache-control', 'max-age=7200, must-revalidate')
+    h.add('cache-control', 'max-age=7200, must-revalidate')
     return flask.Response(stream_archive(files_to_archive), mimetype='application/zip', headers = h, direct_passthrough = True)
 
 @app.route("/upload/<tag>/")
