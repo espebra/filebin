@@ -28,10 +28,30 @@
       <h1>Private tag</h1>
     {% endif %}
 
-    <p>The {{ num_files }} files stored in tag {{ tag }} are listed below. Some file types will open directly in the browser, whilst others will open as attachments.
-{% if conf['permission'] == 'rw' %}
-  You may upload more files to the tag.
-{% endif %}
+    <p>
+      {% if num_files > 1 %}
+        The {{ num_files }} files stored in tag {{ tag }} are listed below. 
+      {% else %}
+        The file stored in tag {{ tag }} is listed below. 
+      {% endif %}
+
+      {% if conf['permission'] == 'rw' %}
+        You may upload more files to the tag.
+      {% endif %}
+
+      {% if valid_days %}
+        {% if valid_days > 1 %}
+          It will expire in {{ valid_days + 1 }} days.
+        {% elif valid_days == 1 %}
+          It will expire tomorrow.
+        {% elif valid_days == 0 %}
+          The tag will expire today.
+        {% elif valid_days == -1 %}
+          <!-- It will never expire. -->
+        {% endif %}
+      {% else %}
+        It has already expired, and will be removed today.
+      {% endif %}
       </p>
       <p>
         <a class="btn btn-primary btn-large" href="/upload/">

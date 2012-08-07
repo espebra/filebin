@@ -373,6 +373,7 @@ def generate_thumbnails(tag):
 #    return md5.hexdigest()
 
 def get_tag_lifetime(tag):
+    days = False
     conf = read_tag_configuration(tag)
 
     registered = datetime.datetime.strptime(str(conf['registered']), \
@@ -405,12 +406,20 @@ def get_tag_lifetime(tag):
 
     if int(to.strftime("%Y%m%d%H%M%S")) > int(now.strftime("%Y%m%d%H%M%S")):
         # TTL not reached
-        return True
+        if ttl == 5:
+            # Forever, will never expire
+            days = -1
+        else:
+            # Will expire some day
+            diff = to - now
+            days = int(diff.days)
 
     else:
         # Tag should be removed
         # TTL reached
-        return False
+        days = False
+
+    return days
 
 def read_tag_log(tag = False):
     ret = []
@@ -805,10 +814,24 @@ def tag_page(tag,page):
     client = get_client()
     dblog("Show tag %s" % (tag),client,tag)
 
+    try:
+        valid_days = get_tag_lifetime(tag)
+
+    except:
+        valid_days = False
+
     response = flask.make_response(flask.render_template("tag.html", \
         tag = tag, files = files, conf = conf, num_files = num_files, \
-        pages = pages, page = page, title = "Tag %s" % (tag)))
-    response.headers['cache-control'] = 'max-age=120, must-revalidate'
+        pages = pages, page = page, valid_days = valid_days, \
+        title = "Tag %s" % (tag)))
+
+    if num_files > 0:
+        response.headers['cache-control'] = 'max-age=60, must-revalidate'
+    else:
+        # We want to avoid long TTL on empty tags since users are likely to
+        # upload files and recheck the tag shortly after.
+        response.headers['cache-control'] = 'max-age=5, must-revalidate'
+
     return response
 
 @app.route("/<tag>/json/")
@@ -1068,7 +1091,10 @@ def upload_to_tag(tag):
         create_default_tag_configuration(tag,key)
 
     response = flask.make_response(flask.render_template("upload.html", tag = tag, key = key, title = "Upload to tag %s" % (tag)))
-    response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+
+    # Cannot have to long TTL here as it will show the link to the
+    # administration interface.
+    response.headers['cache-control'] = 'max-age=5, must-revalidate'
     return response
 
 @app.route("/upload/")
@@ -1262,8 +1288,9 @@ def uploader():
 def maintenance():
     tags = get_tags()
     for tag in tags:
-        if get_tag_lifetime(tag):
-            #log("DEBUG","%s: TTL not reached" % (tag))
+        valid_days = get_tag_lifetime(tag)
+        if valid_days:
+            #log("DEBUG","%s: TTL not reached (%d days left)" % (tag,valid_days))
             generate_thumbnails(tag)
 
         else:
