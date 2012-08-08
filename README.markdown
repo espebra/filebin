@@ -38,19 +38,29 @@ Apache
 
 Varnish
 -------
-Protect /overview and /monitor using ACL. Otherwise, the web application will provide OK cache-control headers.
+Protect /overview and /monitor using ACL. Otherwise, the web application will provide OK cache-control headers. This example works for Varnish 2.
 
+    acl purge {
+      "localhost";
+    }
     acl admins {
       "1.2.3.4";
       "2.3.4.5";
     }
-    
     acl monitor {
       "3.4.5.6";
     }
     
     sub vcl_recv {
       # [...]
+      if (req.request == "PURGE") {
+        if (!client.ip ~ purge) {
+          error 405 "Not allowed.";
+        } else {
+          purge_url(req.url);
+          error 200 "Purged";
+        }
+      }
       if (req.url ~ "^/archive"){
         # For streaming download
         return (pipe);
@@ -73,4 +83,3 @@ TODO
 * Statistics in the admin interface.
 * Proper MD5 checksumming during upload.
 * Client side error handling.
-* PURGE requests to Varnish.
