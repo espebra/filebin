@@ -1188,7 +1188,7 @@ def uploader():
     
     # Stream the content directly to the temporary file on disk
     while 1:
-        buf = sys.stdin.read(1)
+        buf = sys.stdin.read(4096)
         if buf:
             temp.write(buf)
     
