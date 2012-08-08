@@ -51,6 +51,10 @@ Protect /overview and /monitor using ACL. Otherwise, the web application will pr
     
     sub vcl_recv {
       # [...]
+      if (req.url ~ "^/archive"){
+        # For streaming download
+        return (pipe);
+      }
       if (req.url ~ "^/overview"){
         if (!client.ip ~ admins) {
           error 403 "Forbidden";
@@ -65,7 +69,6 @@ Protect /overview and /monitor using ACL. Otherwise, the web application will pr
 
 TODO
 ----
-* Improved archive downloading (streaming).
 * API documentation.
 * Statistics in the admin interface.
 * Proper MD5 checksumming during upload.
