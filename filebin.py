@@ -789,7 +789,7 @@ def index():
     client = get_client()
     dblog("Show front page", client = client)
     response = flask.make_response(flask.render_template("index.html", title = "Online storage at your fingertips"))
-    response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+    response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
 
 @app.route("/<tag>/")
