@@ -12,6 +12,7 @@ import fcntl
 import select
 import shutil
 import random
+import httplib
 import hashlib
 import pymongo
 import datetime
@@ -34,6 +35,9 @@ temp_directory = "/var/www/includes/filebin/temp"
 thumbnail_directory = "/var/www/includes/filebin/thumbnails"
 failure_sleep = 3
 
+purgehost = 'filebin.net'
+purgeport = 80
+
 dbhost = "127.0.0.1"
 dbport = 27017
 db = "filebin"
@@ -43,6 +47,17 @@ thumbnail_height = 180
 
 app = flask.Flask(__name__)
 app.config.from_object(__name__)
+
+def purge(uri):
+    if purgehost and purgeport:
+        url = 'http://%s%s' % (purgehost,uri)
+
+        conn = httplib.HTTPConnection(purgehost, purgeport, timeout = 2)
+        conn.request('PURGE', uri)
+        resp = conn.getresponse()
+        conn.close()
+        log("DEBUG","Purging %s: %s %s" \
+            % (uri,resp.status,resp.reason))
 
 # Generate tag
 def generate_tag():
@@ -362,6 +377,10 @@ def generate_thumbnails(tag):
                             % (filename,tag,mimetype))
                     
                     else:
+                        purge('/%s' % (tag))
+                        purge('/%s/' % (tag))
+                        purge('/thumbnail/%s/%s' % (tag,filename))
+
                         log("INFO","Generated thumbnail for file %s " \
                             "in tag %s with mimetype %s" \
                             % (filename,tag,mimetype))
@@ -825,13 +844,7 @@ def tag_page(tag,page):
         pages = pages, page = page, valid_days = valid_days, \
         title = "Tag %s" % (tag)))
 
-    if num_files > 0:
-        response.headers['cache-control'] = 'max-age=60, must-revalidate'
-    else:
-        # We want to avoid long TTL on empty tags since users are likely to
-        # upload files and recheck the tag shortly after.
-        response.headers['cache-control'] = 'max-age=5, must-revalidate'
-
+    response.headers['cache-control'] = 'max-age=120, must-revalidate'
     return response
 
 @app.route("/<tag>/json/")
@@ -871,7 +884,7 @@ def thumbnail(tag,filename):
         if os.path.isfile(filepath):
             # Output image files directly to the client browser
             response = flask.make_response(flask.send_file(filepath))
-            response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+            response.headers['cache-control'] = 'max-age=86400, must-revalidate'
             return response
 
     flask.abort(404)
@@ -993,6 +1006,11 @@ def admin(tag,key):
                 "tag %s." % (tag))
 
         else:
+            purge('/%s/' % (tag))
+            purge('/%s' % (tag))
+            purge('/download/')
+            purge('/download')
+
             saved = 1
 
     else:
@@ -1273,6 +1291,11 @@ def uploader():
     response = flask.make_response(flask.render_template('uploader.html'))
 
     if status:
+        purge('/%s' % (i['tag']))
+        purge('/%s/' % (i['tag']))
+        purge('/thumbnail/%s/%s' % (i['tag'],i['filename']))
+        purge('/%s/file/%s' % (i['tag'],i['filename']))
+
         response.headers['status'] = '200'
 
     else:
