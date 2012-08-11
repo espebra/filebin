@@ -834,7 +834,7 @@ def dashboard():
     response = flask.make_response( \
         flask.render_template("overview_dashboard.html", \
         last_file_uploads = last_file_uploads, \
-        last_tags = last_tags, \
+        last_tags = last_tags, active = 'dashboard', \
         title = "Dashboard"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
@@ -869,7 +869,7 @@ def overview_log_day(year,month,day):
 
     response = flask.make_response(flask.render_template("overview_log.html", \
         log = log, days = days, year = year, month = month, day = day, \
-        title = "Log overview"))
+        active = 'logs', title = "Logs"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
 
@@ -884,7 +884,7 @@ def overview_files():
     for tag in tags:
        files[tag] = get_files_in_tag(tag)
 
-    response = flask.make_response(flask.render_template("overview_files.html", files = files, title = "File overview"))
+    response = flask.make_response(flask.render_template("overview_files.html", files = files, active = 'files', title = "Files"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
 

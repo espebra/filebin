@@ -1,15 +1,27 @@
 <ul class="nav nav-tabs">
-  <li>
+  {% if active == 'dashboard' %}
+    <li class="active">
+  {% else %}
+    <li>
+  {% endif %}
     <a href="/overview/dashboard">
       Dashboard
     </a>
   </li>
-  <li>
+  {% if active == 'logs' %}
+    <li class="active">
+  {% else %}
+    <li>
+  {% endif %}
     <a href="/overview/log">
       Logs
     </a>
   </li>
-  <li>
+  {% if active == 'files' %}
+    <li class="active">
+  {% else %}
+    <li>
+  {% endif %}
     <a href="/overview/files">
       Files
     </a>
