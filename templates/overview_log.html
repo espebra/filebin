@@ -1,9 +1,5 @@
 {% include "header.html" %}
 
-<div class="hero-unit">
-  <h1>Logs</h1>
-</div>
-
 {% include "overview_nav.html" %}
 
 <div class="span1">
@@ -26,7 +22,7 @@
 </div>
 
 <div class="span10">
-  <p>{{ log|count }} log entries found.</p>
+  <p>{{ log|count }} log entries found from {{ year }}-{{ month }}-{{ day }}.</p>
   
   {% if log|count > 0 %}
     <table class="table table-bordered">
