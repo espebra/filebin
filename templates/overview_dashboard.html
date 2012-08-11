@@ -2,13 +2,14 @@
 
 {% include "overview_nav.html" %}
 
-<div class="span10">
+<div class="span11">
 <h2>Last {{ last_file_uploads|count }} file uploads</h2>
 <table class="table table-bordered table-condensed">
 <tr>
   <thead>
     <th>Timestamp</th>
     <th>Tag</th>
+    <th>Client</th>
     <th>Mime type</th>
     <th>Downloads</th>
     <th>Filename</th>
@@ -18,6 +19,7 @@
   <tr>
     <td>{{ f.time }} UTC</td>
     <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
+    <td>{{ f.client }}</td>
     <td>{{ f.mimetype }}</td>
     <td>{{ f.downloads }}</td>
     <td><a href="/{{ f.tag }}/file/{{ f.filename }}">{{ f.filename }}</a></td>

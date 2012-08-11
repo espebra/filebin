@@ -569,6 +569,7 @@ def get_last(count, files = False, tags = False):
            l['filename'] = entry['filename'] 
            l['mimetype'] = entry['mimetype'] 
            l['downloads'] = entry['downloads'] 
+           l['client'] = entry['client'] 
 
            ret.append(l)
 
