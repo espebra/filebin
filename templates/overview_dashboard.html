@@ -1,0 +1,58 @@
+{% include "header.html" %}
+
+<div class="hero-unit">
+  <h1>Dashboard</h1>
+</div>
+
+{% include "overview_nav.html" %}
+
+<div class="span10">
+<h2>Last {{ last_file_uploads|count }} file uploads</h2>
+<table class="table table-bordered table-condensed">
+<tr>
+  <thead>
+    <th>Timestamp</th>
+    <th>Tag</th>
+    <th>Mime type</th>
+    <th>Downloads</th>
+    <th>Filename</th>
+  </thead>
+</tr>
+{% for f in last_file_uploads %}
+  <tr>
+    <td>{{ f.time }} UTC</td>
+    <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
+    <td>{{ f.mimetype }}</td>
+    <td>{{ f.downloads }}</td>
+    <td><a href="/{{ f.tag }}/file/{{ f.filename }}">{{ f.filename }}</a></td>
+  </tr>
+{% endfor %}
+</table>
+</div>
+
+<div class="span5">
+<h2>Last {{ last_tags|count }} tags</h2>
+<table class="table table-bordered table-condensed">
+<tr>
+  <thead>
+    <th>Timestamp</th>
+    <th>Tag</th>
+    <th>Files</th>
+    <th>Downloads</th>
+    <th>TTL</th>
+  </thead>
+</tr>
+{% for f in last_tags %}
+  <tr>
+    <td>{{ f.time }} UTC</td>
+    <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
+    <td>{{ f.files }}</td>
+    <td>{{ f.downloads }}</td>
+    <td>{{ f.days_left }} days</td>
+  </tr>
+{% endfor %}
+</table>
+</div>
+
+{% include "footer.html" %}
+

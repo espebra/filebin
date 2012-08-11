@@ -185,7 +185,7 @@ def get_files_in_tag(tag, page = False, per_page = 100):
     if not verify(tag):
         return files
 
-    conf = read_tag_configuration(tag)
+    conf = get_tag_configuration(tag)
 
     col = dbopen('files')
     try:
@@ -329,7 +329,7 @@ def read_tag_creation_time(tag):
     return False 
 
 def generate_thumbnails(tag):
-    conf = read_tag_configuration(tag)
+    conf = get_tag_configuration(tag)
 
     if not conf['preview'] == 'on':
         return True
@@ -393,7 +393,7 @@ def generate_thumbnails(tag):
 
 def get_tag_lifetime(tag):
     days = False
-    conf = read_tag_configuration(tag)
+    conf = get_tag_configuration(tag)
 
     registered = datetime.datetime.strptime(str(conf['registered']), \
                                             "%Y%m%d%H%M%S")
@@ -440,10 +440,47 @@ def get_tag_lifetime(tag):
 
     return days
 
-def read_log_days(tag = False):
-    return 1
+def get_log_days(tag = False):
+    d = {}
+    col = dbopen('log')
+    try:
+        f = {}
+        if tag:
+            f['tag'] = tag
 
-def read_log(year = False,month = False,day = False,tag = False):
+        entries = col.find(f)
+
+    except:
+        return d
+
+    try:
+        entries
+
+    except:
+        return d
+
+    else:
+        for entry in entries:
+           if 'year' in entry and 'month' in entry and 'day' in entry:
+               year = '%04d' % int(entry['year'])
+               month = '%02d' % int(entry['month'])
+               day = '%02d' % int(entry['day'])
+
+               if not year in d:
+                   d[year] = {}
+
+               if not month in d[year]:
+                   d[year][month] = {}
+
+               if day in d[year][month]:
+                   d[year][month][day] += 1
+        
+               if not day in d[year][month]:
+                   d[year][month][day] = 1
+
+    return d
+
+def get_log(year = False,month = False,day = False,tag = False):
     ret = []
     col = dbopen('log')
     try:
@@ -498,7 +535,7 @@ def read_log(year = False,month = False,day = False,tag = False):
 
     return ret 
 
-def read_tag_configuration(tag):
+def get_tag_configuration(tag):
     col = dbopen('tags')
     try:
         configuration = col.find_one({'_id' : tag})
@@ -516,6 +553,51 @@ def read_tag_configuration(tag):
         return configuration
 
     return False 
+
+def get_last(count, files = False, tags = False):
+    count = int(count)
+    ret = []
+    if files == True:
+        col = dbopen('files')
+        cursor = col.find().sort('uploaded',-1).limit(count)
+
+        for entry in cursor:
+           l = {}
+           l['time'] = datetime.datetime.strptime(str(entry['uploaded']),"%Y%m%d%H%M%S")
+
+           l['tag'] = entry['tag'] 
+           l['filename'] = entry['filename'] 
+           l['mimetype'] = entry['mimetype'] 
+           l['downloads'] = entry['downloads'] 
+
+           ret.append(l)
+
+    if tags == True:
+        col = dbopen('tags')
+        cursor = col.find().sort('registered',-1).limit(count)
+
+        for entry in cursor:
+           l = {}
+           tag = entry['_id'] 
+           l['time'] = datetime.datetime.strptime(str(entry['registered']),"%Y%m%d%H%M%S")
+
+           l['tag'] = tag
+           l['ttl'] = entry['ttl'] 
+
+           try:
+               l['days_left'] = get_tag_lifetime(tag)
+
+           except:
+               l['days_left'] = False
+
+           files = get_files_in_tag(tag)
+           l['files'] = len(files)
+           l['downloads'] = 0
+           for f in files:
+               l['downloads'] += int(f['downloads'])
+
+           ret.append(l)
+    return ret
 
 def hash_key(key):
     # Let's hash the admin key
@@ -744,20 +826,32 @@ def remove_tag(tag):
 
     return status
 
+@app.route("/overview/dashboard/")
+@app.route("/overview/dashboard")
+def dashboard():
+    last_file_uploads = get_last(10,files = True)
+    last_tags = get_last(10,tags = True)
+    response = flask.make_response( \
+        flask.render_template("overview_dashboard.html", \
+        last_file_uploads = last_file_uploads, \
+        last_tags = last_tags, \
+        title = "Dashboard"))
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
+    return response
+
 @app.route("/overview/")
 @app.route("/overview")
 def overview():
-    return flask.redirect('/overview/log')
+    return flask.redirect('/overview/dashboard')
 
 @app.route("/overview/log/")
 @app.route("/overview/log")
 def overview_log():
-
     now = datetime.datetime.utcnow()
-    year = int(now.strftime("%Y"))
-    month = int(now.strftime("%m"))
-    day = int(now.strftime("%d"))
-    return flask.redirect('/overview/log/%d/%d/%d' % (year,month,day))
+    year = '%04d' % int(now.strftime("%Y"))
+    month = '%02d' % int(now.strftime("%m"))
+    day = '%02d' % int(now.strftime("%d"))
+    return flask.redirect('/overview/log/%s/%s/%s' % (year,month,day))
 
 @app.route("/overview/log/<year>/<month>/<day>/")
 @app.route("/overview/log/<year>/<month>/<day>")
@@ -766,11 +860,16 @@ def overview_log_day(year,month,day):
     client = get_client()
     dblog("Show log overview", client = client)
 
-    log = read_log(year,month,day)
-    days = read_log_days()
+    year = '%04d' % int(year)
+    month = '%02d' % int(month)
+    day = '%02d' % int(day)
+
+    log = get_log(year,month,day)
+    days = get_log_days()
 
     response = flask.make_response(flask.render_template("overview_log.html", \
-        log = log, days = days, title = "Log overview"))
+        log = log, days = days, year = year, month = month, day = day, \
+        title = "Log overview"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
 
@@ -835,7 +934,7 @@ def tag_page(tag,page):
         time.sleep(failure_sleep)
         flask.abort(400)
 
-    conf = read_tag_configuration(tag)
+    conf = get_tag_configuration(tag)
 
     num_files = len(get_files_in_tag(tag))
 
@@ -885,7 +984,7 @@ def tag_json(tag):
         time.sleep(failure_sleep)
         flask.abort(400)
 
-    conf = read_tag_configuration(tag)
+    conf = get_tag_configuration(tag)
     files = get_files_in_tag(tag)
 
     for f in files:
@@ -965,8 +1064,8 @@ def admin_log(tag,key):
     if not authenticate_key(tag,hashed_key):
         flask.abort(401)
 
-    log = read_log(tag = tag)
-    conf = read_tag_configuration(tag)
+    log = get_log(tag = tag)
+    conf = get_tag_configuration(tag)
 
     response = flask.make_response(flask.render_template("log.html", \
         tag = tag, log = log, conf = conf, key = key, \
@@ -1045,7 +1144,7 @@ def admin(tag,key):
     else:
         dblog('Show administration settings for tag %s' % (tag), client, tag)
 
-    conf = read_tag_configuration(tag)
+    conf = get_tag_configuration(tag)
 
     response = flask.make_response(flask.render_template("admin.html", \
         tag = tag, conf = conf, key = key, registered_iso = registered_iso, \
@@ -1126,7 +1225,7 @@ def upload_to_tag(tag):
 
     # Generate the administration only if the tag does not exist.
     key = False
-    conf = read_tag_configuration(tag)
+    conf = get_tag_configuration(tag)
 
     if conf:
         # The tag is read only
@@ -1190,7 +1289,7 @@ def uploader():
         flask.abort(400)
 
     # The input values are to be trusted at this point
-    conf = read_tag_configuration(i['tag'])
+    conf = get_tag_configuration(i['tag'])
     if conf:
         # The tag is read only
         if conf['permission'] != 'rw':
@@ -1352,8 +1451,14 @@ def maintenance():
             # Remove from filesystem
             if remove_tag(tag):
                 log("INFO","%s: Removed." % (tag))
+                dblog("Tag %s has been removed due to expiry." % (tag), \
+                    tag = tag)
+                purge('/%s/' % tag)
+                purge('/%s' % tag)
             else:
                 log("ERROR","%s: Unable to remove." % (tag))
+                dblog("Failed to remove tag %s. It has expired." % (tag), \
+                    tag = tag)
 
             
     response = flask.make_response(flask.render_template('maintenance.html', title = "Maintenance"))

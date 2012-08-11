@@ -1,8 +1,10 @@
 {% include "header.html" %}
 
 <div class="hero-unit">
-  <h1>File overview</h1>
+  <h1>Files</h1>
 </div>
+
+{% include "overview_nav.html" %}
 
 {% if files|count == 0 %}
   <p>No tags found</p>

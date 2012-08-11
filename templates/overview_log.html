@@ -1,46 +1,69 @@
 {% include "header.html" %}
 
 <div class="hero-unit">
-  <h1>Log overview</h1>
+  <h1>Logs</h1>
 </div>
 
-{% if log|count == 0 %}
-  <p>No log entries found</p>
-{% else %}
-  <table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>Time</th>
-      <th>Client</th>
-      <th>Description</th>
-      <th>Links</th>
-    </tr>
-  </thead>
-  {% for l in log %}
-    <tr>
-      <td>{{ l.time }} UTC</td>
-      <td>{{ l.client }}</td>
-      <td>{{ l.description }}</td>
-      <td>
-        <ul>
-        {% if l.tag %}
-           <li>T: <a href="/{{ l.tag }}">{{ l.tag }}</a></li>
-        {% endif %}
-        {% if l.filename %}
-           <li>F: <a href="/{{ l.tag }}/file/{{ l.filename }}">{{ l.filename }}</a></li>
-        {% endif %}
-        {% if l.referer %}
-           <li>R: {{ l.referer }}</li>
-        {% endif %}
-        {% if l.useragent %}
-           <li>U: {{ l.useragent }}</li>
-        {% endif %}
-        </ul>
-      </td>
-    </tr>
+{% include "overview_nav.html" %}
+
+<div class="span1">
+  <ul class="unstyled">
+  {% for y in days %}
+    {% for m in days[y] %}
+      {% for d in days[y][m] %}
+        <li>
+        {% if y == year and m == month and d == day %}
+          <span class="label label-info">{{ y }}-{{ m }}-{{ d }}</span>
+        {% else %}
+          <a alt="{{ days[y][m][d] }} log entries" href="/overview/log/{{ y }}/{{ m }}/{{ d }}"><span class="label">{{ y }}-{{ m }}-{{ d }}</span></a>
+        {% endif %}
+        
+        </li>
+      {% endfor %}
+    {% endfor %}
   {% endfor %}
-  </table>
-{% endif %}
+  </ul>
+</div>
+
+<div class="span10">
+  <p>{{ log|count }} log entries found.</p>
+  
+  {% if log|count > 0 %}
+    <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Client</th>
+        <th>Description</th>
+        <th>Links</th>
+      </tr>
+    </thead>
+    {% for l in log %}
+      <tr>
+        <td>{{ l.time }} UTC</td>
+        <td>{{ l.client }}</td>
+        <td>{{ l.description }}</td>
+        <td>
+          <ul>
+          {% if l.tag %}
+             <li>T: <a href="/{{ l.tag }}">{{ l.tag }}</a></li>
+          {% endif %}
+          {% if l.filename %}
+             <li>F: <a href="/{{ l.tag }}/file/{{ l.filename }}">{{ l.filename }}</a></li>
+          {% endif %}
+          {% if l.referer %}
+             <li>R: {{ l.referer }}</li>
+          {% endif %}
+          {% if l.useragent %}
+             <li>U: {{ l.useragent }}</li>
+          {% endif %}
+          </ul>
+        </td>
+      </tr>
+    {% endfor %}
+    </table>
+  {% endif %}
+</div>
 
 {% include "footer.html" %}
 
