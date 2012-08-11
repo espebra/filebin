@@ -440,15 +440,27 @@ def get_tag_lifetime(tag):
 
     return days
 
-def read_tag_log(tag = False):
+def read_log_days(tag = False):
+    return 1
+
+def read_log(year = False,month = False,day = False,tag = False):
     ret = []
     col = dbopen('log')
     try:
-        if tag:
-            entries = col.find({'tag' : tag}).sort('time',-1)
+        f = {}
+        if year:
+            f['year'] = int(year)
 
-        else:
-            entries = col.find().sort('time',-1)
+        if month:
+            f['month'] = int(month)
+
+        if day:
+            f['day'] = int(day)
+
+        if tag:
+            f['tag'] = tag
+
+        entries = col.find(f).sort('time',-1)
 
     except:
         return ret
@@ -463,20 +475,21 @@ def read_tag_log(tag = False):
         for entry in entries:
            l = {}
            l['time']      = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
+
            if 'description' in entry:
                l['description'] = entry['description'] 
 
            if 'client' in entry:
-               l['client']    = entry['client']     
+               l['client'] = entry['client']     
 
            if 'tag' in entry:
-               l['tag']       = entry['tag']     
+               l['tag'] = entry['tag']     
 
            if 'referer' in entry:
-               l['referer']       = entry['referer']
+               l['referer'] = entry['referer']
 
            if 'useragent' in entry:
-               l['useragent']       = entry['useragent']
+               l['useragent'] = entry['useragent']
 
            if 'filename' in entry:
                l['filename']  = entry['filename']     
@@ -610,11 +623,14 @@ def dblog(description,client = False,tag = False,filename = False):
     referer = get_header('referer')
     useragent = get_header('user-agent')
 
-    time = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    now = datetime.datetime.utcnow()
     col = dbopen('log')
     try:
         i = {}
-        i['time'] = time
+        i['time'] = now.strftime("%Y%m%d%H%M%S")
+        i['year'] = int(now.strftime("%Y"))
+        i['month'] = int(now.strftime("%m"))
+        i['day'] = int(now.strftime("%d"))
 
         if client:
             i['client'] = client
@@ -736,12 +752,25 @@ def overview():
 @app.route("/overview/log/")
 @app.route("/overview/log")
 def overview_log():
+
+    now = datetime.datetime.utcnow()
+    year = int(now.strftime("%Y"))
+    month = int(now.strftime("%m"))
+    day = int(now.strftime("%d"))
+    return flask.redirect('/overview/log/%d/%d/%d' % (year,month,day))
+
+@app.route("/overview/log/<year>/<month>/<day>/")
+@app.route("/overview/log/<year>/<month>/<day>")
+def overview_log_day(year,month,day):
+
     client = get_client()
     dblog("Show log overview", client = client)
 
-    log = read_tag_log()
+    log = read_log(year,month,day)
+    days = read_log_days()
 
-    response = flask.make_response(flask.render_template("overview_log.html", log = log, title = "Log overview"))
+    response = flask.make_response(flask.render_template("overview_log.html", \
+        log = log, days = days, title = "Log overview"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
 
@@ -936,7 +965,7 @@ def admin_log(tag,key):
     if not authenticate_key(tag,hashed_key):
         flask.abort(401)
 
-    log = read_tag_log(tag)
+    log = read_log(tag = tag)
     conf = read_tag_configuration(tag)
 
     response = flask.make_response(flask.render_template("log.html", \
