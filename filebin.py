@@ -831,6 +831,22 @@ def remove_tag(tag):
 def dashboard():
     last_file_uploads = get_last(10,files = True)
     last_tags = get_last(10,tags = True)
+
+    #tags = get_tags()
+    #for tag in tags:
+    #    size = 0
+    #    downloads = 0
+    #    bandwidth = 0
+    #    files = get_files_in_tag(tag)
+    #    for f in files:
+    #        size += int(f['size_bytes'])
+    #        downloads += int(f['downloads'])
+    #        bandwidth += int(f['size_bytes']) * int(f['downloads'])
+
+    #    #tags[tag]['total_size'] = size
+    #    #tags[tag]['total_downloads'] = downloads
+    #    #tags[tag]['total_bandwidth'] = bandwidth
+
     response = flask.make_response( \
         flask.render_template("overview_dashboard.html", \
         last_file_uploads = last_file_uploads, \
@@ -922,12 +938,9 @@ def index():
 
 @app.route("/<tag>/")
 @app.route("/<tag>")
-def tag(tag):
-    return flask.redirect('/%s/page/1' % (tag))
-
 @app.route("/<tag>/page/<page>/")
 @app.route("/<tag>/page/<page>")
-def tag_page(tag,page):
+def tag_page(tag,page = 1):
     files = {}
 
     if not verify(tag):
