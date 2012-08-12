@@ -52,6 +52,26 @@
 </table>
 </div>
 
+<div class="span6">
+<h2>Last {{ last_referers|count }} referers</h2>
+<table class="table table-bordered table-condensed">
+<tr>
+  <thead>
+    <th>Timestamp</th>
+    <th>Tag</th>
+    <th>Referer</th>
+  </thead>
+</tr>
+{% for f in last_referers %}
+  <tr>
+    <td>{{ f.time }} UTC</td>
+    <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
+    <td>{{ f.referer }}</td>
+  </tr>
+{% endfor %}
+</table>
+</div>
+
 <div class="span3">
 <h2>Totals</h2>
 <table class="table table-bordered table-condensed">

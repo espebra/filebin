@@ -554,7 +554,16 @@ def get_tag_configuration(tag):
 
     return False 
 
-def get_last(count, files = False, tags = False):
+def get_hostname():
+    try:
+        hostname = os.environ['HTTP_HOST']
+
+    except:
+        hostname = False
+
+    return hostname
+
+def get_last(count, files = False, tags = False, referers = False):
     count = int(count)
     ret = []
     if files == True:
@@ -572,6 +581,36 @@ def get_last(count, files = False, tags = False):
            l['client'] = entry['client'] 
 
            ret.append(l)
+
+    if referers == True:
+        col = dbopen('log')
+        cursor = col.find().sort('time',-1)
+        hostname = get_hostname()
+        if hostname:
+            m = re.compile('^http?://%s' % hostname)
+
+        i = 0
+        for entry in cursor:
+           if i == count:
+               break
+
+           l = {}
+           if 'referer' in entry:
+               # Do not show refereres that match our own hostname
+               if not m.match(entry['referer']):
+                   i += 1
+                   l['referer'] = entry['referer'] 
+
+                   if 'tag' in entry:
+                       l['tag'] = entry['tag'] 
+
+                   if 'filename' in entry:
+                       l['filename'] = entry['filename'] 
+
+                   if 'time' in entry:
+                       l['time'] = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
+
+                   ret.append(l)
 
     if tags == True:
         col = dbopen('tags')
@@ -832,6 +871,7 @@ def remove_tag(tag):
 def dashboard():
     last_file_uploads = get_last(10,files = True)
     last_tags = get_last(10,tags = True)
+    last_referers = get_last(10,referers = True)
 
     totals = {}
     size = 0
@@ -855,7 +895,8 @@ def dashboard():
     response = flask.make_response( \
         flask.render_template("overview_dashboard.html", \
         last_file_uploads = last_file_uploads, totals = totals, \
-        last_tags = last_tags, active = 'dashboard', \
+        last_tags = last_tags, last_referers = last_referers, \
+        active = 'dashboard', \
         title = "Dashboard"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
