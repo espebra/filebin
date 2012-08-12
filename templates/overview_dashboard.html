@@ -52,5 +52,31 @@
 </table>
 </div>
 
+<div class="span3">
+<h2>Totals</h2>
+<table class="table table-bordered table-condensed">
+<tr>
+  <td>Number of tags:</td>
+  <td>{{ totals.tags }}</td>
+</tr>
+<tr>
+  <td>Number of files:</td>
+  <td>{{ totals.files }}</td>
+</tr>
+<tr>
+  <td>File downloads:</td>
+  <td>{{ totals.downloads }}</td>
+</tr>
+<tr>
+  <td>Disk space used by files:</td>
+  <td>{{ totals.size }} GB</td>
+</tr>
+<tr>
+  <td>Outbound bandwidth:</td>
+  <td>{{ totals.bandwidth }} GB</td>
+</tr>
+</table>
+</div>
+
 {% include "footer.html" %}
 

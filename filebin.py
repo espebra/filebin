@@ -833,24 +833,28 @@ def dashboard():
     last_file_uploads = get_last(10,files = True)
     last_tags = get_last(10,tags = True)
 
-    #tags = get_tags()
-    #for tag in tags:
-    #    size = 0
-    #    downloads = 0
-    #    bandwidth = 0
-    #    files = get_files_in_tag(tag)
-    #    for f in files:
-    #        size += int(f['size_bytes'])
-    #        downloads += int(f['downloads'])
-    #        bandwidth += int(f['size_bytes']) * int(f['downloads'])
+    totals = {}
+    size = 0
+    downloads = 0
+    bandwidth = 0
+    tags = get_tags()
+    totals['tags'] = len(tags)
+    totals['files'] = 0
+    for tag in tags:
+        files = get_files_in_tag(tag)
+        for f in files:
+            totals['files'] += 1
+            size += int(f['size_bytes']) / 1024 / 1024 / round(1024)
+            bandwidth += int(f['size_bytes']) * int(f['downloads']) / 1024 / 1024 / round(1024)
+            downloads += int(f['downloads'])
 
-    #    #tags[tag]['total_size'] = size
-    #    #tags[tag]['total_downloads'] = downloads
-    #    #tags[tag]['total_bandwidth'] = bandwidth
+    totals['size'] = '%.2f' % (size)
+    totals['bandwidth'] = '%.2f' % bandwidth
+    totals['downloads'] = downloads
 
     response = flask.make_response( \
         flask.render_template("overview_dashboard.html", \
-        last_file_uploads = last_file_uploads, \
+        last_file_uploads = last_file_uploads, totals = totals, \
         last_tags = last_tags, active = 'dashboard', \
         title = "Dashboard"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
