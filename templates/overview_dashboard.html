@@ -46,7 +46,12 @@
     <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
     <td>{{ f.files }}</td>
     <td>{{ f.downloads }}</td>
-    <td>{{ f.days_left }} days</td>
+    <td>{% if f.days_left %}
+           {{ f.days_left }} days
+        {% else %}
+           Expired
+        {% endif %}
+    </td>
   </tr>
 {% endfor %}
 </table>
