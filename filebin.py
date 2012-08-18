@@ -29,11 +29,16 @@ import subprocess
 import flask
 import werkzeug
 
+# Import smtplib for the actual sending function
+import smtplib
+from email.mime.text import MIMEText
+
 logfile = "/var/log/app/filebin/filebin.log"
 file_directory = "/var/www/includes/filebin/files"
 temp_directory = "/var/www/includes/filebin/temp"
 thumbnail_directory = "/var/www/includes/filebin/thumbnails"
 failure_sleep = 3
+email = "root@localhost"
 
 purgehost = 'filebin.net'
 purgeport = 80
@@ -749,6 +754,24 @@ def increment_download_counter(tag,filename):
         log("ERROR","Unable to increment download counter for " \
             "%s in %s" % (filename,tag))
 
+def send_email(subject,body,to = email):
+    try:
+        me = 'noreply@filebin.net'
+        you = to
+        msg = MIMEText(body)
+
+        msg['Subject'] = subject
+        msg['From'] = me
+        msg['To'] = you
+        
+        s = smtplib.SMTP('localhost')
+        s.set_debuglevel(1)
+        s.sendmail(me, [you], msg.as_string())
+        s.quit()
+
+    except:
+        pass
+
 def dblog(description,client = False,tag = False,filename = False):
     referer = get_header('referer')
     useragent = get_header('user-agent')
@@ -1017,30 +1040,40 @@ def deletion(tag):
         except:
             flask.abort(400)
 
-        client = get_client()
-
-        now = datetime.datetime.utcnow()
-        col = dbopen('deletions')
-        try:
-            i = {}
-            i['time'] = now.strftime("%Y%m%d%H%M%S")
-            i['year'] = int(now.strftime("%Y"))
-            i['month'] = int(now.strftime("%m"))
-            i['day'] = int(now.strftime("%d"))
-            i['tag'] = tag
-            i['reason'] = reason
-            i['client'] = client
-            col.insert(i)
-        
-        except:
-            dblog("Failed to submit deletion request", client = client, tag = tag)
-            log("ERROR","Unable to add deletion request, tag %s, client %s, reason %s"
-                % (tag,client,reason))
-            submitted = -1
-
         else:
-            dblog("Deletion request submitted", client = client, tag = tag)
-            submitted = 1
+
+            client = get_client()
+
+            subject = 'Filebin: Request to delete tag %s' % (tag)
+            body = 'Good day,\n%s has just sent a request to delete tag %s. ' \
+                   'The reason to why the tag should be deleted is:\n\n' \
+                   '"%s"' % (client,tag,reason)
+
+            send_email(subject,body)
+
+            now = datetime.datetime.utcnow()
+            col = dbopen('deletions')
+            try:
+                i = {}
+                i['time'] = now.strftime("%Y%m%d%H%M%S")
+                i['year'] = int(now.strftime("%Y"))
+                i['month'] = int(now.strftime("%m"))
+                i['day'] = int(now.strftime("%d"))
+                i['tag'] = tag
+                i['reason'] = reason
+                i['client'] = client
+                col.insert(i)
+            
+            except:
+                dblog("Failed to submit deletion request", \
+                    client = client, tag = tag)
+                log("ERROR","Unable to add deletion request, tag %s, client " \
+                    "%s, reason %s" % (tag,client,reason))
+                submitted = -1
+
+            else:
+                dblog("Deletion request submitted", client = client, tag = tag)
+                submitted = 1
 
     response = flask.make_response(flask.render_template("deletion.html", \
         tag = tag, submitted = submitted, \
