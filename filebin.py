@@ -441,14 +441,14 @@ def get_tag_lifetime(tag):
     return days
 
 def get_log_days(tag = False):
-    d = {}
+    d = []
     col = dbopen('log')
     try:
         f = {}
         if tag:
             f['tag'] = tag
 
-        entries = col.find(f)
+        entries = col.find(f).sort('time',-1)
 
     except:
         return d
@@ -465,18 +465,10 @@ def get_log_days(tag = False):
                year = '%04d' % int(entry['year'])
                month = '%02d' % int(entry['month'])
                day = '%02d' % int(entry['day'])
+               date = '%s-%s-%s' % (year,month,day)
 
-               if not year in d:
-                   d[year] = {}
-
-               if not month in d[year]:
-                   d[year][month] = {}
-
-               if day in d[year][month]:
-                   d[year][month][day] += 1
-        
-               if not day in d[year][month]:
-                   d[year][month][day] = 1
+               if not date in d:
+                   d.append(date) 
 
     return d
 
@@ -913,11 +905,18 @@ def overview_log():
     year = '%04d' % int(now.strftime("%Y"))
     month = '%02d' % int(now.strftime("%m"))
     day = '%02d' % int(now.strftime("%d"))
-    return flask.redirect('/overview/log/%s/%s/%s' % (year,month,day))
+    return flask.redirect('/overview/log/%s-%s-%s' % (year,month,day))
 
-@app.route("/overview/log/<year>/<month>/<day>/")
-@app.route("/overview/log/<year>/<month>/<day>")
-def overview_log_day(year,month,day):
+@app.route("/overview/log/<date>/")
+@app.route("/overview/log/<date>")
+def overview_log_day(date):
+    try:
+       year = date[0:4]
+       month = date[5:7]
+       day = date[8:10]
+
+    except:
+       flask.abort(400)
 
     client = get_client()
     dblog("Show log overview", client = client)
@@ -925,13 +924,14 @@ def overview_log_day(year,month,day):
     year = '%04d' % int(year)
     month = '%02d' % int(month)
     day = '%02d' % int(day)
+    date = '%s-%s-%s' % (year,month,day)
 
     log = get_log(year,month,day)
     days = get_log_days()
 
     response = flask.make_response(flask.render_template("overview_log.html", \
         log = log, days = days, year = year, month = month, day = day, \
-        active = 'logs', title = "Logs"))
+        active = 'logs', date = date, title = "Logs"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
 

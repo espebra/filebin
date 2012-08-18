@@ -4,25 +4,20 @@
 
 <div class="span1">
   <ul class="unstyled">
-  {% for y in days %}
-    {% for m in days[y] %}
-      {% for d in days[y][m] %}
-        <li>
-        {% if y == year and m == month and d == day %}
-          <span class="label label-info">{{ y }}-{{ m }}-{{ d }}</span>
-        {% else %}
-          <a alt="{{ days[y][m][d] }} log entries" href="/overview/log/{{ y }}/{{ m }}/{{ d }}"><span class="label">{{ y }}-{{ m }}-{{ d }}</span></a>
-        {% endif %}
-        
-        </li>
-      {% endfor %}
-    {% endfor %}
+  {% for d in days %}
+    <li>
+    {% if d == date %}
+      <span class="label label-info">{{ d }}</span>
+    {% else %}
+      <a href="/overview/log/{{ d }}"><span class="label">{{ d }}</span></a>
+    {% endif %}
+    </li>
   {% endfor %}
   </ul>
 </div>
 
 <div class="span10">
-  <p>{{ log|count }} log entries found from {{ year }}-{{ month }}-{{ day }}.</p>
+  <p>{{ log|count }} log entries found from {{ date }}.</p>
   
   {% if log|count > 0 %}
     <table class="table table-bordered">
