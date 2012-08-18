@@ -1015,6 +1015,15 @@ def monitor():
 
     return response
 
+@app.route("/about/")
+@app.route("/about")
+def about():
+    client = get_client()
+    dblog("Show about", client = client)
+    response = flask.make_response(flask.render_template("about.html", title = "About"))
+    response.headers['cache-control'] = 'max-age=86400, must-revalidate'
+    return response
+
 @app.route("/")
 def index():
     client = get_client()
