@@ -1033,11 +1033,13 @@ def deletion(tag):
             col.insert(i)
         
         except:
+            dblog("Failed to submit deletion request", client = client, tag = tag)
             log("ERROR","Unable to add deletion request, tag %s, client %s, reason %s"
                 % (tag,client,reason))
             submitted = -1
 
         else:
+            dblog("Deletion request submitted", client = client, tag = tag)
             submitted = 1
 
     response = flask.make_response(flask.render_template("deletion.html", \
