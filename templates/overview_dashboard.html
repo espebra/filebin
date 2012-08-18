@@ -3,6 +3,32 @@
 {% include "overview_nav.html" %}
 
 <div class="span11">
+{% if last_deletion_requests|count  == 0 %}
+  <p>There are no deletion requests.</p>
+{% else %}
+  <h2>Last {{ last_deletion_requests|count }} deletion requests</h2>
+  <table class="table table-bordered table-condensed">
+  <tr>
+    <thead>
+      <th>Timestamp</th>
+      <th>Tag</th>
+      <th>Client</th>
+      <th>Reason</th>
+    </thead>
+  </tr>
+  {% for f in last_deletion_requests %}
+    <tr>
+      <td>{{ f.time }} UTC</td>
+      <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
+      <td>{{ f.client }}</td>
+      <td>{{ f.reason }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+{% endif %}
+</div>
+
+<div class="span11">
 <h2>Last {{ last_file_uploads|count }} file uploads</h2>
 <table class="table table-bordered table-condensed">
 <tr>

@@ -555,7 +555,9 @@ def get_hostname():
 
     return hostname
 
-def get_last(count, files = False, tags = False, referers = False):
+def get_last(count, files = False, tags = False, referers = False, \
+    deletion_requests = False):
+
     count = int(count)
     ret = []
     if files == True:
@@ -603,6 +605,20 @@ def get_last(count, files = False, tags = False, referers = False):
                        l['time'] = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
 
                    ret.append(l)
+
+    if deletion_requests == True:
+        col = dbopen('deletions')
+        cursor = col.find().sort('time',-1).limit(count)
+
+        for entry in cursor:
+           l = {}
+           tag = entry['tag'] 
+           l['time'] = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
+           l['tag'] = tag
+           l['client'] = entry['client'] 
+           l['reason'] = entry['reason'] 
+
+           ret.append(l)
 
     if tags == True:
         col = dbopen('tags')
@@ -864,6 +880,7 @@ def dashboard():
     last_file_uploads = get_last(10,files = True)
     last_tags = get_last(10,tags = True)
     last_referers = get_last(10,referers = True)
+    last_deletion_requests = get_last(10,deletion_requests = True)
 
     totals = {}
     size = 0
@@ -888,6 +905,7 @@ def dashboard():
         flask.render_template("overview_dashboard.html", \
         last_file_uploads = last_file_uploads, totals = totals, \
         last_tags = last_tags, last_referers = last_referers, \
+        last_deletion_requests = last_deletion_requests, \
         active = 'dashboard', \
         title = "Dashboard"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
@@ -980,6 +998,53 @@ def index():
     dblog("Show front page", client = client)
     response = flask.make_response(flask.render_template("index.html", title = "Online storage at your fingertips"))
     response.headers['cache-control'] = 'max-age=86400, must-revalidate'
+    return response
+
+@app.route("/deletion/<tag>/", methods = ['POST', 'GET'])
+@app.route("/deletion/<tag>", methods = ['POST', 'GET'])
+def deletion(tag):
+
+    submitted = 0
+
+    if not verify(tag):
+        time.sleep(failure_sleep)
+        flask.abort(400)
+
+    if flask.request.method == 'POST':
+        try:
+            reason = flask.request.form['reason']
+
+        except:
+            flask.abort(400)
+
+        client = get_client()
+
+        now = datetime.datetime.utcnow()
+        col = dbopen('deletions')
+        try:
+            i = {}
+            i['time'] = now.strftime("%Y%m%d%H%M%S")
+            i['year'] = int(now.strftime("%Y"))
+            i['month'] = int(now.strftime("%m"))
+            i['day'] = int(now.strftime("%d"))
+            i['tag'] = tag
+            i['reason'] = reason
+            i['client'] = client
+            col.insert(i)
+        
+        except:
+            log("ERROR","Unable to add deletion request, tag %s, client %s, reason %s"
+                % (tag,client,reason))
+            submitted = -1
+
+        else:
+            submitted = 1
+
+    response = flask.make_response(flask.render_template("deletion.html", \
+        tag = tag, submitted = submitted, \
+        title = "Request deletion, tag %s" % (tag)))
+
+    response.headers['cache-control'] = 'max-age=120, must-revalidate'
     return response
 
 @app.route("/<tag>/")
