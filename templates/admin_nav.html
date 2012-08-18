@@ -1,7 +1,10 @@
 <p>
-::
-<a href="/{{ tag }}">View tag</a> :: 
-{% if conf['permission'] == 'rw' %}
-  <a href="/upload/{{ tag }}">Upload more files</a> ::
-{% endif %}
+  <a class="btn btn-primary btn-large" href="/{{ tag }}">
+    View tag
+  </a>
+  {% if conf['permission'] == 'rw' %}
+    <a class="btn btn-primary btn-large" href="/upload/{{ tag }}">
+      Upload files to this tag
+    </a>
+  {% endif %}
 </p>
