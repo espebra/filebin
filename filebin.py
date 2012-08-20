@@ -694,7 +694,7 @@ def create_default_tag_configuration(tag,key):
                    {
                      '_id'         : tag,
                      'key'         : hashed_key,
-                     'ttl'         : 3,
+                     'ttl'         : 2,
                      'expose'      : 'private',
                      'permission'  : 'rw',
                      'preview'     : 'on',
