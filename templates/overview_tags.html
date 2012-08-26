@@ -5,7 +5,7 @@
 {% if tags|count == 0 %}
   <p>No tags found</p>
 {% else %}
-  <table class="table table-bordered">
+  <table class="table table-bordered table-condensed">
   <thead>
     <tr>
       <th>Tag</th>
@@ -18,6 +18,7 @@
     </tr>
   </thead>
   {% for tag in tags | sort %}
+          <form method="POST" action="">
     <tr>
         <td><a href="/{{ tag }}">{{ tag }}</a></td>
         <td>{{ tags[tag]['files'] }}</td>
@@ -26,24 +27,23 @@
         <td>{{ tags[tag]['bandwidth'] }} MB</td>
         <td>
             {% if tags[tag]['conf']['permission'] == 'rw' %}
-                 <span class="badge badge-success">RW</span>
+                 <span class="badge badge-warning"><i class="icon-upload icon-white"></i> <i class="icon-download icon-white"></i></span>
             {% else %}
-                 <span class="badge badge-info">RO</span>
+                 <span class="badge badge-success"><i class="icon-download icon-white"></i></span>
             {% endif %}
             {% if tags[tag]['conf']['expose'] == 'private' %}
-                 <span class="badge badge-success">Private</span>
+                 <span class="badge badge-success"><i class="icon-user icon-white"></i></span>
             {% else %}
-                 <span class="badge badge-important">Public</span>
-            {% endif %}
-            {% if tags[tag]['conf']['blocked'] %}
-                 <span class="badge badge-success">Blocked</span>
+                 <span class="badge badge-warning"><i class="icon-globe icon-white"></i></span>
             {% endif %}
             {% if tags[tag]['deletion'] %}
-                 <span alt="foo" class="badge badge-warning">Deletion request</span>
+                 <span class="badge badge-important"><i class="icon-lock icon-white"></i> ?</span>
+            {% endif %}
+            {% if tags[tag]['conf']['blocked'] %}
+                 <span class="badge badge-important"><i class="icon-lock icon-white"></i></span>
             {% endif %}
         </td>
         <td>
-          <form method="POST" action="">
           <input type="hidden" name="tag" value="{{ tag }}"/>
           {% if tags[tag]['conf']['blocked'] %}
             <input type="hidden" name="action" value="unblock"/>
@@ -52,9 +52,9 @@
             <input type="hidden" name="action" value="block"/>
             <input type="submit" class="btn btn-danger btn-small" value="Block"/>
           {% endif %}
-          </form>
         </td>
     </tr>
+    </form>
   {% endfor %}
   </table>
 {% endif %}

@@ -847,6 +847,11 @@ def unblock_tag(tag):
         return False
 
     else:
+        purge('/%s' % (tag))
+        purge('/%s/' % (tag))
+        for f in get_files_in_tag(tag):
+            purge('/%s/file/%s' % (tag,f['filename']))
+
         return True
 
 def block_tag(tag):
@@ -868,6 +873,11 @@ def block_tag(tag):
         return False
 
     else:
+        purge('/%s' % (tag))
+        purge('/%s/' % (tag))
+        for f in get_files_in_tag(tag):
+            purge('/%s/file/%s' % (tag,f['filename']))
+            
         return True
 
 def get_mimetype(path):
