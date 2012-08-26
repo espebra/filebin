@@ -1,0 +1,63 @@
+{% include "header.html" %}
+
+{% include "overview_nav.html" %}
+
+{% if tags|count == 0 %}
+  <p>No tags found</p>
+{% else %}
+  <table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Tag</th>
+      <th>Files</th>
+      <th>Downloads</th>
+      <th>Size</th>
+      <th>Bandwidth</th>
+      <th>Status</th>
+      <th>Block</th>
+    </tr>
+  </thead>
+  {% for tag in tags | sort %}
+    <tr>
+        <td><a href="/{{ tag }}">{{ tag }}</a></td>
+        <td>{{ tags[tag]['files'] }}</td>
+        <td>{{ tags[tag]['downloads'] }}</td>
+        <td>{{ tags[tag]['size'] }} MB</td>
+        <td>{{ tags[tag]['bandwidth'] }} MB</td>
+        <td>
+            {% if tags[tag]['conf']['permission'] == 'rw' %}
+                 <span class="badge badge-success">RW</span>
+            {% else %}
+                 <span class="badge badge-info">RO</span>
+            {% endif %}
+            {% if tags[tag]['conf']['expose'] == 'private' %}
+                 <span class="badge badge-success">Private</span>
+            {% else %}
+                 <span class="badge badge-important">Public</span>
+            {% endif %}
+            {% if tags[tag]['conf']['blocked'] %}
+                 <span class="badge badge-success">Blocked</span>
+            {% endif %}
+            {% if tags[tag]['deletion'] %}
+                 <span alt="foo" class="badge badge-warning">Deletion request</span>
+            {% endif %}
+        </td>
+        <td>
+          <form method="POST" action="">
+          <input type="hidden" name="tag" value="{{ tag }}"/>
+          {% if tags[tag]['conf']['blocked'] %}
+            <input type="hidden" name="action" value="unblock"/>
+            <input type="submit" class="btn btn-primary btn-small" value="Unblock"/>
+          {% else %}
+            <input type="hidden" name="action" value="block"/>
+            <input type="submit" class="btn btn-danger btn-small" value="Block"/>
+          {% endif %}
+          </form>
+        </td>
+    </tr>
+  {% endfor %}
+  </table>
+{% endif %}
+
+{% include "footer.html" %}
+

@@ -1,6 +1,12 @@
 {% include "header.html" %}
 
-{% if num_files == 0 %}
+{% if conf['blocked'] %}
+  <div class="hero-unit">
+    <h1>Uh oh,</h1>
+    <p>The tag you are trying to access has been blocked.</p>
+  </div>
+
+{% elif num_files == 0 %}
   <div class="hero-unit">
     <h1>Uh oh,</h1>
     <p>The tag you are trying to access does not contain any files.

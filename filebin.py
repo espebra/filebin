@@ -180,7 +180,10 @@ def get_public_tags():
 
     if cursor:
         for t in cursor:
-            tags.append(t['_id'])
+            tag = t['_id']
+            files = get_files_in_tag(tag)
+            if len(files) > 0:
+                tags.append(tag)
 
     return tags
 
@@ -560,14 +563,20 @@ def get_hostname():
 
     return hostname
 
-def get_last(count, files = False, tags = False, referers = False, \
+def get_last(count = False, files = False, tags = False, referers = False, \
     deletion_requests = False):
 
-    count = int(count)
+    if count:
+        count = int(count)
+
     ret = []
     if files == True:
         col = dbopen('files')
-        cursor = col.find().sort('uploaded',-1).limit(count)
+        if count:
+            cursor = col.find().sort('uploaded',-1).limit(count)
+
+        else:
+            cursor = col.find().sort('uploaded',-1)
 
         for entry in cursor:
            l = {}
@@ -590,8 +599,9 @@ def get_last(count, files = False, tags = False, referers = False, \
 
         i = 0
         for entry in cursor:
-           if i == count:
-               break
+           if count:
+               if i == count:
+                   break
 
            l = {}
            if 'referer' in entry:
@@ -613,7 +623,12 @@ def get_last(count, files = False, tags = False, referers = False, \
 
     if deletion_requests == True:
         col = dbopen('deletions')
-        cursor = col.find().sort('time',-1).limit(count)
+
+        if count:
+            cursor = col.find().sort('time',-1).limit(count)
+
+        else:
+            cursor = col.find().sort('time',-1)
 
         for entry in cursor:
            l = {}
@@ -627,7 +642,12 @@ def get_last(count, files = False, tags = False, referers = False, \
 
     if tags == True:
         col = dbopen('tags')
-        cursor = col.find().sort('registered',-1).limit(count)
+
+        if count:
+            cursor = col.find().sort('registered',-1).limit(count)
+
+        else:
+            cursor = col.find().sort('registered',-1)
 
         for entry in cursor:
            l = {}
@@ -808,6 +828,48 @@ def dblog(description,client = False,tag = False,filename = False):
         log("ERROR","Unable to log %s of file %s to tag %s and client %s" \
             % (direction,filename,tag,client))
 
+def unblock_tag(tag):
+    client = get_client()
+    dblog("Unblocking tag %s" % (tag), client, tag)
+    col = dbopen('tags')
+    try:
+        col.update({'_id' : tag},
+                   {
+                     '$set' : {
+                       'blocked' : False
+                     }
+                   },
+                   False)
+
+    except:
+        log("ERROR","Unable to update configuration for " \
+            "tag %s." % (tag))
+        return False
+
+    else:
+        return True
+
+def block_tag(tag):
+    client = get_client()
+    dblog("Blocking tag %s" % (tag), client, tag)
+    col = dbopen('tags')
+    try:
+        col.update({'_id' : tag},
+                   {
+                     '$set' : {
+                       'blocked' : True
+                     }
+                   },
+                   False)
+
+    except:
+        log("ERROR","Unable to update configuration for " \
+            "tag %s." % (tag))
+        return False
+
+    else:
+        return True
+
 def get_mimetype(path):
     m = magic.open(magic.MAGIC_MIME_TYPE)
     m.load()
@@ -973,6 +1035,70 @@ def overview_log_day(date):
     response = flask.make_response(flask.render_template("overview_log.html", \
         log = log, days = days, year = year, month = month, day = day, \
         active = 'logs', date = date, title = "Logs"))
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
+    return response
+
+@app.route("/overview/tags/", methods = ['POST', 'GET'])
+@app.route("/overview/tags", methods = ['POST', 'GET'])
+def overview_tags():
+    client = get_client()
+    #dblog("Show tag overview", client = client)
+
+    if flask.request.method == 'POST':
+        try:
+            tag = flask.request.form['tag']
+            action = flask.request.form['action']
+
+        except:
+            pass
+
+        else:
+           if verify(tag):
+                if action == 'block':
+                    block_tag(tag)
+
+                elif action == 'unblock':
+                    unblock_tag(tag)
+
+    deletion_requests = get_last(deletion_requests = True)
+
+    tags = {}
+    for t in get_tags():
+        n = {}
+        for d in deletion_requests:
+            if d['tag'] == t:
+                n['deletion'] = d
+
+        n['files'] = 0
+        n['downloads'] = 0
+        n['size'] = 0
+        n['bandwidth'] = 0
+
+        conf = get_tag_configuration(t)
+        n['conf'] = conf
+
+        files = get_files_in_tag(t)
+        if files:
+            n['files'] = len(files)
+            for f in files:
+                n['downloads'] += f['downloads']
+                n['size'] += f['size_bytes'] / 1024 / float(1024)
+                n['bandwidth'] += (f['size_bytes'] * f['downloads']) / 1024 / float(1024)
+
+        # Show only two decimals
+        n['size'] = '%.2f' % n['size']
+        n['bandwidth'] = '%.2f' % n['bandwidth']
+
+        # Only show the tags with files
+        if n['files'] > 0:
+            if not t in tags:
+                tags[t] = {}
+
+            tags[t] = n
+
+    response = flask.make_response(flask.render_template("overview_tags.html", \
+        tags = tags, active = 'tags', title = "Tags"))
+
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
 
@@ -1175,6 +1301,11 @@ def tag_json(tag):
 @app.route("/thumbnails/<tag>/<filename>")
 def thumbnail(tag,filename):
     if verify(tag,filename):
+
+        conf = get_tag_configuration(tag)
+        if conf['blocked']:
+            flask.abort(403)
+
         filepath = get_path(tag,filename,True)
         #log("DEBUG","Deliver thumbnail from %s" % (filepath))
         if os.path.isfile(filepath):
@@ -1191,6 +1322,10 @@ def file(tag,filename):
     client = get_client()
     mimetype = False
     if verify(tag,filename):
+        conf = get_tag_configuration(tag)
+        if conf['blocked']:
+            flask.abort(403)
+
         log_prefix = "%s/%s -> %s" % (tag,filename,client)
         file_path = get_path(tag,filename)
         if os.path.isfile(file_path):
