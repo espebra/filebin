@@ -2,105 +2,111 @@
 
 {% include "overview_nav.html" %}
 
-<div class="span11">
-{% if last_reports|count  == 0 %}
-  <p>There are no tags reported for moderation.</p>
-{% else %}
-  <h2>Last {{ last_reports|count }} tags reported</h2>
-  <table class="table table-bordered table-condensed">
-  <tr>
-    <thead>
-      <th>Timestamp</th>
-      <th>Tag</th>
-      <th>Client</th>
-      <th>Reason</th>
-    </thead>
-  </tr>
-  {% for f in last_reports %}
+<div class="row">
+  <div class="span12">
+    {% if last_reports|count  == 0 %}
+      <p>There are no tags reported for moderation.</p>
+    {% else %}
+      <h2>Last {{ last_reports|count }} tags reported</h2>
+      <table class="table table-bordered table-condensed">
+      <tr>
+        <thead>
+          <th>Timestamp</th>
+          <th>Tag</th>
+          <th>Client</th>
+          <th>Reason</th>
+        </thead>
+      </tr>
+      {% for f in last_reports %}
+        <tr>
+          <td>{{ f.time }} UTC</td>
+          <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
+          <td>{{ f.client }}</td>
+          <td>{{ f.reason }}</td>
+        </tr>
+      {% endfor %}
+      </table>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row">
+  <div class="span12">
+    <h2>Last {{ last_file_uploads|count }} file uploads</h2>
+    <table class="table table-bordered table-condensed">
     <tr>
-      <td>{{ f.time }} UTC</td>
-      <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
-      <td>{{ f.client }}</td>
-      <td>{{ f.reason }}</td>
+      <thead>
+        <th>Timestamp</th>
+        <th>Tag</th>
+        <th>Client</th>
+        <th>Mime type</th>
+        <th>Downloads</th>
+        <th>Filename</th>
+      </thead>
     </tr>
-  {% endfor %}
-  </table>
-{% endif %}
+    {% for f in last_file_uploads %}
+      <tr>
+        <td>{{ f.time }} UTC</td>
+        <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
+        <td>{{ f.client }}</td>
+        <td>{{ f.mimetype }}</td>
+        <td>{{ f.downloads }}</td>
+        <td><a href="/{{ f.tag }}/file/{{ f.filename }}">{{ f.filename }}</a></td>
+      </tr>
+    {% endfor %}
+    </table>
+  </div>
 </div>
 
-<div class="span11">
-<h2>Last {{ last_file_uploads|count }} file uploads</h2>
-<table class="table table-bordered table-condensed">
-<tr>
-  <thead>
-    <th>Timestamp</th>
-    <th>Tag</th>
-    <th>Client</th>
-    <th>Mime type</th>
-    <th>Downloads</th>
-    <th>Filename</th>
-  </thead>
-</tr>
-{% for f in last_file_uploads %}
-  <tr>
-    <td>{{ f.time }} UTC</td>
-    <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
-    <td>{{ f.client }}</td>
-    <td>{{ f.mimetype }}</td>
-    <td>{{ f.downloads }}</td>
-    <td><a href="/{{ f.tag }}/file/{{ f.filename }}">{{ f.filename }}</a></td>
-  </tr>
-{% endfor %}
-</table>
-</div>
-
-<div class="span5">
-<h2>Last {{ last_tags|count }} tags</h2>
-<table class="table table-bordered table-condensed">
-<tr>
-  <thead>
-    <th>Timestamp</th>
-    <th>Tag</th>
-    <th>Files</th>
-    <th>Downloads</th>
-    <th>TTL</th>
-  </thead>
-</tr>
-{% for f in last_tags %}
-  <tr>
-    <td>{{ f.time }} UTC</td>
-    <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
-    <td>{{ f.files }}</td>
-    <td>{{ f.downloads }}</td>
-    <td>{% if f.days_left %}
-           {{ f.days_left }} days
-        {% else %}
-           Expired
-        {% endif %}
-    </td>
-  </tr>
-{% endfor %}
-</table>
-</div>
-
-<div class="span6">
-<h2>Last {{ last_referers|count }} referers</h2>
-<table class="table table-bordered table-condensed">
-<tr>
-  <thead>
-    <th>Timestamp</th>
-    <th>Tag</th>
-    <th>Referer</th>
-  </thead>
-</tr>
-{% for f in last_referers %}
-  <tr>
-    <td>{{ f.time }} UTC</td>
-    <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
-    <td>{{ f.referer }}</td>
-  </tr>
-{% endfor %}
-</table>
+<div class="row">
+  <div class="span6">
+    <h2>Last {{ last_tags|count }} tags</h2>
+    <table class="table table-bordered table-condensed">
+    <tr>
+      <thead>
+        <th>Timestamp</th>
+        <th>Tag</th>
+        <th>Files</th>
+        <th>Downloads</th>
+        <th>TTL</th>
+      </thead>
+    </tr>
+    {% for f in last_tags %}
+      <tr>
+        <td>{{ f.time }} UTC</td>
+        <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
+        <td>{{ f.files }}</td>
+        <td>{{ f.downloads }}</td>
+        <td>{% if f.days_left %}
+               {{ f.days_left }} days
+            {% else %}
+               Expired
+            {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </table>
+  </div>
+    
+  <div class="span6">
+    <h2>Last {{ last_referers|count }} referers</h2>
+    <table class="table table-bordered table-condensed">
+    <tr>
+      <thead>
+        <th>Timestamp</th>
+        <th>Tag</th>
+        <th>Referer</th>
+      </thead>
+    </tr>
+    {% for f in last_referers %}
+      <tr>
+        <td>{{ f.time }} UTC</td>
+        <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
+        <td>{{ f.referer }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+  </div>
 </div>
 
 <div class="span3">
