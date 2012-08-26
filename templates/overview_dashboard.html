@@ -3,10 +3,10 @@
 {% include "overview_nav.html" %}
 
 <div class="span11">
-{% if last_deletion_requests|count  == 0 %}
-  <p>There are no deletion requests.</p>
+{% if last_reports|count  == 0 %}
+  <p>There are no tags reported for moderation.</p>
 {% else %}
-  <h2>Last {{ last_deletion_requests|count }} deletion requests</h2>
+  <h2>Last {{ last_reports|count }} tags reported</h2>
   <table class="table table-bordered table-condensed">
   <tr>
     <thead>
@@ -16,7 +16,7 @@
       <th>Reason</th>
     </thead>
   </tr>
-  {% for f in last_deletion_requests %}
+  {% for f in last_reports %}
     <tr>
       <td>{{ f.time }} UTC</td>
       <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>

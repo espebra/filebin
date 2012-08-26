@@ -564,7 +564,7 @@ def get_hostname():
     return hostname
 
 def get_last(count = False, files = False, tags = False, referers = False, \
-    deletion_requests = False):
+    reports = False):
 
     if count:
         count = int(count)
@@ -621,8 +621,8 @@ def get_last(count = False, files = False, tags = False, referers = False, \
 
                    ret.append(l)
 
-    if deletion_requests == True:
-        col = dbopen('deletions')
+    if reports == True:
+        col = dbopen('reports')
 
         if count:
             cursor = col.find().sort('time',-1).limit(count)
@@ -975,7 +975,7 @@ def dashboard():
     last_file_uploads = get_last(10,files = True)
     last_tags = get_last(10,tags = True)
     last_referers = get_last(10,referers = True)
-    last_deletion_requests = get_last(10,deletion_requests = True)
+    last_reports = get_last(10,reports = True)
 
     totals = {}
     size = 0
@@ -1000,7 +1000,7 @@ def dashboard():
         flask.render_template("overview_dashboard.html", \
         last_file_uploads = last_file_uploads, totals = totals, \
         last_tags = last_tags, last_referers = last_referers, \
-        last_deletion_requests = last_deletion_requests, \
+        last_reports = last_reports, \
         active = 'dashboard', \
         title = "Dashboard"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
@@ -1070,14 +1070,14 @@ def overview_tags():
                 elif action == 'unblock':
                     unblock_tag(tag)
 
-    deletion_requests = get_last(deletion_requests = True)
+    reports = get_last(reports = True)
 
     tags = {}
     for t in get_tags():
         n = {}
-        for d in deletion_requests:
+        for d in reports:
             if d['tag'] == t:
-                n['deletion'] = d
+                n['reported'] = True
 
         n['files'] = 0
         n['downloads'] = 0
@@ -1168,9 +1168,9 @@ def index():
     response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
 
-@app.route("/deletion/<tag>/", methods = ['POST', 'GET'])
-@app.route("/deletion/<tag>", methods = ['POST', 'GET'])
-def deletion(tag):
+@app.route("/report/<tag>/", methods = ['POST', 'GET'])
+@app.route("/report/<tag>", methods = ['POST', 'GET'])
+def report(tag):
 
     submitted = 0
 
@@ -1197,7 +1197,7 @@ def deletion(tag):
             send_email(subject,body)
 
             now = datetime.datetime.utcnow()
-            col = dbopen('deletions')
+            col = dbopen('reports')
             try:
                 i = {}
                 i['time'] = now.strftime("%Y%m%d%H%M%S")
@@ -1210,19 +1210,19 @@ def deletion(tag):
                 col.insert(i)
             
             except:
-                dblog("Failed to submit deletion request", \
+                dblog("Failed to submit report", \
                     client = client, tag = tag)
-                log("ERROR","Unable to add deletion request, tag %s, client " \
+                log("ERROR","Unable to add report, tag %s, client " \
                     "%s, reason %s" % (tag,client,reason))
                 submitted = -1
 
             else:
-                dblog("Deletion request submitted", client = client, tag = tag)
+                dblog("Tag %s reported" % tag, client = client, tag = tag)
                 submitted = 1
 
-    response = flask.make_response(flask.render_template("deletion.html", \
+    response = flask.make_response(flask.render_template("report.html", \
         tag = tag, submitted = submitted, \
-        title = "Request deletion, tag %s" % (tag)))
+        title = "Report tag %s" % (tag)))
 
     response.headers['cache-control'] = 'max-age=120, must-revalidate'
     return response

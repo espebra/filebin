@@ -91,33 +91,37 @@
     </ul>
   {% endif %}
 
-  <table class="table table-striped">
-  <thead>
-  <tr>
-    <th>File name</th>
-    <th>File type</th>
-    <th>File size</th>
-    <th>Downloads</th>
-    <th>Bandwidth</th>
-    <th>Uploaded at</th>
-  </thead>
-  {% for file in files %}
-    <tr>
-      <td><a href="/{{ tag }}/file/{{ file.filename }}">{{ file.filename }}</a>
-        {% if conf['preview'] == 'on' %}
-          {% if file.thumbnail %}
-            <i class="icon-camera" rel="tooltip" title="This file has a thumbnail."></i>
-          {% endif %}
-        {% endif %}
-      </td>
-      <td>{{ file.mimetype }}</td>
-      <td>{{ file.size }} MB</td>
-      <td>{{ file.downloads }}</td>
-      <td>{{ file.bandwidth }} MB</td>
-      <td>{{ file.uploaded_iso }} UTC</td>
-    </tr>
-  {% endfor %}
-  </table>
+  <div class="row">
+    <div class="span12">
+      <table class="table table-striped">
+      <thead>
+      <tr>
+        <th class="span5">File name</th>
+        <th class="span2">File type</th>
+        <th class="span1">File size</th>
+        <th class="span1">Downloads</th>
+        <th class="span1">Bandwidth</th>
+        <th class="span2">Uploaded at</th>
+      </thead>
+      {% for file in files %}
+        <tr>
+          <td class="span5"><a href="/{{ tag }}/file/{{ file.filename }}">{{ file.filename }}</a>
+            {% if conf['preview'] == 'on' %}
+              {% if file.thumbnail %}
+                <i class="icon-camera" rel="tooltip" title="This file has a thumbnail."></i>
+              {% endif %}
+            {% endif %}
+          </td>
+          <td class="span2">{{ file.mimetype }}</td>
+          <td class="span1">{{ file.size }} MB</td>
+          <td class="span1">{{ file.downloads }}</td>
+          <td class="span1">{{ file.bandwidth }} MB</td>
+          <td class="span2">{{ file.uploaded_iso }} UTC</td>
+        </tr>
+      {% endfor %}
+      </table>
+    </div>
+  </div>
 
   {% include "pages.html" %}
 
