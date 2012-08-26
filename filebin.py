@@ -1303,8 +1303,15 @@ def thumbnail(tag,filename):
     if verify(tag,filename):
 
         conf = get_tag_configuration(tag)
-        if conf['blocked']:
-            flask.abort(403)
+        try:
+            conf['blocked']
+
+        except:
+            pass
+
+        else:
+            if conf['blocked'] == True:
+                flask.abort(403)
 
         filepath = get_path(tag,filename,True)
         #log("DEBUG","Deliver thumbnail from %s" % (filepath))
@@ -1323,8 +1330,16 @@ def file(tag,filename):
     mimetype = False
     if verify(tag,filename):
         conf = get_tag_configuration(tag)
-        if conf['blocked']:
-            flask.abort(403)
+
+        try:
+            conf['blocked']
+
+        except:
+            pass
+
+        else:
+            if conf['blocked'] == True:
+                flask.abort(403)
 
         log_prefix = "%s/%s -> %s" % (tag,filename,client)
         file_path = get_path(tag,filename)
