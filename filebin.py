@@ -1758,7 +1758,7 @@ def uploader():
         response.headers['status'] = '501'
 
     response.headers['content-type'] = 'text/plain'
-    response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
 
     return response
 
