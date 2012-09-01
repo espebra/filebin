@@ -36,6 +36,31 @@ Apache
       DirectoryIndex index.py
     </Directory>
 
+Nginx 
+-------
+    location / { try_files $uri @filebin; }
+    location @filebin {
+        include uwsgi_params;
+        uwsgi_read_timeout 6000;
+        uwsgi_send_timeout 6000;
+        client_max_body_size 1024M;
+        client_body_buffer_size 128k;
+        uwsgi_pass unix:/run/shm/filebin.sock;
+    }
+
+Uwsgi
+-------
+    uwsgi:
+        uid: www-data
+        gid: www-data
+        socket: /run/shm/filebin.sock
+        plugins: http,python
+        chmod-socket: 666
+        processes: 2
+        module: filebin
+        callable: app
+        chdir: /srv/www/filebin
+
 Varnish
 -------
 Protect /overview and /monitor using ACL. Otherwise, the web application will provide OK cache-control headers. This example works for Varnish 2.
