@@ -1659,17 +1659,10 @@ def uploader():
 
     log("DEBUG","%s: Will save the content to %s" % ( \
         log_prefix,i['filepath']))
-    
-    # Stream the content directly to the temporary file on disk
-    while 1:
-        buf = sys.stdin.read(4096)
-        if buf:
-            temp.write(buf)
-    
-        else:
-            log("DEBUG","%s: Upload to tempfile complete" % (log_prefix))
-            temp.seek(0)
-            break
+
+    temp.write(flask.request.data)
+    log("DEBUG","%s: Upload to tempfile complete" % (log_prefix))
+    temp.seek(0)
 
     # Verify the md5 checksum here.
     i['md5sum'] = md5_for_file(temp.name)
