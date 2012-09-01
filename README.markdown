@@ -4,7 +4,10 @@ Filebin is a very simple web application that supports multifile upload and larg
 
 Requirements
 ============
-Some Python modules, MongoDB and Apache.
+Some Python modules, MongoDB and Apache or Nginx+uwsgi.
+
+For ubuntu:
+    sudo apt-get install mongodb-server python-pymongo python-jinja2 python-flask python-werkzeug python-magic python-pythonmagick python-pyexiv2 
 
 Additional configuration
 ========================
@@ -50,6 +53,7 @@ Nginx
 
 Uwsgi
 -------
+filebin.yaml:
     uwsgi:
         uid: www-data
         gid: www-data
