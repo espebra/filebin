@@ -32,28 +32,17 @@ import werkzeug
 import smtplib
 from email.mime.text import MIMEText
 
-logfile = "/var/log/app/filebin/filebin.log"
-file_directory = "/var/www/includes/filebin/files"
-temp_directory = "/var/www/includes/filebin/temp"
-thumbnail_directory = "/var/www/includes/filebin/thumbnails"
-failure_sleep = 3
-email = "root@localhost"
-fromemail = 'noreply@filebin.net'
 
-purgehost = 'filebin.net'
-purgeport = 80
-
-dbhost = "127.0.0.1"
-dbport = 27017
-db = "filebin"
-
-thumbnail_width = 260
-thumbnail_height = 180
-
+#app.config.from_envvar('FILEBIN_SETTINGS')
 app = flask.Flask(__name__)
-app.config.from_object(__name__)
+# Load app defaults
+app.config.from_pyfile('application.cfg')
+# Load the local.cfg if it exists (silent=True)
+app.config.from_pyfile('local.cfg', silent=True)
 
 def purge(uri):
+    purgehost = app.config['PURGEHOST']
+    purgeport = app.config['PURGEPORT']
     if purgehost and purgeport:
         url = 'http://%s%s' % (purgehost,uri)
 
@@ -85,14 +74,14 @@ def get_path(tag = False, filename = False, thumbnail = False):
     b = m.group(2)
 
     if thumbnail == True:
-        path = '%s/%s/%s/%s' % (thumbnail_directory,a,b,tag)
+        path = '%s/%s/%s/%s' % (app.config['THUMBNAIL_DIRECTORY'],a,b,tag)
 
         if filename:
             #path = '%s/%s-thumb.jpg' % (path,filename)
             path = '%s/%s' % (path,filename)
 
     else:
-        path = '%s/%s/%s/%s' % (file_directory,a,b,tag)
+        path = '%s/%s/%s/%s' % (app.config['FILE_DIRECTORY'],a,b,tag)
 
         if filename:
             path = '%s/%s' % (path,filename)
@@ -112,7 +101,7 @@ def md5_for_file(target):
 # A simple log function. Might want to inject to database and/or syslog instead
 def log(priority,text):
     try:
-        f = open(logfile, 'a')
+        f = open(app.config['LOGFILE'], 'a')
 
     except:
         pass
@@ -273,6 +262,9 @@ def get_client():
     return client
 
 def dbopen(collection):
+    dbhost = app.config['DBHOST']
+    dbport = app.config['DBPORT']
+    db = app.config['DBNAME']
     # Connect to mongodb
     try:
         connection = pymongo.Connection(dbhost,dbport)
@@ -314,7 +306,7 @@ def authenticate_key(tag,key):
     if configuration:
         return True
 
-    return False 
+    return False
 
 def read_tag_creation_time(tag):
     col = dbopen('tags')
@@ -375,7 +367,7 @@ def generate_thumbnails(tag):
 
                     try:
                         im = PythonMagick.Image(filepath)
-                        im.scale('%dx%d' % (int(thumbnail_width),int(thumbnail_height)))
+                        im.scale('%dx%d' % (app.config['THUMBNAIL_WIDTH'], app.config['THUMBNAIL_HEIGHT']))
                         im.write(str(thumbfile))
 
                     except:
@@ -766,9 +758,10 @@ def increment_download_counter(tag,filename):
         log("ERROR","Unable to increment download counter for " \
             "%s in %s" % (filename,tag))
 
-def send_email(subject,body,to = email):
+
+def send_email(subject,body,to = app.config['EMAIL']):
     try:
-        me = fromemail
+        me = app.config.fromemail
         you = to
         msg = MIMEText(body)
 
@@ -776,7 +769,7 @@ def send_email(subject,body,to = email):
         msg['From'] = me
         msg['To'] = you
 
-        s = smtplib.SMTP('localhost')
+        s = smtplib.SMTP(app.config['SMTPHOST'])
         s.set_debuglevel(1)
         s.sendmail(me, [you], msg.as_string())
         s.quit()
@@ -1167,7 +1160,7 @@ def report(tag):
     submitted = 0
 
     if not verify(tag):
-        time.sleep(failure_sleep)
+        time.sleep(app.config['FAILURE_SLEEP'])
         flask.abort(400)
 
     if flask.request.method == 'POST':
@@ -1227,7 +1220,7 @@ def tag_page(tag,page = 1):
     files = {}
 
     if not verify(tag):
-        time.sleep(failure_sleep)
+        time.sleep(app.config['FAILURE_SLEEP'])
         flask.abort(400)
 
     conf = get_tag_configuration(tag)
@@ -1277,7 +1270,7 @@ def tag_json(tag):
     files = {}
 
     if not verify(tag):
-        time.sleep(failure_sleep)
+        time.sleep(app.config['FAILURE_SLEEP'])
         flask.abort(400)
 
     conf = get_tag_configuration(tag)
@@ -1406,7 +1399,7 @@ def admin(tag,key):
     hashed_key = hash_key(key)
 
     if not authenticate_key(tag,hashed_key):
-        time.sleep(failure_sleep)
+        time.sleep(app.config['FAILURE_SLEEP'])
         flask.abort(401)
 
     ttl_iso = {}
@@ -1512,12 +1505,12 @@ def archive(tag):
                 break
 
     if not verify(tag):
-        time.sleep(failure_sleep)
+        time.sleep(app.config['FAILURE_SLEEP'])
         flask.abort(400)
 
     tag_path = get_path(tag)
     if not os.path.exists(tag_path):
-        time.sleep(failure_sleep)
+        time.sleep(app.config['FAILURE_SLEEP'])
         flask.abort(404)
 
     log_prefix = '%s archive -> %s' % (tag,client)
@@ -1619,16 +1612,16 @@ def uploader():
     log_prefix = '%s -> %s/%s' % (i['client'],i['tag'],i['filename'])
     log("INFO","%s: Upload request received" % (log_prefix))
 
-    if not os.path.exists(temp_directory):
-        os.makedirs(temp_directory)
-        if not os.path.exists(temp_directory):
+    if not os.path.exists(app.config['TEMP_DIRECTORY']):
+        os.makedirs(app.config['TEMP_DIRECTORY'])
+        if not os.path.exists(app.config['TEMP_DIRECTORY']):
             log("ERROR","%s: Unable to create directory %s" % (\
-                log_prefix,temp_directory))
+                log_prefix,app.config['TEMP_DIRECTORY']))
             flask.abort(501)
 
     # The temporary destination (while the upload is still in progress)
     try:
-        temp = tempfile.NamedTemporaryFile(dir = temp_directory)
+        temp = tempfile.NamedTemporaryFile(dir = app.config['TEMP_DIRECTORY'])
 
     except:
         log("DEBUG","%s: Unable to create temp file %s" % \
