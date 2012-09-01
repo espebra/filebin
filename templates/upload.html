@@ -117,9 +117,12 @@
               );
               p.appendChild(pText);
               li.appendChild(p);
+              var divContainer = document.createElement("div");
+              divContainer.className = "progress progress-striped active";
               var divLoader = document.createElement("div");
-              divLoader.className = "loadingIndicator";
-              li.appendChild(divLoader);
+              divLoader.className = "bar";
+              li.appendChild(divContainer);
+              divContainer.appendChild(divLoader);
               fileList.appendChild(li);
               fileQueue.push({
                   file : file,
@@ -180,7 +183,7 @@
                   upload = xhr.upload;
               upload.addEventListener("progress", function (ev) {
                   if (ev.lengthComputable) {
-                      var loader = li.getElementsByTagName("div")[0];
+                      var loader = li.getElementsByTagName("div")[1];
                       loader.style["width"] = (ev.loaded / ev.total) * 100 + "%";
                       var ps = li.getElementsByTagName("p");
                       for (var i = 0; i < ps.length; i++) {
@@ -195,13 +198,13 @@
               }, false);
               upload.addEventListener("load", function (ev) {
                   var ps = li.getElementsByTagName("p");
-                  var div = li.getElementsByTagName("div")[0];
+                  var div = li.getElementsByTagName("div")[1];
                   div.style["width"] = "100%";
                   div.style["backgroundColor"] = "#468847";
                   for (var i = 0; i < ps.length; i++) {
                       if (ps[i].className == "loader") {
                           ps[i].textContent = "Upload complete";
-                          ps[i].style["color"] = "#468847";
+                          ps[i].style["color"] = "white";
                           break;
                       }
                   }
