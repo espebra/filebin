@@ -24,7 +24,6 @@ import PythonMagick
 import pyexiv2
 
 import subprocess
-#from tornado.database import Connection
 
 import flask
 import werkzeug
@@ -102,8 +101,8 @@ def get_path(tag = False, filename = False, thumbnail = False):
 # Function to calculate the md5 checksum for a file on the local file system
 def md5_for_file(target):
     md5 = hashlib.md5()
-    with open(target,'rb') as f: 
-        for chunk in iter(lambda: f.read(128*md5.block_size), b''): 
+    with open(target,'rb') as f:
+        for chunk in iter(lambda: f.read(128*md5.block_size), b''):
             md5.update(chunk)
 
     f.close()
@@ -249,7 +248,6 @@ def get_header(header):
 
         except:
             pass
-       
     if value:
         log("DEBUG","Header %s = %s" % (header,value))
     else:
@@ -267,7 +265,7 @@ def get_client():
     except:
         try:
             client = os.environ['REMOTE_ADDR']
- 
+
         except:
             client = False
 
@@ -334,7 +332,7 @@ def read_tag_creation_time(tag):
     else:
         return t['registered']
 
-    return False 
+    return False
 
 def generate_thumbnails(tag):
     conf = get_tag_configuration(tag)
@@ -383,7 +381,6 @@ def generate_thumbnails(tag):
                         log("ERROR","Unable to generate thumbnail for file " \
                             "%s in tag %s with mimetype %s" \
                             % (filename,tag,mimetype))
-                    
                     else:
                         purge('/%s' % (tag))
                         purge('/%s/' % (tag))
@@ -410,27 +407,21 @@ def get_tag_lifetime(tag):
     if ttl == 0:
         # Expire immediately
         to = now
-
     elif ttl == 1:
         # One week from registered
         to = registered + datetime.timedelta(weeks = 1)
-        
     elif ttl == 2:
         # One month from registered
         to = registered + datetime.timedelta(weeks = 4)
-
     elif ttl == 3:
         # Six months from registered
         to = registered + datetime.timedelta(weeks = 26)
-
     elif ttl == 4:
         # One year from registered
         to = registered + datetime.timedelta(weeks = 52)
-
     elif ttl == 5:
         # Forever
         to = now + datetime.timedelta(weeks = 52)
-
     if int(to.strftime("%Y%m%d%H%M%S")) > int(now.strftime("%Y%m%d%H%M%S")):
         # TTL not reached
         if ttl == 5:
@@ -476,7 +467,7 @@ def get_log_days(tag = False):
                date = '%s-%s-%s' % (year,month,day)
 
                if not date in d:
-                   d.append(date) 
+                   d.append(date)
 
     return d
 
@@ -514,13 +505,13 @@ def get_log(year = False,month = False,day = False,tag = False):
            l['time']      = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
 
            if 'description' in entry:
-               l['description'] = entry['description'] 
+               l['description'] = entry['description']
 
            if 'client' in entry:
-               l['client'] = entry['client']     
+               l['client'] = entry['client']
 
            if 'tag' in entry:
-               l['tag'] = entry['tag']     
+               l['tag'] = entry['tag']
 
            if 'referer' in entry:
                l['referer'] = entry['referer']
@@ -529,11 +520,11 @@ def get_log(year = False,month = False,day = False,tag = False):
                l['useragent'] = entry['useragent']
 
            if 'filename' in entry:
-               l['filename']  = entry['filename']     
+               l['filename']  = entry['filename']
 
            ret.append(l)
 
-    return ret 
+    return ret
 
 def get_tag_configuration(tag):
     col = dbopen('tags')
@@ -552,7 +543,7 @@ def get_tag_configuration(tag):
     else:
         return configuration
 
-    return False 
+    return False
 
 def get_hostname():
     try:
@@ -582,11 +573,11 @@ def get_last(count = False, files = False, tags = False, referers = False, \
            l = {}
            l['time'] = datetime.datetime.strptime(str(entry['uploaded']),"%Y%m%d%H%M%S")
 
-           l['tag'] = entry['tag'] 
-           l['filename'] = entry['filename'] 
-           l['mimetype'] = entry['mimetype'] 
-           l['downloads'] = entry['downloads'] 
-           l['client'] = entry['client'] 
+           l['tag'] = entry['tag']
+           l['filename'] = entry['filename']
+           l['mimetype'] = entry['mimetype']
+           l['downloads'] = entry['downloads']
+           l['client'] = entry['client']
 
            ret.append(l)
 
@@ -608,13 +599,13 @@ def get_last(count = False, files = False, tags = False, referers = False, \
                # Do not show refereres that match our own hostname
                if not m.match(entry['referer']):
                    i += 1
-                   l['referer'] = entry['referer'] 
+                   l['referer'] = entry['referer']
 
                    if 'tag' in entry:
-                       l['tag'] = entry['tag'] 
+                       l['tag'] = entry['tag']
 
                    if 'filename' in entry:
-                       l['filename'] = entry['filename'] 
+                       l['filename'] = entry['filename']
 
                    if 'time' in entry:
                        l['time'] = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
@@ -632,11 +623,11 @@ def get_last(count = False, files = False, tags = False, referers = False, \
 
         for entry in cursor:
            l = {}
-           tag = entry['tag'] 
+           tag = entry['tag']
            l['time'] = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
            l['tag'] = tag
-           l['client'] = entry['client'] 
-           l['reason'] = entry['reason'] 
+           l['client'] = entry['client']
+           l['reason'] = entry['reason']
 
            ret.append(l)
 
@@ -655,7 +646,7 @@ def get_last(count = False, files = False, tags = False, referers = False, \
            l['time'] = datetime.datetime.strptime(str(entry['registered']),"%Y%m%d%H%M%S")
 
            l['tag'] = tag
-           l['ttl'] = entry['ttl'] 
+           l['ttl'] = entry['ttl']
 
            try:
                l['days_left'] = get_tag_lifetime(tag)
@@ -769,7 +760,7 @@ def increment_download_counter(tag,filename):
                      }
                    },
                    True)
-    
+
     except:
         log("ERROR","Unable to increment download counter for " \
             "%s in %s" % (filename,tag))
@@ -783,7 +774,7 @@ def send_email(subject,body,to = email):
         msg['Subject'] = subject
         msg['From'] = me
         msg['To'] = you
-        
+
         s = smtplib.SMTP('localhost')
         s.set_debuglevel(1)
         s.sendmail(me, [you], msg.as_string())
@@ -822,8 +813,8 @@ def dblog(description,client = False,tag = False,filename = False):
 
         i['description'] = description
         col.insert(i)
-                   
-    
+
+
     except:
         log("ERROR","Unable to log %s of file %s to tag %s and client %s" \
             % (direction,filename,tag,client))
@@ -877,7 +868,7 @@ def block_tag(tag):
         purge('/%s/' % (tag))
         for f in get_files_in_tag(tag):
             purge('/%s/file/%s' % (tag,f['filename']))
-            
+
         return True
 
 def get_mimetype(path):
@@ -1208,7 +1199,7 @@ def report(tag):
                 i['reason'] = reason
                 i['client'] = client
                 col.insert(i)
-            
+
             except:
                 dblog("Failed to submit report", \
                     client = client, tag = tag)
@@ -1248,7 +1239,7 @@ def tag_page(tag,page = 1):
     # Input validation
     try:
         int(page)
- 
+
     except:
        flask.abort(400)
 
@@ -1420,7 +1411,7 @@ def admin(tag,key):
     ttl_iso = {}
     # When the tag was created (YYYYMMDDhhmmss UTC)
     registered = read_tag_creation_time(tag)
-    
+
     try:
         registered_iso = datetime.datetime.strptime(str(registered),"%Y%m%d%H%M%S")
 
@@ -1480,8 +1471,8 @@ def admin(tag,key):
         title = "Administration for %s" % (tag)))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
-   
-     
+
+
 #def nonblocking(pipe, size):
 #    f = fcntl.fcntl(pipe, fcntl.F_GETFL)
 # 
@@ -1506,11 +1497,11 @@ def archive(tag):
         command = "/usr/bin/zip -j - %s" % (" ".join(files_to_archive))
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell = True, close_fds = True)
         f = fcntl.fcntl(p.stdout, fcntl.F_GETFL)
- 
+
         while True:
             if not p.stdout.closed:
                 fcntl.fcntl(p.stdout, fcntl.F_SETFL, f | os.O_NONBLOCK)
-         
+
             if not select.select([p.stdout], [], [])[0]:
                 yield ""
 
@@ -1781,7 +1772,6 @@ def maintenance():
                 dblog("Failed to remove tag %s. It has expired." % (tag), \
                     tag = tag)
 
-            
     response = flask.make_response(flask.render_template('maintenance.html', title = "Maintenance"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
