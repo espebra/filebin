@@ -38,6 +38,7 @@ temp_directory = "/var/www/includes/filebin/temp"
 thumbnail_directory = "/var/www/includes/filebin/thumbnails"
 failure_sleep = 3
 email = "root@localhost"
+fromemail = 'noreply@filebin.net'
 
 purgehost = 'filebin.net'
 purgeport = 80
@@ -767,7 +768,7 @@ def increment_download_counter(tag,filename):
 
 def send_email(subject,body,to = email):
     try:
-        me = 'noreply@filebin.net'
+        me = fromemail
         you = to
         msg = MIMEText(body)
 
