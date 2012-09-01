@@ -761,7 +761,7 @@ def increment_download_counter(tag,filename):
 
 def send_email(subject,body,to = app.config['EMAIL']):
     try:
-        me = app.config.fromemail
+        me = app.config['FROM_EMAIL']
         you = to
         msg = MIMEText(body)
 
