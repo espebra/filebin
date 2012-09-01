@@ -51,9 +51,8 @@ Nginx
         uwsgi_pass unix:/run/shm/filebin.sock;
     }
 
-Uwsgi
+Uwsgi (filebin.yaml)
 -------
-filebin.yaml:
     uwsgi:
         uid: www-data
         gid: www-data
