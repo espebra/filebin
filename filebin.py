@@ -1655,9 +1655,16 @@ def uploader():
     log("DEBUG","%s: Will save the content to %s" % ( \
         log_prefix,i['filepath']))
 
-    temp.write(flask.request.data)
-    log("DEBUG","%s: Upload to tempfile complete" % (log_prefix))
-    temp.seek(0)
+    try:
+        temp.write(flask.request.data)
+        temp.seek(0)
+
+    except:
+        log("DEBUG","%s: Unable to write temp file %s" % \
+            (log_prefix,i['filepath']))
+
+    else:
+        log("DEBUG","%s: Upload to tempfile complete" % (log_prefix))
 
     # Verify the md5 checksum here.
     i['md5sum'] = md5_for_file(temp.name)
