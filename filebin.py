@@ -889,7 +889,11 @@ def get_time_of_capture(path):
             time = str(image['Exif.Photo.DateTimeOriginal'])
 
         except:
-            time = str(image['Exif.Image.DateTime'])
+            try:
+                time = str(image['Exif.Image.DateTime'])
+
+            except:
+                log("ERROR","EXIF: Unable to find DateTime and DateTimeOriginal in %s" % (path))
 
     if time:
         log("DEBUG","EXIF: DateTime = %s for %s" % (time,path))
