@@ -1,10 +1,46 @@
-<p>
-  <a class="btn btn-primary btn-large" href="/{{ tag }}">
-    View tag
-  </a>
-  {% if conf['permission'] == 'rw' %}
-    <a class="btn btn-primary btn-large" href="/upload/{{ tag }}">
-      Upload files to this tag
+<div class="hero-unit">
+  <h1>Administration</h1>
+  <p>Tag {{ tag }}.</p>
+  <p>
+    <a class="btn btn-primary btn-large" href="/{{ tag }}">
+      View tag
     </a>
+    {% if conf['permission'] == 'rw' %}
+      <a class="btn btn-primary btn-large" href="/upload/{{ tag }}">
+        Upload files to this tag
+      </a>
+    {% endif %}
+  </p>
+</div>
+
+<ul class="nav nav-tabs">
+  {% if active == 'configuration' %}
+    <li class="active">
+  {% else %}
+    <li>
   {% endif %}
-</p>
+    <a href="/admin/{{ tag }}/{{ key }}/configuration">
+      Configuration
+    </a>
+  </li>
+  {% if active == 'files' %}
+    <li class="active">
+  {% else %}
+    <li>
+  {% endif %}
+    <a href="/admin/{{ tag }}/{{ key }}/files">
+      Files
+    </a>
+  </li>
+  <!--
+  {% if active == 'statistics' %}
+    <li class="active">
+  {% else %}
+    <li>
+  {% endif %}
+    <a href="/admin/{{ tag }}/{{ key }}/statistics">
+      Statistics
+    </a>
+  </li>
+  -->
+</ul>

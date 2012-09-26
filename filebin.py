@@ -1399,9 +1399,55 @@ def admin_log(tag,key):
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
 
+
+@app.route("/admin/<tag>/<key>/files/", methods = ['POST', 'GET'])
+@app.route("/admin/<tag>/<key>/files", methods = ['POST', 'GET'])
+def admin_files(tag,key):
+    client = get_client()
+
+    if not verify(tag):
+        flask.abort(400)
+
+    # Let's hash the admin key
+    hashed_key = hash_key(key)
+
+    if not authenticate_key(tag,hashed_key):
+        time.sleep(app.config['FAILURE_SLEEP'])
+        flask.abort(401)
+
+    files = get_files_in_tag(tag)
+    conf = get_tag_configuration(tag)
+
+    if flask.request.method == 'POST':
+        dblog("Admin files for for tag %s" % (tag), client, tag)
+
+    #   purge('/%s/' % (tag))
+    #   purge('/%s' % (tag))
+    #   purge('/download/')
+    #   purge('/download')
+    #   saved = 1
+
+    #else:
+    #    dblog('Show administration settings for tag %s' % (tag), client, tag)
+
+    #conf = get_tag_configuration(tag)
+
+    response = flask.make_response(flask.render_template("admin_files.html", \
+        tag = tag, key = key, files = files, conf = conf, active = 'files', \
+        title = "Administration for %s" % (tag)))
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
+    return response
+
 @app.route("/admin/<tag>/<key>/", methods = ['POST', 'GET'])
 @app.route("/admin/<tag>/<key>", methods = ['POST', 'GET'])
 def admin(tag,key):
+    response = flask.redirect('/admin/%s/%s/configuration' % (tag,key))
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
+    return response
+
+@app.route("/admin/<tag>/<key>/configuration/", methods = ['POST', 'GET'])
+@app.route("/admin/<tag>/<key>/configuration", methods = ['POST', 'GET'])
+def admin_configuration(tag,key):
     client = get_client()
     saved = 0
 
@@ -1472,13 +1518,12 @@ def admin(tag,key):
 
     conf = get_tag_configuration(tag)
 
-    response = flask.make_response(flask.render_template("admin.html", \
+    response = flask.make_response(flask.render_template("admin_configuration.html", \
         tag = tag, conf = conf, key = key, registered_iso = registered_iso, \
-        ttl_iso = ttl_iso, saved = saved, \
+        ttl_iso = ttl_iso, saved = saved, active = 'configuration', \
         title = "Administration for %s" % (tag)))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
-
 
 #def nonblocking(pipe, size):
 #    f = fcntl.fcntl(pipe, fcntl.F_GETFL)

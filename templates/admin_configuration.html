@@ -1,21 +1,9 @@
 {% include "header.html" %}
 
-<div class="hero-unit">
-  <h1>Administration</h1>
-  <p>Configuration and statistics for tag {{ tag }}.</p>
-  {% include "admin_nav.html" %}
-</div>
-
-<!--
-<fieldset>
-  <legend>Statistics</legend>
-  <p>The tag was created at {{ registered_iso }} UTC.</p>
-</fieldset>
--->
+{% include "admin_nav.html" %}
 
 <form class="form-horizontal" method="POST" action="">
   <fieldset>
-    <legend>Configuration</legend>
 
     {% if saved == 1 %}
     <div class="alert alert-success">

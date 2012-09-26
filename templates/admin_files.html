@@ -1,0 +1,30 @@
+{% include "header.html" %}
+
+{% include "admin_nav.html" %}
+
+<table class="table table-condensed table-striped">
+  <thead>
+    <th>File name</th>
+    <th>File type</th>
+    <th>File size</th>
+    <th>Uploaded at</th>
+    <th></th>
+  </thead>
+  <tbody>
+    {% for f in files | sort %}
+      <tr>
+        <td class="span3"><a href="/{{ tag }}/file/{{ f.filename }}">{{ f.filename }}</a></td>
+        <td class="span2">{{ f.mimetype }}</td>
+        <td class="span2">{{ f.size }} MB</td>
+        <td class="span2">{{ f.uploaded_iso }}</td>
+        <td class="span1">
+          <button class="btn btn-mini btn-danger disabled" type="button">
+            <i class="icon-trash icon-white"></i>
+          </button>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% include "footer.html" %}
