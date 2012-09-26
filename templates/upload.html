@@ -2,11 +2,13 @@
 
 <script src="/static/js/md5.js"></script>
 <script>
-  function FileAPI (t, d, f) {
+  function FileAPI (c, t, d, f) {
   
-      var fileList = t,
+      var fileCount = c,
+          fileList = t,
           dropZone = d,
           fileField = f,
+          counter = 0,
           fileQueue = new Array()
           preview = null;
   
@@ -33,6 +35,12 @@
 
           var files = ev.dataTransfer.files;
           addFileListItems(files);
+          counter += files.length;
+          if (counter == 1) {
+              fileCount.textContent = "You have one file in the upload queue.";
+          } else {
+              fileCount.textContent = "You have " + counter + " files in the upload queue.";
+          }
       }
   
       this.clearList = function (ev) {
@@ -229,10 +237,12 @@
   
   window.onload = function () {
       if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a modern browser with File API support to upload files.");
+      var fileCount = document.getElementById("fileCount");
       var fileList = document.getElementById("fileList");
       var fileDrop = document.getElementById("fileDrop");
       var fileField = document.getElementById("fileField");
       FileAPI = new FileAPI(
+          fileCount,
           fileList,
           fileDrop,
           fileField
@@ -292,6 +302,8 @@
       <a id="reset" class="btn" href="#" title="Remove all files from list">Clear list</a>
     </p>
 </div>
+
+<h6><div id="fileCount"></div></h6>
 
 <div id="files">
     <ul id="fileList"></ul>
