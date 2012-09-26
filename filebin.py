@@ -1378,28 +1378,6 @@ def file(tag,filename):
 
     flask.abort(404)
 
-@app.route("/log/<tag>/<key>/")
-@app.route("/log/<tag>/<key>")
-def admin_log(tag,key):
-    if not verify(tag):
-        flask.abort(400)
-
-    # Let's hash the admin key
-    hashed_key = hash_key(key)
-
-    if not authenticate_key(tag,hashed_key):
-        flask.abort(401)
-
-    log = get_log(tag = tag)
-    conf = get_tag_configuration(tag)
-
-    response = flask.make_response(flask.render_template("log.html", \
-        tag = tag, log = log, conf = conf, key = key, \
-        title = "Log entries for %s" % (tag)))
-    response.headers['cache-control'] = 'max-age=0, must-revalidate'
-    return response
-
-
 @app.route("/admin/<tag>/<key>/files/", methods = ['POST', 'GET'])
 @app.route("/admin/<tag>/<key>/files", methods = ['POST', 'GET'])
 def admin_files(tag,key):
