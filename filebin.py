@@ -73,6 +73,10 @@ def get_path(tag = False, filename = False, thumbnail = False):
     a = m.group(1)
     b = m.group(2)
 
+    # Make sure the filename is safe
+    if filename:
+        filename = werkzeug.utils.secure_filename(filename)
+
     if thumbnail == True:
         path = '%s/%s/%s/%s' % (app.config['THUMBNAIL_DIRECTORY'],a,b,tag)
 
@@ -127,16 +131,11 @@ def verify(tag = False, filename = False):
                 return False
 
     if filename:
-        # Only known chars are allowed in the filename
-        if not re.match('^[a-zA-Z0-9\.\-\_\%()\ ]+$',filename):
-            return False
-
-        # '..' is not allowed
-        if re.search('\.\.',filename):
-            return False
-
-        # We want to have a valid filename
+        # We want to have a valid length
         if len(filename) < 1:
+            return False
+
+        if len(filename) > 200:
             return False
 
     return True
@@ -1607,13 +1606,28 @@ def uploader():
 
     # Store values in a hash that is stored in db later
     i = {}
+    filename      = get_header('x-file-name')
     i['client']   = get_client()
-    i['filename'] = get_header('x-file-name')
     i['tag']      = get_header('x-tag')
     checksum      = get_header('content-md5')
 
-    if not verify(i['tag'],i['filename']):
+    if not verify(i['tag'],filename):
         flask.abort(400)
+
+    # Use werkzeug to validate the filename
+    try:
+        i['filename'] = werkzeug.utils.secure_filename(filename)
+
+    except:
+        log("ERROR","%s: Unable to create a secure version of the filename" % \
+            (filename))
+        flask.abort(400)
+
+    else:
+        if filename != i['filename']:
+            log("INFO","Filename '%s' was renamed to the secure version '%s'" \
+                % (filename,i['filename']))
+ 
 
     # The input values are to be trusted at this point
     conf = get_tag_configuration(i['tag'])
