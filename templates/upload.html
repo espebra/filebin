@@ -8,7 +8,9 @@
           fileList = t,
           dropZone = d,
           fileField = f,
-          counter = 0,
+          counter_queue = 0,
+          counter_uploading = 0,
+          counter_completed = 0,
           fileQueue = new Array()
           preview = null;
   
@@ -25,6 +27,20 @@
           addFileListItems(this.files);
       }
   
+      function updateFileCount() {
+          var text = "Status: " + counter_completed + " of " + counter_queue + " file";
+          if (counter_queue != 1){
+              text = text + "s";
+          }
+          text = text + " uploaded";
+
+          if (counter_completed == counter_queue) {
+              fileCount.textContent = text + ", all done!";
+        } else {
+              fileCount.textContent = text + ", please wait ...";
+        }
+      }
+
       this.showDroppedFiles = function (ev) {
           ev.stopPropagation();
           ev.preventDefault();
@@ -35,12 +51,6 @@
 
           var files = ev.dataTransfer.files;
           addFileListItems(files);
-          counter += files.length;
-          if (counter == 1) {
-              fileCount.textContent = "You have one file in the upload queue.";
-          } else {
-              fileCount.textContent = "You have " + counter + " files in the upload queue.";
-          }
       }
   
       this.clearList = function (ev) {
@@ -93,6 +103,9 @@
       }
   
       var addFileListItems = function (files) {
+          counter_queue += files.length;
+          updateFileCount();
+
           for (var i = 0; i < files.length; i++) {
               //var fr = new FileReader();
               //fr.file = files[i];
@@ -132,6 +145,10 @@
               li.appendChild(divContainer);
               divContainer.appendChild(divLoader);
               fileList.appendChild(li);
+
+              counter_uploading += 1;
+              updateFileCount();
+
               fileQueue.push({
                   file : file,
                   li : li
@@ -189,6 +206,7 @@
           if (li && file) {
               var xhr = new XMLHttpRequest(),
                   upload = xhr.upload;
+
               upload.addEventListener("progress", function (ev) {
                   if (ev.lengthComputable) {
                       var loader = li.getElementsByTagName("div")[1];
@@ -213,6 +231,10 @@
                   divBar.className = "bar bar-success";
                   for (var i = 0; i < ps.length; i++) {
                       if (ps[i].className == "loader") {
+                          counter_uploading -= 1;
+                          counter_completed += 1;
+                          updateFileCount();
+
                           ps[i].textContent = "Upload complete";
                           ps[i].style["color"] = "white";
                           break;
