@@ -1755,6 +1755,12 @@ def uploader():
     else:
         i['size'] = int(stat.st_size)
 
+        # Verify that the file size is more than 0 bytes
+        if i['size'] == 0:
+            log("ERROR","%s: The file %s was 0 bytes. Let's abort here." % \
+                (temp.name))
+            flask.abort(400)
+
     # Uploading to temporary file is complete. Will now copy the contents 
     # to the final target destination.
     try:
