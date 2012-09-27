@@ -870,6 +870,40 @@ def get_mimetype(path):
     mimetype = m.file(path)
     return mimetype
 
+def delete_file_from_db(tag,filename):
+    col = dbopen('files')
+    try:
+        col.remove({
+                    'filename' : filename,
+                    'tag' : tag
+                   },
+                   False)
+
+    except:
+        log("ERROR","%s: Unable to remove file %s" % (tag,filename))
+        return False
+
+    else:
+        log("INFO","%s: File %s removed from the database" % (tag,filename))
+        return True
+
+def delete_file(path):
+    # Remove the file from the file system
+    if os.path.exists(path):
+        try:
+            os.remove(path)
+
+        except:
+            log("ERROR","Unable to remove %s from the filesystem" % (path))
+            return False
+
+        else:
+            log("INFO","The file %s was successfully removed." % (path))
+            return True
+    else:
+        log("INFO","The file %s does not exist. No need to remove." % (path))
+        return True
+
 def get_time_of_capture(path):
     ret = False
     time = False
@@ -1382,6 +1416,7 @@ def file(tag,filename):
 @app.route("/admin/<tag>/<key>/files", methods = ['POST', 'GET'])
 def admin_files(tag,key):
     client = get_client()
+    filename = False
 
     if not verify(tag):
         flask.abort(400)
@@ -1393,25 +1428,54 @@ def admin_files(tag,key):
         time.sleep(app.config['FAILURE_SLEEP'])
         flask.abort(401)
 
-    files = get_files_in_tag(tag)
     conf = get_tag_configuration(tag)
 
+    status = 0
     if flask.request.method == 'POST':
-        dblog("Admin files for for tag %s" % (tag), client, tag)
+        try:
+            filename = flask.request.form['filename']
+            action   = flask.request.form['action']
 
-    #   purge('/%s/' % (tag))
-    #   purge('/%s' % (tag))
-    #   purge('/download/')
-    #   purge('/download')
-    #   saved = 1
+        except:
+            status = -1
 
-    #else:
-    #    dblog('Show administration settings for tag %s' % (tag), client, tag)
+        else:
+            if action == 'delete':
+                filename = werkzeug.utils.secure_filename(filename)
+                if verify(filename = filename):
+                    # Remove the file from the file system
+                    file_path = get_path(tag,filename)
+                    log("INFO","%s: Will remove %s" % (tag,filename))
+                    if delete_file(file_path):
+                        status = 1
+                        log("INFO","%s: The file %s was deleted by %s" % \
+                            (tag,file_path,client))
+                    else:
+                        status = -1
+                        log("ERROR","%s: Failed to remove the file %s from " \
+                            "the file system." % (tag,file_path,client))
 
-    #conf = get_tag_configuration(tag)
+                    if status == 1:
+                        # Make sure that the thumbnail is removed also.
+                        thumb_path = get_path(tag,filename,thumbnail = True)
+                        delete_file(thumb_path)
+
+                        if delete_file_from_db(tag,filename):
+                            dblog("File %s was deleted" % \
+                                (filename), client, tag)
+
+                            purge('/%s/' % (tag))
+                            purge('/%s' % (tag))
+                            purge('/%s/file/%s/' % (tag,filename))
+                            purge('/%s/file/%s' % (tag,filename))
+                            purge('/thumbnails/%s/%s/' % (tag,filename))
+                            purge('/thumbnails/%s/%s' % (tag,filename))
+
+    files = get_files_in_tag(tag)
 
     response = flask.make_response(flask.render_template("admin_files.html", \
         tag = tag, key = key, files = files, conf = conf, active = 'files', \
+        status = status, filename = filename, \
         title = "Administration for %s" % (tag)))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response

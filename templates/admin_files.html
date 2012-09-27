@@ -2,29 +2,68 @@
 
 {% include "admin_nav.html" %}
 
-<table class="table table-condensed table-striped">
-  <thead>
-    <th>File name</th>
-    <th>File type</th>
-    <th>File size</th>
-    <th>Uploaded at</th>
-    <th></th>
-  </thead>
-  <tbody>
-    {% for f in files | sort %}
-      <tr>
-        <td class="span3"><a href="/{{ tag }}/file/{{ f.filename }}">{{ f.filename }}</a></td>
-        <td class="span2">{{ f.mimetype }}</td>
-        <td class="span2">{{ f.size }} MB</td>
-        <td class="span2">{{ f.uploaded_iso }}</td>
-        <td class="span1">
-          <button class="btn btn-mini btn-danger disabled" type="button">
-            <i class="icon-trash icon-white"></i>
-          </button>
-        </td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<script>
+$(document).on("click", ".open-delete", function () {
+     var filename = $(this).data('id');
+     $(".modal-body #filename").val( filename );
+    $('#delete').modal('show');
+});
+</script>
+
+<div id="delete" class="modal hide fade in" style="display: none; ">  
+  <form action="" method="POST">
+    <input type="hidden" name="action" value="delete"/>
+    <div class="modal-header">  
+      <h3>Please confirm</h3>  
+    </div>  
+    <div class="modal-body">  
+      <p>Are you sure you want to delete the file?</p>
+      <input type="hidden" name="filename" id="filename" value=""/>
+    </div>  
+    <div class="modal-footer">  
+      <button type="submit" class="btn btn-danger">Yes</button>
+      <a href="#" class="btn btn-success" data-dismiss="modal">No</a>  
+    </div>  
+  </form>
+</div>  
+
+{% if status == -1 %}
+  <div class="alert alert-error">
+    <strong>Warning!</strong> Unable to remove the file.
+  </div>
+{% elif status == 1 %}
+  <div class="alert alert-success">
+    The file {{ filename }} was successfully removed from this tag.
+  </div>
+{% endif %}
+
+{% if files|count > 0 %}
+  <table class="table table-condensed table-striped">
+    <thead>
+      <th>File name</th>
+      <th>File type</th>
+      <th>File size</th>
+      <th>Uploaded at</th>
+      <th></th>
+    </thead>
+    <tbody>
+      {% for f in files | sort %}
+        <tr>
+          <td class="span3"><a href="/{{ tag }}/file/{{ f.filename }}">{{ f.filename }}</a></td>
+          <td class="span2">{{ f.mimetype }}</td>
+          <td class="span2">{{ f.size }} MB</td>
+          <td class="span2">{{ f.uploaded_iso }}</td>
+          <td class="span1">
+            <a data-toggle="modal" href="#delete" class="open-delete btn btn-mini btn-danger" data-id="{{ f.filename }}">
+              <i class="icon-trash icon-white"></i>
+            </a></p>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>This tag does not contain any files.</p>
+{% endif %}
 
 {% include "footer.html" %}
