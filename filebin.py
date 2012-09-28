@@ -201,7 +201,7 @@ def get_files_in_tag(tag, page = False, per_page = 100):
             i['filename'] = f['filename']
             i['downloads'] = int(f['downloads'])
             i['mimetype'] = f['mimetype']
-            i['filepath'] = f['filepath']
+            i['filepath'] = get_path(tag,filename)
             i['size_bytes'] = f['size']
             i['size'] = "%.2f" % (f['size'] / 1024 / round(1024))
             i['bandwidth'] = "%.2f" % ((f['downloads'] * f['size']) / 1024 / round(1024))
@@ -1620,7 +1620,7 @@ def archive(tag):
     files = get_files_in_tag(tag)
     files_to_archive = []
     for f in files:
-        filepath = f['filepath']
+        filepath = get_path(tag,f['filename'])
         files_to_archive.append(filepath)
         #log("INFO","Zip tag %s, file path %s" % (tag,filepath))
 
