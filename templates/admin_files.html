@@ -39,6 +39,10 @@ $(document).on("click", ".open-delete", function () {
   </div>
 {% endif %}
 
+<pre>
+{{ files }}
+</pre>
+
 {% if files|count > 0 %}
   <table class="table table-condensed table-striped">
     <thead>
@@ -49,7 +53,7 @@ $(document).on("click", ".open-delete", function () {
       <th></th>
     </thead>
     <tbody>
-      {% for f in files | sort %}
+      {% for f in files %}
         <tr>
           <td class="span3"><a href="/{{ tag }}/file/{{ f.filename }}">{{ f.filename }}</a></td>
           <td class="span2">{{ f.mimetype }}</td>
