@@ -4,8 +4,10 @@
 
 <script>
 $(document).on("click", ".open-delete", function () {
-     var filename = $(this).data('id');
-     $(".modal-body #filename").val( filename );
+    var areyousure = document.getElementById("areyousure");
+    var filename = $(this).data('id');
+    $(".modal-body #filename").val( filename );
+    areyousure.textContent="Are you sure you want to delete " + filename + "?";
     $('#delete').modal('show');
 });
 </script>
@@ -17,7 +19,7 @@ $(document).on("click", ".open-delete", function () {
       <h3>Please confirm</h3>  
     </div>  
     <div class="modal-body">  
-      <p>Are you sure you want to delete the file?</p>
+      <p id="areyousure"></p>
       <input type="hidden" name="filename" id="filename" value=""/>
     </div>  
     <div class="modal-footer">  
