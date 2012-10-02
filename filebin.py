@@ -209,6 +209,10 @@ def get_files_in_tag(tag, page = False, per_page = 100):
             i['uploaded_iso'] = datetime.datetime.strptime(str(f['uploaded']), \
                                     "%Y%m%d%H%M%S")
 
+            if 'captured' in f:
+                i['captured_iso'] = datetime.datetime.strptime( \
+                                        str(f['captured']), "%Y%m%d%H%M%S")
+
             # Add thumbnail path if the tag should show thumbnails and the
             # thumbnail for this filename exists.
             if conf['preview'] == 'on':
@@ -1294,6 +1298,13 @@ def tag_page(tag,page = 1):
     #log("DEBUG","PAGES: Tag %s has %d files, which will be presented in %d pages with %d files per page" % (tag, num_files, pages, per_page))
     files = get_files_in_tag(tag,page,per_page)
 
+    # By default, do not show captured at in the file listing
+    datetime_found = False
+    for f in files:
+        if 'captured_iso' in f:
+            datetime_found = True
+            continue
+
     client = get_client()
     dblog("Show tag %s" % (tag),client,tag)
 
@@ -1306,6 +1317,7 @@ def tag_page(tag,page = 1):
     response = flask.make_response(flask.render_template("tag.html", \
         tag = tag, files = files, conf = conf, num_files = num_files, \
         pages = pages, page = page, valid_days = valid_days, \
+        datetime_found = datetime_found, \
         title = "Tag %s" % (tag)))
 
     response.headers['cache-control'] = 'max-age=120, must-revalidate'

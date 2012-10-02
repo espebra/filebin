@@ -110,6 +110,9 @@
         <th class="span1">Downloads</th>
         <th class="span2">Bandwidth</th>
         <th class="span3">Uploaded at</th>
+        {% if datetime_found %}
+          <th class="span3">Captured at</th>
+        {% endif %}
       </thead>
       {% for file in files %}
         <tr>
@@ -125,6 +128,13 @@
           <td class="span1">{{ file.downloads }}</td>
           <td class="span2">{{ file.bandwidth }} MB</td>
           <td class="span3">{{ file.uploaded_iso }} UTC</td>
+          {% if datetime_found %}
+            <td class="span3">
+              {% if file.captured_iso %}
+                {{ file.captured_iso }}
+              {% endif %}
+            </td>
+          {% endif %}
         </tr>
       {% endfor %}
       </table>
