@@ -86,7 +86,7 @@
           {% for file in files %}
             {% if file.thumbnail %}
               <li class="span3">
-                <a href="/{{ tag }}/file/{{ file.filename }}">
+                <a href="/{{ tag }}/file/{{ file.filename }}" rel="tooltip" title="{{ file.filename }}{% if file.captured_iso %}, {{ file.captured_iso }}{% endif %}">
                   <div class="thumbnail">
                     <img src="/thumbnails/{{ tag }}/{{ file.filename }}"/>
                   </div>
