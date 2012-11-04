@@ -4,10 +4,10 @@
 
 <div class="row">
   <div class="span12">
-    {% if last_reports|count  == 0 %}
+    {% if data['reports']|count  == 0 %}
       <p>There are no tags reported for moderation.</p>
     {% else %}
-      <h2>Last {{ last_reports|count }} tags reported</h2>
+      <h2>Last {{ data['reports']|count }} tags reported</h2>
       <table class="table table-bordered table-condensed">
       <tr>
         <thead>
@@ -17,7 +17,7 @@
           <th>Reason</th>
         </thead>
       </tr>
-      {% for f in last_reports %}
+      {% for f in data['reports'] %}
         <tr>
           <td>{{ f.time }} UTC</td>
           <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
@@ -32,7 +32,7 @@
 
 <div class="row">
   <div class="span12">
-    <h2>Last {{ last_file_uploads|count }} file uploads</h2>
+    <h2>Last {{ data['uploads']|count }} file uploads</h2>
     <table class="table table-bordered table-condensed">
     <tr>
       <thead>
@@ -44,7 +44,7 @@
         <th>Filename</th>
       </thead>
     </tr>
-    {% for f in last_file_uploads %}
+    {% for f in data['uploads'] %}
       <tr>
         <td>{{ f.time }} UTC</td>
         <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
@@ -60,7 +60,7 @@
 
 <div class="row">
   <div class="span6">
-    <h2>Last {{ last_tags|count }} tags</h2>
+    <h2>Last {{ data['tags']|count }} tags created</h2>
     <table class="table table-bordered table-condensed">
     <tr>
       <thead>
@@ -71,7 +71,7 @@
         <th>TTL</th>
       </thead>
     </tr>
-    {% for f in last_tags %}
+    {% for f in data['tags'] %}
       <tr>
         <td>{{ f.time }} UTC</td>
         <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
@@ -87,9 +87,32 @@
     {% endfor %}
     </table>
   </div>
-    
   <div class="span6">
-    <h2>Last {{ last_referers|count }} referers</h2>
+    <h2>Last {{ data['downloads']|count }} files downloaded</h2>
+    <table class="table table-bordered table-condensed">
+    <tr>
+      <thead>
+        <th>Timestamp</th>
+        <th>Tag</th>
+        <th>Filename</th>
+        <th>Client</th>
+      </thead>
+    </tr>
+    {% for f in data['downloads'] %}
+      <tr>
+        <td>{{ f.time }} UTC</td>
+        <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
+        <td>{{ f.filename }}</td>
+        <td>{{ f.client }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="row">
+  <div class="span12">
+    <h2>Last {{ data['referers']|count }} referers</h2>
     <table class="table table-bordered table-condensed">
     <tr>
       <thead>
@@ -98,7 +121,7 @@
         <th>Referer</th>
       </thead>
     </tr>
-    {% for f in last_referers %}
+    {% for f in data['referers'] %}
       <tr>
         <td>{{ f.time }} UTC</td>
         <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
@@ -109,30 +132,32 @@
   </div>
 </div>
 
-<div class="span3">
-<h2>Totals</h2>
-<table class="table table-bordered table-condensed">
-<tr>
-  <td>Number of tags:</td>
-  <td>{{ totals.tags }}</td>
-</tr>
-<tr>
-  <td>Number of files:</td>
-  <td>{{ totals.files }}</td>
-</tr>
-<tr>
-  <td>File downloads:</td>
-  <td>{{ totals.downloads }}</td>
-</tr>
-<tr>
-  <td>Disk space used by files:</td>
-  <td>{{ totals.size }} GB</td>
-</tr>
-<tr>
-  <td>Outbound bandwidth:</td>
-  <td>{{ totals.bandwidth }} GB</td>
-</tr>
-</table>
+<div class="row">
+  <div class="span3">
+    <h2>Totals</h2>
+    <table class="table table-bordered table-condensed">
+    <tr>
+      <td>Number of tags:</td>
+      <td>{{ data.totals.tags }}</td>
+    </tr>
+    <tr>
+      <td>Number of files:</td>
+      <td>{{ data.totals.files }}</td>
+    </tr>
+    <tr>
+      <td>File downloads:</td>
+      <td>{{ data.totals.downloads }}</td>
+    </tr>
+    <tr>
+      <td>Disk space used by files:</td>
+      <td>{{ data.totals.size }} GB</td>
+    </tr>
+    <tr>
+      <td>Outbound bandwidth:</td>
+      <td>{{ data.totals.bandwidth }} GB</td>
+    </tr>
+    </table>
+  </div>
 </div>
 
 {% include "footer.html" %}

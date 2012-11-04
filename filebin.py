@@ -551,7 +551,7 @@ def get_hostname():
     return hostname
 
 def get_last(count = False, files = False, tags = False, referers = False, \
-    reports = False):
+    reports = False, downloads = False):
 
     if count:
         count = int(count)
@@ -579,34 +579,72 @@ def get_last(count = False, files = False, tags = False, referers = False, \
 
     if referers == True:
         col = dbopen('log')
-        cursor = col.find().sort('time',-1)
-        hostname = get_hostname()
-        if hostname:
-            m = re.compile('^http?://%s' % hostname)
+        try:
+            cursor = col.find().sort('time',-1)
+            hostname = get_hostname()
+            if hostname:
+                m = re.compile('^http?://%s' % hostname)
 
-        i = 0
-        for entry in cursor:
-           if count:
-               if i == count:
-                   break
+            i = 0
+            for entry in cursor:
+                pass
+                if count:
+                    if i == count:
+                        break
 
-           l = {}
-           if 'referer' in entry:
-               # Do not show refereres that match our own hostname
-               if not m.match(entry['referer']):
-                   i += 1
-                   l['referer'] = entry['referer']
+                l = {}
+                if 'referer' in entry:
+                    # Do not show refereres that match our own hostname
+                    if not m.match(entry['referer']):
+                        i += 1
+                        l['referer'] = entry['referer']
 
-                   if 'tag' in entry:
-                       l['tag'] = entry['tag']
+                        if 'tag' in entry:
+                            l['tag'] = entry['tag']
 
-                   if 'filename' in entry:
-                       l['filename'] = entry['filename']
+                        if 'filename' in entry:
+                            l['filename'] = entry['filename']
 
-                   if 'time' in entry:
-                       l['time'] = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
+                        if 'time' in entry:
+                            l['time'] = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
 
-                   ret.append(l)
+                        ret.append(l)
+
+        except:
+            pass
+
+    if downloads == True:
+        col = dbopen('log')
+        try:
+            cursor = col.find().sort('time',-1)
+
+            i = 0
+            for entry in cursor:
+                pass
+                if count:
+                    if i == count:
+                        break
+
+                l = {}
+                if 'tag' in entry and 'client' in entry and 'filename' in entry:
+                    i += 1
+
+                    if 'tag' in entry:
+                        l['tag'] = entry['tag']
+
+                    if 'client' in entry:
+                        l['client'] = entry['client']
+
+                    if 'filename' in entry:
+                        l['filename'] = entry['filename']
+
+                    if 'time' in entry:
+                        l['time'] = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
+
+                    ret.append(l)
+
+        except:
+            pass
 
     if reports == True:
         col = dbopen('reports')
@@ -1008,37 +1046,36 @@ def remove_tag(tag):
 @app.route("/overview/dashboard/")
 @app.route("/overview/dashboard")
 def dashboard():
-    last_file_uploads = get_last(10,files = True)
-    last_tags = get_last(10,tags = True)
-    last_referers = get_last(10,referers = True)
-    last_reports = get_last(10,reports = True)
-
-    totals = {}
+    data = {}
+    data['totals'] = {}
     size = 0
     downloads = 0
     bandwidth = 0
+
+    data['uploads'] = get_last(10,files = True)
+    data['tags'] = get_last(10,tags = True)
+    data['referers'] = get_last(10,referers = True)
+    data['reports'] = get_last(10,reports = True)
+    data['downloads'] = get_last(10,downloads = True)
+
     tags = get_tags()
-    totals['tags'] = len(tags)
-    totals['files'] = 0
+    data['totals']['tags'] = len(tags)
+    data['totals']['files'] = 0
     for tag in tags:
         files = get_files_in_tag(tag)
         for f in files:
-            totals['files'] += 1
+            data['totals']['files'] += 1
             size += int(f['size_bytes']) / 1024 / 1024 / round(1024)
             bandwidth += int(f['size_bytes']) * int(f['downloads']) / 1024 / 1024 / round(1024)
             downloads += int(f['downloads'])
 
-    totals['size'] = '%.2f' % (size)
-    totals['bandwidth'] = '%.2f' % bandwidth
-    totals['downloads'] = downloads
+    data['totals']['size'] = '%.2f' % (size)
+    data['totals']['bandwidth'] = '%.2f' % bandwidth
+    data['totals']['downloads'] = downloads
 
     response = flask.make_response( \
         flask.render_template("overview_dashboard.html", \
-        last_file_uploads = last_file_uploads, totals = totals, \
-        last_tags = last_tags, last_referers = last_referers, \
-        last_reports = last_reports, \
-        active = 'dashboard', \
-        title = "Dashboard"))
+        data = data, active = 'dashboard', title = "Dashboard"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
 
@@ -1761,16 +1798,21 @@ def uploader():
     target_dir = get_path(i['tag'])
 
     if not os.path.exists(target_dir):
-        os.makedirs(target_dir)
-        if not os.path.exists(target_dir):
+        try:
+            os.makedirs(target_dir)
+
+        except:
             log("ERROR","%s: Unable to create directory %s" % (\
                 log_prefix,target_dir))
             flask.abort(501)
 
+        else:
+            log("DEBUG","%s: Directory %s created successfully." % \
+                (log_prefix,target_dir))
+
     i['filepath'] = get_path(i['tag'],i['filename'])
 
-    log("DEBUG","%s: Will save the content to %s" % ( \
-        log_prefix,i['filepath']))
+    log("DEBUG","%s: Will save the content to %s" % (log_prefix,i['filepath']))
 
     try:
         temp.write(flask.request.data)
@@ -1883,6 +1925,19 @@ def uploader():
 @app.route("/maintenance/")
 @app.route("/maintenance")
 def maintenance():
+    # Fix indexes
+
+    try:
+        col = dbopen('log')
+        col.create_index('time')
+
+        col = dbopen('files')
+        col.create_index('tag')
+        col.create_index('uploaded')
+
+    except:
+        pass
+
     tags = get_tags()
     for tag in tags:
         valid_days = get_tag_lifetime(tag)
