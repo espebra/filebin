@@ -210,8 +210,11 @@ def get_files_in_tag(tag, page = False, per_page = 100):
                                     "%Y%m%d%H%M%S")
 
             if 'captured' in f:
-                i['captured_iso'] = datetime.datetime.strptime( \
-                                        str(f['captured']), "%Y%m%d%H%M%S")
+                try:
+                    i['captured_iso'] = datetime.datetime.strptime( \
+                                            str(f['captured']), "%Y%m%d%H%M%S")
+                except:
+                    pass
 
             # Add thumbnail path if the tag should show thumbnails and the
             # thumbnail for this filename exists.
