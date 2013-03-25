@@ -38,7 +38,7 @@ app = flask.Flask(__name__)
 # Load app defaults
 app.config.from_pyfile('application.cfg')
 # Load the local.cfg if it exists (silent=True)
-app.config.from_pyfile('local.cfg', silent=True)
+app.config.from_pyfile('/etc/filebin/local.cfg', silent=True)
 
 def purge(uri):
     purgehost = app.config['PURGEHOST']
