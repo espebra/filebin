@@ -256,7 +256,7 @@ def get_client():
     client = False
 
     try:
-        client = os.environ['HTTP_X_FORWARDED_FOR']
+        client = flask.request.headers.get('x-forwarded-for')
 
     except:
         try:
