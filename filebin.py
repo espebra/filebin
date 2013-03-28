@@ -1231,7 +1231,6 @@ def monitor():
 @app.route("/about")
 def about():
     client = get_client()
-    dblog("Show about", client = client)
     response = flask.make_response(flask.render_template("about.html", title = "About"))
     response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
@@ -1239,7 +1238,6 @@ def about():
 @app.route("/")
 def index():
     client = get_client()
-    dblog("Show front page", client = client)
     response = flask.make_response(flask.render_template("index.html", title = "Online storage at your fingertips"))
     response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
@@ -1300,7 +1298,7 @@ def report(tag):
         tag = tag, submitted = submitted, \
         title = "Report tag %s" % (tag)))
 
-    response.headers['cache-control'] = 'max-age=120, must-revalidate'
+    response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
 
 @app.route("/<tag>/")
@@ -1346,7 +1344,6 @@ def tag_page(tag,page = 1):
             continue
 
     client = get_client()
-    dblog("Show tag %s" % (tag),client,tag)
 
     try:
         valid_days = get_tag_lifetime(tag)
@@ -1360,7 +1357,7 @@ def tag_page(tag,page = 1):
         datetime_found = datetime_found, \
         title = "Tag %s" % (tag)))
 
-    response.headers['cache-control'] = 'max-age=120, must-revalidate'
+    response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
 
 @app.route("/<tag>/json/")
@@ -1443,9 +1440,6 @@ def file(tag,filename):
             # Increment download counter
             increment_download_counter(tag,filename)
 
-            # Log the activity
-            dblog('Downloading %s/%s' % (tag,filename),client,tag,filename)
-
             # Output image files directly to the client browser
             m = re.match('^image|^video|^audio|^text/plain|^application/pdf',mimetype)
             if m:
@@ -1459,7 +1453,7 @@ def file(tag,filename):
 
                 response = flask.make_response(flask.send_file(file_path, as_attachment = True))
 
-            response.headers['cache-control'] = 'max-age=120, must-revalidate'
+            response.headers['cache-control'] = 'max-age=86400, must-revalidate'
             return response
 
     flask.abort(404)
@@ -1667,7 +1661,6 @@ def archive(tag):
 
     log_prefix = '%s archive -> %s' % (tag,client)
     log("INFO","%s: Archive download request received" % (log_prefix))
-    dblog("Downloading tag %s as archive" % (tag),client,tag)
 
     files = get_files_in_tag(tag)
     files_to_archive = []
@@ -1735,7 +1728,7 @@ def download():
     else:
         tags = get_public_tags()
         response = flask.make_response(flask.render_template("download.html" , tags = tags, title = "Download"))
-        response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+        response.headers['cache-control'] = 'max-age=86400, must-revalidate'
         return response
 
 @app.route("/uploader/", methods = ['POST'])
@@ -1977,7 +1970,7 @@ def maintenance():
 def robots():
     response = flask.make_response(flask.render_template('robots.txt'))
     response.headers['content-type'] = 'text/plain'
-    response.headers['cache-control'] = 'max-age=7200, must-revalidate'
+    response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
 
 if __name__ == '__main__':
