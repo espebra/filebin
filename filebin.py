@@ -1817,10 +1817,10 @@ def uploader():
 
     log("DEBUG","%s: Will save the content to %s" % (log_prefix,i['filepath']))
 
-    chunk = 16 * 1024
+    chunk_size = 16 * 1024
     try:
         while True:
-            chunk = flask.request.stream.read(chunk)
+            chunk = flask.request.stream.read(chunk_size)
             if not chunk: 
                 break
             temp.write(chunk)
