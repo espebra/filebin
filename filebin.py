@@ -51,7 +51,7 @@ def purge(uri):
         resp = conn.getresponse()
         conn.close()
         log("DEBUG","Purging %s: %s %s" \
-            % (uri,resp.status,resp.reason))
+            % (url,resp.status,resp.reason))
 
 # Generate tag
 def generate_tag():
