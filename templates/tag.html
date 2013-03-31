@@ -107,8 +107,6 @@
         <th class="span3">File name</th>
         <th class="span2">File type</th>
         <th class="span2">File size</th>
-        <th class="span1">Downloads</th>
-        <th class="span2">Bandwidth</th>
         <th class="span3">Uploaded at</th>
         {% if datetime_found %}
           <th class="span3">Captured at</th>
@@ -125,8 +123,6 @@
           </td>
           <td class="span2">{{ file.mimetype }}</td>
           <td class="span2">{{ file.size }} MB</td>
-          <td class="span1">{{ file.downloads }}</td>
-          <td class="span2">{{ file.bandwidth }} MB</td>
           <td class="span3">{{ file.uploaded_iso }} UTC</td>
           {% if datetime_found %}
             <td class="span3">
