@@ -131,9 +131,13 @@
               h5.appendChild(h5Text);
               li.appendChild(h5)
               var p = document.createElement("p");
+              var mime = file.type;
+              if (mime.length == 0){
+                  mime = "unknown";
+              }
               var pText = document.createTextNode(
                   "File type: "
-                  + file.type + ", size: " +
+                  + mime + ", size: " +
                   Math.round(file.size / 1024 / 1024) + " MB"
               );
               p.appendChild(pText);
