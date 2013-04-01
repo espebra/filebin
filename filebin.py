@@ -65,6 +65,29 @@ def generate_key():
     length = 30
     return ''.join(random.choice(chars) for _ in xrange(length))
 
+def get_pages_for_tag(tag):
+    per_page = int(app.config['FILES_PER_PAGE'])
+    num_files = len(get_files_in_tag(tag))
+    pages = int(math.ceil(num_files / round(per_page)))
+    return pages
+
+def purge_tag(tag, files = False):
+    purge('/%s/' % tag)
+    purge('/%s' % tag)
+    pages = get_pages_for_tag(tag)
+    for i in range(pages):
+        purge('/%s/page/%d/' % (tag,i+1))
+        purge('/%s/page/%d' % (tag,i+1))
+
+    if files:
+        files = get_files_in_tag(tag)
+        for f in files:
+            filename = f['filename']
+            purge('/%s/file/%s/' % (tag,filename))
+            purge('/%s/file/%s' % (tag,filename))
+            purge('/thumbnails/%s/%s/' % (tag,filename))
+            purge('/thumbnails/%s/%s' % (tag,filename))
+
 # Generate path to save the file
 def get_path(tag = False, filename = False, thumbnail = False):
 
@@ -381,8 +404,7 @@ def generate_thumbnails(tag):
                             "%s in tag %s with mimetype %s" \
                             % (filename,tag,mimetype))
                     else:
-                        purge('/%s' % (tag))
-                        purge('/%s/' % (tag))
+                        purge_tag(tag)
                         purge('/thumbnail/%s/%s' % (tag,filename))
 
                         log("INFO","Generated thumbnail for file %s " \
@@ -876,10 +898,7 @@ def unblock_tag(tag):
         return False
 
     else:
-        purge('/%s' % (tag))
-        purge('/%s/' % (tag))
-        for f in get_files_in_tag(tag):
-            purge('/%s/file/%s' % (tag,f['filename']))
+        purge_tag(tag,files = True)
 
         return True
 
@@ -902,10 +921,7 @@ def block_tag(tag):
         return False
 
     else:
-        purge('/%s' % (tag))
-        purge('/%s/' % (tag))
-        for f in get_files_in_tag(tag):
-            purge('/%s/file/%s' % (tag,f['filename']))
+        purge_tag(tag,files = True)
 
         return True
 
@@ -1316,8 +1332,7 @@ def tag_page(tag,page = 1):
 
     num_files = len(get_files_in_tag(tag))
 
-    per_page = 50
-    pages = int(math.ceil(num_files / round(per_page)))
+    pages = get_pages_for_tag(tag)
 
     # Input validation
     try:
@@ -1510,8 +1525,8 @@ def admin_files(tag,key):
                             dblog("File %s was deleted" % \
                                 (filename), client, tag)
 
-                            purge('/%s/' % (tag))
-                            purge('/%s' % (tag))
+                            purge_tag(tag)
+
                             purge('/%s/file/%s/' % (tag,filename))
                             purge('/%s/file/%s' % (tag,filename))
                             purge('/thumbnails/%s/%s/' % (tag,filename))
@@ -1594,8 +1609,7 @@ def admin_configuration(tag,key):
                 "tag %s." % (tag))
 
         else:
-            purge('/%s/' % (tag))
-            purge('/%s' % (tag))
+            purge_tag(tag)
             purge('/download/')
             purge('/download')
 
@@ -1908,8 +1922,8 @@ def uploader():
     response = flask.make_response(flask.render_template('uploader.html'))
 
     if status:
-        purge('/%s' % (i['tag']))
-        purge('/%s/' % (i['tag']))
+        purge_tag(i['tag'])
+
         purge('/thumbnail/%s/%s' % (i['tag'],i['filename']))
         purge('/%s/file/%s' % (i['tag'],i['filename']))
 
@@ -1955,8 +1969,9 @@ def maintenance():
                 log("INFO","%s: Removed." % (tag))
                 dblog("Tag %s has been removed due to expiry." % (tag), \
                     tag = tag)
-                purge('/%s/' % tag)
-                purge('/%s' % tag)
+
+                purge_tag(tag)
+
             else:
                 log("ERROR","%s: Unable to remove." % (tag))
                 dblog("Failed to remove tag %s. It has expired." % (tag), \
