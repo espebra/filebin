@@ -198,7 +198,7 @@ def get_public_tags():
 
     return tags
 
-def get_files_in_tag(tag, page = False, per_page = 100):
+def get_files_in_tag(tag, page = False, per_page = app.config['FILES_PER_PAGE']):
     files = []
 
     if not verify(tag):
@@ -1349,7 +1349,7 @@ def tag_page(tag,page = 1):
         page = pages
 
     #log("DEBUG","PAGES: Tag %s has %d files, which will be presented in %d pages with %d files per page" % (tag, num_files, pages, per_page))
-    files = get_files_in_tag(tag,page,per_page)
+    files = get_files_in_tag(tag,page)
 
     # By default, do not show captured at in the file listing
     datetime_found = False
