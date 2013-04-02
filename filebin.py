@@ -1927,7 +1927,7 @@ def uploader():
 
         else:
             # Log the activity
-            dblog('Uploaded %s/%s, %sB' % (i['tag'],i['filename'],i['size']),i['client'],i['tag'],i['filename'])
+            dblog('Uploaded %s/%s, %s bytes' % (i['tag'],i['filename'],i['size']),i['client'],i['tag'],i['filename'])
             status = True
 
     # Clean up the temporary file
