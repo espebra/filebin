@@ -844,6 +844,19 @@ def send_email(subject,body,to = app.config['EMAIL']):
     except:
         pass
 
+def clean_log():
+    col = dbopen('log')
+    days = int(app.config['NUMBER_OF_DAYS_TO_KEEP_LOGS'])
+    dt = datetime.datetime.now() - datetime.timedelta(days = days)
+
+    d =  {
+             'time' : {
+                 '$lt' : int(dt.strftime("%Y%m%d%H%M%S"))
+             }
+         }
+
+    col.remove(d)
+
 def dblog(description,client = False,tag = False,filename = False):
     referer = get_header('referer')
     useragent = get_header('user-agent')
@@ -852,7 +865,7 @@ def dblog(description,client = False,tag = False,filename = False):
     col = dbopen('log')
     try:
         i = {}
-        i['time'] = now.strftime("%Y%m%d%H%M%S")
+        i['time'] = int(now.strftime("%Y%m%d%H%M%S"))
         i['year'] = int(now.strftime("%Y"))
         i['month'] = int(now.strftime("%m"))
         i['day'] = int(now.strftime("%d"))
@@ -1977,6 +1990,8 @@ def maintenance():
                 log("ERROR","%s: Unable to remove." % (tag))
                 dblog("Failed to remove tag %s. It has expired." % (tag), \
                     tag = tag)
+
+    clean_log()
 
     response = flask.make_response(flask.render_template('maintenance.html', title = "Maintenance"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'

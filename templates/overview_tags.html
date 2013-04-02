@@ -12,9 +12,7 @@
         <tr>
           <th class="span2">Tag</th>
           <th class="span1">Files</th>
-          <th class="span1">Downloads</th>
           <th class="span2">Size</th>
-          <th class="span2">Bandwidth</th>
           <th class="span2">Status</th>
           <th class="span2">Action</th>
         </tr>
@@ -23,9 +21,7 @@
         <tr>
             <td class="span2"><a href="/{{ tag }}">{{ tag }}</a></td>
             <td class="span1">{{ tags[tag]['files'] }}</td>
-            <td class="span1">{{ tags[tag]['downloads'] }}</td>
             <td class="span2">{{ tags[tag]['size'] }} MB</td>
-            <td class="span2">{{ tags[tag]['bandwidth'] }} MB</td>
             <td class="span2">
                 {% if tags[tag]['conf']['permission'] == 'rw' %}
                      <span class="badge badge-warning"><i class="icon-upload icon-white"></i> <i class="icon-download icon-white"></i></span>

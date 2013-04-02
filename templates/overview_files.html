@@ -17,9 +17,7 @@
               <tr>
                 <th class="span3">File name</th>
                 <th class="span2">File type</th>
-                <th class="span1">Downloads</th>
                 <th class="span2">File size</th>
-                <th class="span2">Bandwidth</th>
                 <th class="span2">Uploaded</th>
               </tr>
             </thead>
@@ -29,9 +27,7 @@
                        <tr>
                          <td class="span3"><a href="/{{ tag }}/file/{{ f.filename }}">{{ f.filename }}</a></td>
                          <td class="span2">{{ f.mimetype }}</td>
-                         <td class="span1">{{ f.downloads }}</td>
                          <td class="span2">{{ f.size }} MB</td>
-                         <td class="span2">{{ f.bandwidth }} MB</td>
                          <td class="span2">{{ f.uploaded_iso }}</td>
                        </tr>
                    {% endfor %}
