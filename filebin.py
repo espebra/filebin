@@ -223,12 +223,13 @@ def get_files_in_tag(tag, page = False, per_page = app.config['FILES_PER_PAGE'])
             filename = f['filename']
             i = {}
             i['filename'] = f['filename']
-            i['downloads'] = int(f['downloads'])
+            #i['downloads'] = int(f['downloads'])
             i['mimetype'] = f['mimetype']
+            i['md5'] = f['md5sum']
             i['filepath'] = get_path(tag,filename)
             i['size_bytes'] = f['size']
             i['size'] = "%.2f" % (f['size'] / 1024 / round(1024))
-            i['bandwidth'] = "%.2f" % ((f['downloads'] * f['size']) / 1024 / round(1024))
+            #i['bandwidth'] = "%.2f" % ((f['downloads'] * f['size']) / 1024 / round(1024))
             i['uploaded'] = f['uploaded']
             i['uploaded_iso'] = datetime.datetime.strptime(str(f['uploaded']), \
                                     "%Y%m%d%H%M%S")
