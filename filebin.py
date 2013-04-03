@@ -74,6 +74,10 @@ def get_pages_for_tag(tag):
 def purge_tag(tag, files = False):
     purge('/%s/' % tag)
     purge('/%s' % tag)
+    purge('/%s/json' % tag)
+    purge('/%s/json/' % tag)
+    purge('/%s/plain' % tag)
+    purge('/%s/plain/' % tag)
     purge('/archive/%s' % tag)
     pages = get_pages_for_tag(tag)
     for i in range(pages):
