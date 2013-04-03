@@ -721,9 +721,6 @@ def get_last(count = False, files = False, tags = False, referers = False, \
 
            files = get_files_in_tag(tag)
            l['files'] = len(files)
-           l['downloads'] = 0
-           for f in files:
-               l['downloads'] += int(f['downloads'])
 
            ret.append(l)
     return ret
@@ -1104,12 +1101,8 @@ def dashboard():
         for f in files:
             data['totals']['files'] += 1
             size += int(f['size_bytes']) / 1024 / 1024 / round(1024)
-            bandwidth += int(f['size_bytes']) * int(f['downloads']) / 1024 / 1024 / round(1024)
-            downloads += int(f['downloads'])
 
     data['totals']['size'] = '%.2f' % (size)
-    data['totals']['bandwidth'] = '%.2f' % bandwidth
-    data['totals']['downloads'] = downloads
 
     response = flask.make_response( \
         flask.render_template("overview_dashboard.html", \
@@ -1191,9 +1184,7 @@ def overview_tags():
                 n['reported'] = True
 
         n['files'] = 0
-        n['downloads'] = 0
         n['size'] = 0
-        n['bandwidth'] = 0
 
         conf = get_tag_configuration(t)
         n['conf'] = conf
@@ -1202,13 +1193,10 @@ def overview_tags():
         if files:
             n['files'] = len(files)
             for f in files:
-                n['downloads'] += f['downloads']
                 n['size'] += f['size_bytes'] / 1024 / float(1024)
-                n['bandwidth'] += (f['size_bytes'] * f['downloads']) / 1024 / float(1024)
 
         # Show only two decimals
         n['size'] = '%.2f' % n['size']
-        n['bandwidth'] = '%.2f' % n['bandwidth']
 
         # Only show the tags with files
         if n['files'] > 0:
