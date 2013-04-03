@@ -1394,6 +1394,28 @@ def tag_page(tag,page = 1):
     response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
 
+@app.route("/<tag>/plain/")
+@app.route("/<tag>/plain")
+def tag_plain(tag):
+    out = ""
+
+    if not verify(tag):
+        time.sleep(app.config['FAILURE_SLEEP'])
+        flask.abort(400)
+
+    conf = get_tag_configuration(tag)
+    files = get_files_in_tag(tag)
+
+    protocol = "http"
+    host = app.config['PURGEHOST']
+
+    for f in files:
+        out += "%s://%s/%s/file/%s\n" % (protocol, host, tag, f['filename'])
+
+    h = werkzeug.Headers()
+    h.add('cache-control', 'max-age=7200, must-revalidate')
+    return flask.Response(out, mimetype='text/plain', headers = h)
+
 @app.route("/<tag>/json/")
 @app.route("/<tag>/json")
 def tag_json(tag):
