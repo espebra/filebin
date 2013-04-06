@@ -76,8 +76,8 @@ def purge_tag(tag, files = False):
     purge('/%s' % tag)
     purge('/%s/json' % tag)
     purge('/%s/json/' % tag)
-    purge('/%s/plain' % tag)
-    purge('/%s/plain/' % tag)
+    purge('/%s/playlist' % tag)
+    purge('/%s/playlist/' % tag)
     purge('/archive/%s' % tag)
     pages = get_pages_for_tag(tag)
     for i in range(pages):
@@ -1382,9 +1382,9 @@ def tag_page(tag,page = 1):
     response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
 
-@app.route("/<tag>/plain/")
-@app.route("/<tag>/plain")
-def tag_plain(tag):
+@app.route("/<tag>/playlist/")
+@app.route("/<tag>/playlist")
+def tag_playlist(tag):
     out = ""
 
     if not verify(tag):
