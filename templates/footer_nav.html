@@ -1,3 +1,14 @@
+<div class="pull-left">
+  {% if tag %}
+    <a class="btn btn-small btn-info" href="/{{ tag }}/playlist">
+      <i class="icon-list icon-white"></i> Playlist
+    </a>
+    <a class="btn btn-small btn-info" href="/{{ tag }}/json">
+      <i class="icon-wrench icon-white">JSON
+    </a>
+  {% endif %}
+</div>
+
 <div class="pull-right">
   {% if tag %}
     <a class="btn btn-small btn-danger" href="/report/{{ tag }}">
