@@ -1420,6 +1420,7 @@ def tag_json(tag):
         # Remove some unecessary stuff
         del(f['filepath'])
         del(f['uploaded_iso'])
+        del(f['size'])
 
     # Verify json format
     try:
