@@ -1,11 +1,15 @@
 <div class="pull-left">
   {% if tag %}
-    <a class="btn btn-small btn-info" href="/{{ tag }}/playlist">
-      <i class="icon-film icon-white"></i> Playlist
-    </a>
-    <a class="btn btn-small btn-info" href="/{{ tag }}/json">
-      <i class="icon-wrench icon-white"></i> JSON
-    </a>
+    {% if num_files %}
+      {% if num_files > 0 %}
+        <a class="btn btn-small btn-info" href="/{{ tag }}/playlist">
+          <i class="icon-film icon-white"></i> Playlist
+        </a>
+        <a class="btn btn-small btn-info" href="/{{ tag }}/json">
+          <i class="icon-wrench icon-white"></i> JSON
+        </a>
+      {% endif %}
+    {% endif %}
   {% endif %}
 </div>
 
