@@ -987,14 +987,24 @@ def get_time_of_capture(path):
 
     # If the file contains DateTimeOrigial, then use it. If not, check for 
     # DateTime and use it.
+
     try:
         image = pyexiv2.Image(path)
-        image.readMetadata()
 
     except:
-        log("ERROR","EXIF: Unable to read metadata from %s" % (path))
+        try:
+            image = pyexiv2.ImageMetadata(path)
 
+        except:
+            log("ERROR","EXIF: Unable to load image %s" % (path))
+       
     else:
+        try:
+            image.readMetadata()
+
+        except:
+            pass
+
         try:
             time = str(image['Exif.Photo.DateTimeOriginal'])
 
@@ -1003,20 +1013,22 @@ def get_time_of_capture(path):
                 time = str(image['Exif.Image.DateTime'])
 
             except:
-                log("ERROR","EXIF: Unable to find DateTime and DateTimeOriginal in %s" % (path))
+                log("ERROR", \
+                    "EXIF: Unable to find DateTime and DateTimeOriginal in %s" \
+                    % (path))
 
-    if time:
-        log("DEBUG","EXIF: DateTime = %s for %s" % (time,path))
-        try:
-            time_dt = pyexiv2.StringToDateTime(time)
+        if time:
+            log("DEBUG","EXIF: DateTime = %s for %s" % (time,path))
+            try:
+                time_dt = pyexiv2.StringToDateTime(time)
 
-        except:
-            log("ERROR","EXIF: Unable to convert DateTime from string to " \
-                "datetime")
-            ret = time
+            except:
+                log("ERROR","EXIF: Unable to convert DateTime from string to " \
+                    "datetime")
+                ret = time
 
-        else:
-            ret = time_dt
+            else:
+                ret = time_dt
 
     return ret
 
@@ -1890,7 +1902,8 @@ def uploader():
         mimetype = get_mimetype(temp.name)
 
     except:
-        pass
+        log("DEBUG","%s: Unable to detect mime type on %s" % \
+            (log_prefix, temp.name))
 
     else:
         i['mimetype'] = mimetype
