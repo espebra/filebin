@@ -982,55 +982,84 @@ def delete_file(path):
         return True
 
 def get_time_of_capture(path):
-    ret = False
+    version = False
     time = False
+    try:
+        v = pyexiv2.version_info
 
-    # If the file contains DateTimeOrigial, then use it. If not, check for 
-    # DateTime and use it.
+    except:
+        v = False
+
+    if v:
+        version = "%d%d%d" % (v[0],v[1],v[2])
+
+    if int(version) >= 032:
+        time = get_datetime2(path)
+    else:
+        time = get_datetime(path)
+
+    return time
+
+def get_datetime(path):
+    time = False
+    ret = False
 
     try:
         image = pyexiv2.Image(path)
-
     except:
-        try:
-            image = pyexiv2.ImageMetadata(path)
-
-        except:
-            log("ERROR","EXIF: Unable to load image %s" % (path))
-       
+        log("ERROR","EXIF: Unable to load image %s" % (path))
     else:
         try:
             image.readMetadata()
-
         except:
-            pass
+            log("ERROR","EXIF: Unable to load metadata from %s" % (path))
+        else:
+            try:
+                time = str(image['Exif.Photo.DateTimeOriginal'])
+            except:
+                try:
+                    time = str(image['Exif.Photo.DateTimeOriginal'])
+                except:
+                    log("ERROR", "EXIF: Unable to find DateTime and " \
+                         "DateTimeOriginal in %s" % (path))
 
+    if time:
+        log("DEBUG","EXIF: DateTime = %s for %s" % (time,path))
         try:
-            time = str(image['Exif.Photo.DateTimeOriginal'])
+            time_dt = pyexiv2.StringToDateTime(time)
 
         except:
-            try:
-                time = str(image['Exif.Image.DateTime'])
+            log("ERROR","EXIF: Unable to convert DateTime from string to " \
+                "datetime")
+            ret = time
 
-            except:
-                log("ERROR", \
-                    "EXIF: Unable to find DateTime and DateTimeOriginal in %s" \
-                    % (path))
-
-        if time:
-            log("DEBUG","EXIF: DateTime = %s for %s" % (time,path))
-            try:
-                time_dt = pyexiv2.StringToDateTime(time)
-
-            except:
-                log("ERROR","EXIF: Unable to convert DateTime from string to " \
-                    "datetime")
-                ret = time
-
-            else:
-                ret = time_dt
-
+        else:
+            ret = time_dt
     return ret
+
+def get_datetime2(path):
+    time = False
+
+    try:
+        image = pyexiv2.ImageMetadata(path)
+    except:
+        log("ERROR","EXIF: Unable to load image %s" % (path))
+    else:
+        try:
+            image.read()
+        except:
+            log("ERROR","EXIF: Unable to load metadata from %s" % (path))
+        else:
+            try:
+                time = image['Exif.Photo.DateTimeOriginal'].value
+            except:
+                try:
+                    time = image['Exif.Photo.DateTimeOriginal'].value
+                except:
+                    log("ERROR", "EXIF: Unable to find DateTime and " \
+                         "DateTimeOriginal in %s" % (path))
+
+    return time
 
 def remove_tag(tag):
     status = True
@@ -1907,6 +1936,8 @@ def uploader():
 
     else:
         i['mimetype'] = mimetype
+        log("DEBUG","%s: Detected mime type %s on %s" % \
+            (log_prefix, mimetype, temp.name))
 
     captured = False
     if mimetype:
@@ -1923,6 +1954,7 @@ def uploader():
 
     if captured:
         i['captured'] = captured
+        log("DEBUG","%s: Captured at %s" % (log_prefix, captured))
 
     try:
         stat = os.stat(temp.name)
