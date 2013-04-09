@@ -240,8 +240,8 @@ def get_files_in_tag(tag, page = False, per_page = app.config['FILES_PER_PAGE'])
 
             if 'captured' in f:
                 try:
-                    i['captured_iso'] = datetime.datetime.strptime( \
-                                            str(f['captured']), "%Y%m%d%H%M%S")
+                    i['captured_iso'] = str(datetime.datetime.strptime( \
+                                          str(f['captured']), "%Y%m%d%H%M%S"))
                 except:
                     pass
 
