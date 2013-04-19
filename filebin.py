@@ -214,10 +214,10 @@ def get_files_in_tag(tag, page = False, per_page = app.config['FILES_PER_PAGE'])
     col = dbopen('files')
     try:
         if page == False:
-            cursor = col.find({'tag' : tag}).sort('captured', 1)
+            cursor = col.find({'tag' : tag}, sort = [('captured',1),('filename',1)])
         else:
             skip = (int(page)-1) * per_page
-            cursor = col.find({'tag' : tag},skip = skip, limit = per_page).sort('captured', 1)
+            cursor = col.find({'tag' : tag},skip = skip, limit = per_page, sort = [('captured',1),('filename',1)])
 
     except:
         cursor = False
