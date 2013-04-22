@@ -1826,10 +1826,11 @@ def uploader():
 
     # Store values in a hash that is stored in db later
     i = {}
-    filename      = get_header('x-file-name')
-    i['client']   = get_client()
-    i['tag']      = get_header('x-tag')
-    checksum      = get_header('content-md5')
+    filename           = get_header('x-file-name')
+    i['client']        = get_client()
+    i['tag']           = get_header('x-tag')
+    i['reported_size'] = int(get_header('x-file-size'))
+    checksum           = get_header('content-md5')
 
     if not verify(i['tag'],filename):
         flask.abort(400)
@@ -1858,7 +1859,8 @@ def uploader():
 
     # New flask.request from client
     log_prefix = '%s -> %s/%s' % (i['client'],i['tag'],i['filename'])
-    log("INFO","%s: Upload request received" % (log_prefix))
+    log("INFO","%s: Upload request received, the file is %d bytes." % \
+        (log_prefix,i['reported_size']))
 
     if not os.path.exists(app.config['TEMP_DIRECTORY']):
         os.makedirs(app.config['TEMP_DIRECTORY'])
@@ -1970,6 +1972,12 @@ def uploader():
         if i['size'] == 0:
             log("ERROR","%s: The file %s was 0 bytes. Let's abort here." % \
                 (log_prefix,temp.name))
+            flask.abort(400)
+
+        if i['size'] != i['reported_size']:
+            log("ERROR","%s: The uploaded file %s was %d bytes, but should " \
+                "have been %d bytes. Aborting." % \
+                (log_prefix,temp.name,i['size'],i['reported_size']))
             flask.abort(400)
 
     # Uploading to temporary file is complete. Will now copy the contents 
