@@ -1830,6 +1830,7 @@ def uploader():
     i['client']        = get_client()
     i['tag']           = get_header('x-tag')
     i['reported_size'] = int(get_header('x-file-size'))
+    i['useragent']     = get_header('user-agent')
     checksum           = get_header('content-md5')
 
     if not verify(i['tag'],filename):
@@ -1859,8 +1860,8 @@ def uploader():
 
     # New flask.request from client
     log_prefix = '%s -> %s/%s' % (i['client'],i['tag'],i['filename'])
-    log("INFO","%s: Upload request received, the file is %d bytes." % \
-        (log_prefix,i['reported_size']))
+    log("INFO","%s: Upload request received, the file is %d bytes. User " \
+        "agent: %s" % (log_prefix,i['reported_size'],i['useragent']))
 
     if not os.path.exists(app.config['TEMP_DIRECTORY']):
         os.makedirs(app.config['TEMP_DIRECTORY'])
