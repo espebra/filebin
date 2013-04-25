@@ -89,16 +89,16 @@ Nginx
 
 Uwsgi (filebin.yaml)
 -------
-  uwsgi:
-      uid: nginx
-      gid: nginx
-      socket: /run/shm/filebin.sock
-      post-buffering: 0
-      plugins: http,python
-      processes: 4
-      module: filebin
-      callable: app
-      chdir: /srv/www/filebin/app/
+    uwsgi:
+        uid: nginx
+        gid: nginx
+        socket: /run/shm/filebin.sock
+        post-buffering: 0
+        plugins: http,python
+        processes: 4
+        module: filebin
+        callable: app
+        chdir: /srv/www/filebin/app/
 
 TODO
 ----
