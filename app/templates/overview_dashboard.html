@@ -83,27 +83,6 @@
     {% endfor %}
     </table>
   </div>
-  <div class="span6">
-    <h2>Last {{ data['downloads']|count }} files downloaded</h2>
-    <table class="table table-bordered table-condensed">
-    <tr>
-      <thead>
-        <th>Timestamp</th>
-        <th>Tag</th>
-        <th>Filename</th>
-        <th>Client</th>
-      </thead>
-    </tr>
-    {% for f in data['downloads'] %}
-      <tr>
-        <td>{{ f.time }} UTC</td>
-        <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
-        <td>{{ f.filename }}</td>
-        <td>{{ f.client }}</td>
-      </tr>
-    {% endfor %}
-    </table>
-  </div>
 </div>
 
 <div class="row">

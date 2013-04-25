@@ -35,23 +35,17 @@ from email.mime.text import MIMEText
 
 #app.config.from_envvar('FILEBIN_SETTINGS')
 app = flask.Flask(__name__)
+
 # Load app defaults
-app.config.from_pyfile('application.cfg')
+app.config.from_pyfile('../conf/application.cfg')
+
 # Load the local.cfg if it exists (silent=True)
 app.config.from_pyfile('/etc/filebin/local.cfg', silent=True)
 
-def purge(uri):
-    purgehost = app.config['PURGEHOST']
-    purgeport = app.config['PURGEPORT']
-    if purgehost and purgeport:
-        url = 'http://%s%s' % (purgehost,uri)
+# Load the instance spesific local.cfg if it exists (silent=True)
+app.config.from_pyfile('../conf/local.cfg', silent=True)
 
-        conn = httplib.HTTPConnection(purgehost, purgeport, timeout = 2)
-        conn.request('PURGE', uri)
-        resp = conn.getresponse()
-        conn.close()
-        log("DEBUG","Purging %s: %s %s" \
-            % (url,resp.status,resp.reason))
+app.debug = True
 
 # Generate tag
 def generate_tag():
@@ -71,49 +65,32 @@ def get_pages_for_tag(tag):
     pages = int(math.ceil(num_files / round(per_page)))
     return pages
 
-def purge_tag(tag, files = False):
-    purge('/%s/' % tag)
-    purge('/%s' % tag)
-    purge('/%s/json' % tag)
-    purge('/%s/json/' % tag)
-    purge('/%s/playlist' % tag)
-    purge('/%s/playlist/' % tag)
-    purge('/archive/%s' % tag)
-    pages = get_pages_for_tag(tag)
-    for i in range(pages):
-        purge('/%s/page/%d/' % (tag,i+1))
-        purge('/%s/page/%d' % (tag,i+1))
-
     if files:
         files = get_files_in_tag(tag)
         for f in files:
             filename = f['filename']
-            purge('/%s/file/%s/' % (tag,filename))
-            purge('/%s/file/%s' % (tag,filename))
-            purge('/thumbnails/%s/%s/' % (tag,filename))
-            purge('/thumbnails/%s/%s' % (tag,filename))
 
 # Generate path to save the file
 def get_path(tag = False, filename = False, thumbnail = False):
 
     # Use two levels of directories, just for, eh, scalability
-    m = re.match('^(.)(.)',tag)
-    a = m.group(1)
-    b = m.group(2)
+    #m = re.match('^(.)(.)',tag)
+    #a = m.group(1)
+    #b = m.group(2)
 
     # Make sure the filename is safe
     if filename:
         filename = werkzeug.utils.secure_filename(filename)
 
     if thumbnail == True:
-        path = '%s/%s/%s/%s' % (app.config['THUMBNAIL_DIRECTORY'],a,b,tag)
+        path = '%s/%s' % (app.config['THUMBNAIL_DIRECTORY'],tag)
 
         if filename:
             #path = '%s/%s-thumb.jpg' % (path,filename)
             path = '%s/%s' % (path,filename)
 
     else:
-        path = '%s/%s/%s/%s' % (app.config['FILE_DIRECTORY'],a,b,tag)
+        path = '%s/%s' % (app.config['FILE_DIRECTORY'],tag)
 
         if filename:
             path = '%s/%s' % (path,filename)
@@ -147,6 +124,8 @@ def log(priority,text):
 # Input validation
 # Verify the flask.request. Return True if the flask.request is OK, False if it isn't.
 def verify(tag = False, filename = False):
+
+    illegal_tags = ['thumbnails','files','static']
     if tag:
         # We want to have a long tag
         if len(tag) < 10:
@@ -157,6 +136,10 @@ def verify(tag = False, filename = False):
             m = re.match('^[a-zA-Z0-9]+$',tag)
             if not m:
                 return False
+
+        # Verify that the given tag is not in the blacklist
+        if tag in illegal_tags:
+            return False
 
     if filename:
         # We want to have a valid length
@@ -229,7 +212,12 @@ def get_files_in_tag(tag, page = False, per_page = app.config['FILES_PER_PAGE'])
             i['filename'] = f['filename']
             #i['downloads'] = int(f['downloads'])
             i['mimetype'] = f['mimetype']
-            i['md5'] = f['md5sum']
+
+            if 'md5sum' in f:
+                i['md5'] = f['md5sum']
+            if 'checksum' in f:
+                i['md5'] = f['checksum']
+
             i['filepath'] = get_path(tag,filename)
             i['size_bytes'] = f['size']
             i['size'] = "%.2f" % (f['size'] / 1024 / round(1024))
@@ -288,11 +276,21 @@ def get_client():
         client = flask.request.headers.get('x-forwarded-for')
 
     except:
+        pass
+
+    if client == False or client == None:
         try:
-            client = os.environ['REMOTE_ADDR']
+            client = flask.request.headers.get('x-client')
 
         except:
-            client = False
+            pass
+
+    if client == False or client == None:
+        try:
+            client = flask.request.environ['REMOTE_ADDR']
+
+        except:
+            pass
 
     return client
 
@@ -394,7 +392,6 @@ def generate_thumbnails(tag):
                 thumbfile = get_path(tag,filename,True)
                 filepath = get_path(tag,filename)
 
-
                 # TODO: Should also check if filepath is newer than thumbfile!
                 if not os.path.exists(thumbfile):
                     log("DEBUG","Create thumbnail (%s) of file (%s)" \
@@ -410,9 +407,6 @@ def generate_thumbnails(tag):
                             "%s in tag %s with mimetype %s" \
                             % (filename,tag,mimetype))
                     else:
-                        purge_tag(tag)
-                        purge('/thumbnail/%s/%s' % (tag,filename))
-
                         log("INFO","Generated thumbnail for file %s " \
                             "in tag %s with mimetype %s" \
                             % (filename,tag,mimetype))
@@ -581,8 +575,7 @@ def get_hostname():
 
     return hostname
 
-def get_last(count = False, files = False, tags = False, referers = False, \
-    reports = False, downloads = False):
+def get_last(count = False, files = False, tags = False, reports = False):
 
     if count:
         count = int(count)
@@ -607,75 +600,6 @@ def get_last(count = False, files = False, tags = False, referers = False, \
            l['client'] = entry['client']
 
            ret.append(l)
-
-    if referers == True:
-        col = dbopen('log')
-        try:
-            cursor = col.find().sort('time',-1)
-            hostname = get_hostname()
-            if hostname:
-                m = re.compile('^http?://%s' % hostname)
-
-            i = 0
-            for entry in cursor:
-                pass
-                if count:
-                    if i == count:
-                        break
-
-                l = {}
-                if 'referer' in entry:
-                    # Do not show refereres that match our own hostname
-                    if not m.match(entry['referer']):
-                        i += 1
-                        l['referer'] = entry['referer']
-
-                        if 'tag' in entry:
-                            l['tag'] = entry['tag']
-
-                        if 'filename' in entry:
-                            l['filename'] = entry['filename']
-
-                        if 'time' in entry:
-                            l['time'] = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
-
-                        ret.append(l)
-
-        except:
-            pass
-
-    if downloads == True:
-        col = dbopen('log')
-        try:
-            cursor = col.find().sort('time',-1)
-
-            i = 0
-            for entry in cursor:
-                pass
-                if count:
-                    if i == count:
-                        break
-
-                l = {}
-                if 'tag' in entry and 'client' in entry and 'filename' in entry:
-                    i += 1
-
-                    if 'tag' in entry:
-                        l['tag'] = entry['tag']
-
-                    if 'client' in entry:
-                        l['client'] = entry['client']
-
-                    if 'filename' in entry:
-                        l['filename'] = entry['filename']
-
-                    if 'time' in entry:
-                        l['time'] = datetime.datetime.strptime(str(entry['time']),"%Y%m%d%H%M%S")
-
-                    ret.append(l)
-
-        except:
-            pass
 
     if reports == True:
         col = dbopen('reports')
@@ -914,8 +838,6 @@ def unblock_tag(tag):
         return False
 
     else:
-        purge_tag(tag,files = True)
-
         return True
 
 def block_tag(tag):
@@ -937,8 +859,6 @@ def block_tag(tag):
         return False
 
     else:
-        purge_tag(tag,files = True)
-
         return True
 
 def get_mimetype(path):
@@ -1119,8 +1039,8 @@ def remove_tag(tag):
 
     return status
 
-@app.route("/overview/dashboard/")
 @app.route("/overview/dashboard")
+@app.route("/overview/dashboard/")
 def dashboard():
     data = {}
     data['totals'] = {}
@@ -1130,9 +1050,7 @@ def dashboard():
 
     data['uploads'] = get_last(10,files = True)
     data['tags'] = get_last(10,tags = True)
-    data['referers'] = get_last(10,referers = True)
     data['reports'] = get_last(10,reports = True)
-    data['downloads'] = get_last(10,downloads = True)
 
     tags = get_tags()
     data['totals']['tags'] = len(tags)
@@ -1273,17 +1191,13 @@ def monitor():
     tags = get_tags()
     num_files = 0
     size = 0
-    downloads = 0
-    bandwidth = 0
     for tag in tags:
         files = get_files_in_tag(tag)
         for f in files:
              num_files += 1
-             downloads += int(f['downloads'])
              size += f['size_bytes']
-             bandwidth += (f['downloads'] * f['size_bytes'])
 
-    response = flask.make_response(flask.render_template('monitor.txt', tags = tags, num_files = num_files, size = size, downloads = downloads, bandwidth = bandwidth))
+    response = flask.make_response(flask.render_template('monitor.txt', tags = tags, num_files = num_files, size = size))
 
     response.headers['status'] = '200'
     response.headers['content-type'] = 'text/plain'
@@ -1295,7 +1209,9 @@ def monitor():
 @app.route("/about")
 def about():
     client = get_client()
-    response = flask.make_response(flask.render_template("about.html", title = "About"))
+    host = get_header('host')
+    response = flask.make_response(flask.render_template("about.html", \
+        title = "About", host = host))
     response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
 
@@ -1306,8 +1222,6 @@ def index():
     response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
 
-@app.route("/report/<tag>/", methods = ['POST', 'GET'])
-@app.route("/report/<tag>", methods = ['POST', 'GET'])
 def report(tag):
 
     submitted = 0
@@ -1324,9 +1238,7 @@ def report(tag):
             flask.abort(400)
 
         else:
-
             client = get_client()
-
             subject = 'Filebin: Request to delete tag %s' % (tag)
             body = 'Good day,\n%s has just sent a request to delete tag %s. ' \
                    'The reason to why the tag should be deleted is:\n\n' \
@@ -1365,16 +1277,46 @@ def report(tag):
     response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
 
-@app.route("/<tag>/")
-@app.route("/<tag>")
-@app.route("/<tag>/page/<page>/")
-@app.route("/<tag>/page/<page>")
+@app.route("/<tag>/", methods = ['POST', 'GET'])
+@app.route("/<tag>", methods = ['POST', 'GET'])
+@app.route("/<tag>/page/<page>/", methods = ['POST', 'GET'])
+@app.route("/<tag>/page/<page>", methods = ['POST', 'GET'])
 def tag_page(tag,page = 1):
-    files = {}
 
     if not verify(tag):
         time.sleep(app.config['FAILURE_SLEEP'])
         flask.abort(400)
+
+    try:
+        view = flask.request.args.get('v','')
+    except:
+        view = False
+
+    try:
+        key = flask.request.args.get('key','')
+    except:
+        key = False
+
+    if view == 'playlist':
+        return tag_playlist(tag)
+
+    elif view == 'json':
+        return tag_json(tag)
+
+    elif view == 'report':
+        return report(tag)
+
+    elif view == 'configuration':
+        return admin_configuration(tag,key)
+
+    elif view == 'files':
+        return admin_files(tag,key)
+
+    else:
+        return tag_html(tag, page)
+
+def tag_html(tag,page):
+    files = {}
 
     conf = get_tag_configuration(tag)
 
@@ -1423,8 +1365,6 @@ def tag_page(tag,page = 1):
     response.headers['cache-control'] = 'max-age=86400, must-revalidate'
     return response
 
-@app.route("/<tag>/playlist/")
-@app.route("/<tag>/playlist")
 def tag_playlist(tag):
     out = ""
 
@@ -1436,17 +1376,15 @@ def tag_playlist(tag):
     files = get_files_in_tag(tag)
 
     protocol = "http"
-    host = app.config['PURGEHOST']
+    host = get_header('host')
 
     for f in files:
-        out += "%s://%s/%s/file/%s\n" % (protocol, host, tag, f['filename'])
+        out += "%s://%s/%s/%s\n" % (protocol, host, tag, f['filename'])
 
     h = werkzeug.Headers()
     h.add('cache-control', 'max-age=7200, must-revalidate')
     return flask.Response(out, mimetype='text/plain', headers = h)
 
-@app.route("/<tag>/json/")
-@app.route("/<tag>/json")
 def tag_json(tag):
     files = {}
 
@@ -1462,6 +1400,7 @@ def tag_json(tag):
         del(f['filepath'])
         del(f['uploaded_iso'])
         del(f['size'])
+        f['tag'] = tag
 
     # Verify json format
     try:
@@ -1500,52 +1439,6 @@ def thumbnail(tag,filename):
 
     flask.abort(404)
 
-@app.route("/<tag>/file/<filename>")
-def file(tag,filename):
-
-    client = get_client()
-    mimetype = False
-    if verify(tag,filename):
-        conf = get_tag_configuration(tag)
-
-        try:
-            conf['blocked']
-
-        except:
-            pass
-
-        else:
-            if conf['blocked'] == True:
-                flask.abort(403)
-
-        log_prefix = "%s/%s -> %s" % (tag,filename,client)
-        file_path = get_path(tag,filename)
-        if os.path.isfile(file_path):
-            mimetype = get_mimetype(file_path)
-
-            # Increment download counter
-            increment_download_counter(tag,filename)
-
-            # Output image files directly to the client browser
-            m = re.match('^image|^video|^audio|^text/plain|^application/pdf',mimetype)
-            if m:
-                log("INFO","%s: Delivering file (%s)" % (log_prefix,mimetype))
-                response = flask.make_response(flask.send_file(file_path))
-
-            else:
-                # Output rest of the files as attachments
-                log("INFO","%s: Delivering file (%s) as " \
-                    "attachement." % (log_prefix,mimetype))
-
-                response = flask.make_response(flask.send_file(file_path, as_attachment = True))
-
-            response.headers['cache-control'] = 'max-age=86400, must-revalidate'
-            return response
-
-    flask.abort(404)
-
-@app.route("/admin/<tag>/<key>/files/", methods = ['POST', 'GET'])
-@app.route("/admin/<tag>/<key>/files", methods = ['POST', 'GET'])
 def admin_files(tag,key):
     client = get_client()
     filename = False
@@ -1596,13 +1489,6 @@ def admin_files(tag,key):
                             dblog("File %s was deleted" % \
                                 (filename), client, tag)
 
-                            purge_tag(tag)
-
-                            purge('/%s/file/%s/' % (tag,filename))
-                            purge('/%s/file/%s' % (tag,filename))
-                            purge('/thumbnails/%s/%s/' % (tag,filename))
-                            purge('/thumbnails/%s/%s' % (tag,filename))
-
     files = get_files_in_tag(tag)
 
     response = flask.make_response(flask.render_template("admin_files.html", \
@@ -1612,15 +1498,6 @@ def admin_files(tag,key):
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
 
-@app.route("/admin/<tag>/<key>/", methods = ['POST', 'GET'])
-@app.route("/admin/<tag>/<key>", methods = ['POST', 'GET'])
-def admin(tag,key):
-    response = flask.redirect('/admin/%s/%s/configuration' % (tag,key))
-    response.headers['cache-control'] = 'max-age=0, must-revalidate'
-    return response
-
-@app.route("/admin/<tag>/<key>/configuration/", methods = ['POST', 'GET'])
-@app.route("/admin/<tag>/<key>/configuration", methods = ['POST', 'GET'])
 def admin_configuration(tag,key):
     client = get_client()
     saved = 0
@@ -1680,10 +1557,6 @@ def admin_configuration(tag,key):
                 "tag %s." % (tag))
 
         else:
-            purge_tag(tag)
-            purge('/download/')
-            purge('/download')
-
             saved = 1
 
     else:
@@ -1770,6 +1643,8 @@ def upload_to_tag(tag):
     key = False
     conf = get_tag_configuration(tag)
 
+    host = get_header('host')
+
     if conf:
         # The tag is read only
         if conf['permission'] != 'rw':
@@ -1781,7 +1656,7 @@ def upload_to_tag(tag):
 
     num_files = len(get_files_in_tag(tag))
     response = flask.make_response(flask.render_template("upload.html", \
-        tag = tag, key = key, num_files = num_files, \
+        tag = tag, key = key, num_files = num_files, host = host, \
         title = "Upload to tag %s" % (tag)))
 
     # Cannot have to long TTL here as it will show the link to the
@@ -1819,19 +1694,19 @@ def download():
         response.headers['cache-control'] = 'max-age=86400, must-revalidate'
         return response
 
-@app.route("/uploader/", methods = ['POST'])
-@app.route("/uploader", methods = ['POST'])
-def uploader():
+#@app.route("/callback-upload", methods = ['GET', 'POST'])
+@app.route("/callback-upload", methods = ['POST'])
+def callback_upload():
     status = False
 
-    # Store values in a hash that is stored in db later
     i = {}
-    filename           = get_header('x-file-name')
-    i['client']        = get_client()
-    i['tag']           = get_header('x-tag')
-    i['reported_size'] = int(get_header('x-file-size'))
-    i['useragent']     = get_header('user-agent')
-    checksum           = get_header('content-md5')
+    i['client']            = get_client()
+    i['tempfile']          = get_header('x-tempfile')
+    i['tag']               = get_header('x-tag')
+    i['useragent']         = get_header('x-useragent')
+    i['reported_size']     = int(get_header('x-size'))
+    i['reported_checksum'] = get_header('x-checksum')
+    filename               = get_header('x-filename')
 
     if not verify(i['tag'],filename):
         flask.abort(400)
@@ -1849,8 +1724,9 @@ def uploader():
         if filename != i['filename']:
             log("INFO","Filename '%s' was renamed to the secure version '%s'" \
                 % (filename,i['filename']))
- 
 
+    log("INFO","Callback received [%s]." % (i))
+ 
     # The input values are to be trusted at this point
     conf = get_tag_configuration(i['tag'])
     if conf:
@@ -1860,26 +1736,8 @@ def uploader():
 
     # New flask.request from client
     log_prefix = '%s -> %s/%s' % (i['client'],i['tag'],i['filename'])
-    log("INFO","%s: Upload request received, the file is %d bytes. User " \
+    log("INFO","%s: Upload request received, the file size is %d bytes. User " \
         "agent: %s" % (log_prefix,i['reported_size'],i['useragent']))
-
-    if not os.path.exists(app.config['TEMP_DIRECTORY']):
-        os.makedirs(app.config['TEMP_DIRECTORY'])
-        if not os.path.exists(app.config['TEMP_DIRECTORY']):
-            log("ERROR","%s: Unable to create directory %s" % (\
-                log_prefix,app.config['TEMP_DIRECTORY']))
-            flask.abort(501)
-
-    # The temporary destination (while the upload is still in progress)
-    try:
-        temp = tempfile.NamedTemporaryFile(dir = app.config['TEMP_DIRECTORY'])
-
-    except:
-        log("DEBUG","%s: Unable to create temp file %s" % \
-            (log_prefix,temp.name))
-        flask.abort(501)
-
-    log("DEBUG","%s: Using %s as tempfile" % (log_prefix,temp.name))
 
     # The final destination
     target_dir = get_path(i['tag'])
@@ -1897,56 +1755,36 @@ def uploader():
             log("DEBUG","%s: Directory %s created successfully." % \
                 (log_prefix,target_dir))
 
-    i['filepath'] = get_path(i['tag'],i['filename'])
-
-    log("DEBUG","%s: Will save the content to %s" % (log_prefix,i['filepath']))
-
-    chunk_size = 512 * 1024
-    try:
-        while True:
-            chunk = flask.request.stream.read(chunk_size)
-            if not chunk: 
-                break
-            temp.write(chunk)
-        temp.seek(0)
-
-    except:
-        log("DEBUG","%s: Unable to write temp file %s" % \
-            (log_prefix,i['filepath']))
-
-    else:
-        log("DEBUG","%s: Upload to tempfile complete" % (log_prefix))
-
     # Verify the md5 checksum here.
-    i['md5sum'] = md5_for_file(temp.name)
-    log("DEBUG","%s: MD5-sum on uploaded file: %s" % (log_prefix, i['md5sum']))
+    i['checksum'] = md5_for_file(i['tempfile'])
+    log("DEBUG","%s: Checksum on uploaded file: %s" % (log_prefix, i['checksum']))
 
-    if checksum == i['md5sum']:
+    if i['reported_checksum'] == i['checksum']:
         log("DEBUG","%s: Checksum OK!" % (log_prefix))
 
     else:
         log("DEBUG","%s: Checksum mismatch! (%s != %s)" % ( \
-            log_prefix, checksum, i['md5sum']))
+            log_prefix, i['reported_checksum'], i['checksum']))
         # TODO: Should abort here
 
     # Detect file type
     try:
-        mimetype = get_mimetype(temp.name)
+        mimetype = get_mimetype(i['tempfile'])
 
     except:
         log("DEBUG","%s: Unable to detect mime type on %s" % \
-            (log_prefix, temp.name))
+            (log_prefix, i['tempfile']))
 
     else:
         i['mimetype'] = mimetype
         log("DEBUG","%s: Detected mime type %s on %s" % \
-            (log_prefix, mimetype, temp.name))
+            (log_prefix, mimetype, i['tempfile']))
 
     captured = False
     if mimetype:
          m = re.match('^image',mimetype)
          if m:
-             captured_dt = get_time_of_capture(temp.name)
+             captured_dt = get_time_of_capture(i['tempfile'])
 
              if captured_dt:
                  try:
@@ -1960,11 +1798,11 @@ def uploader():
         log("DEBUG","%s: Captured at %s" % (log_prefix, captured))
 
     try:
-        stat = os.stat(temp.name)
+        stat = os.stat(i['tempfile'])
 
     except:
         log("ERROR","%s: Unable to read size of temp file" % ( \
-            log_prefix,temp.name))
+            log_prefix,i['tempfile']))
 
     else:
         i['size'] = int(stat.st_size)
@@ -1972,27 +1810,30 @@ def uploader():
         # Verify that the file size is more than 0 bytes
         if i['size'] == 0:
             log("ERROR","%s: The file %s was 0 bytes. Let's abort here." % \
-                (log_prefix,temp.name))
+                (log_prefix,i['tempfile']))
             flask.abort(400)
 
         if i['size'] != i['reported_size']:
             log("ERROR","%s: The uploaded file %s was %d bytes, but should " \
                 "have been %d bytes. Aborting." % \
-                (log_prefix,temp.name,i['size'],i['reported_size']))
+                (log_prefix,i['tempfile'],i['size'],i['reported_size']))
             flask.abort(400)
+
+    i['filepath'] = get_path(i['tag'],i['filename'])
+    log("DEBUG","%s: Will save the content to %s" % (log_prefix,i['filepath']))
 
     # Uploading to temporary file is complete. Will now copy the contents 
     # to the final target destination.
     try:
-        shutil.copyfile(temp.name,i['filepath'])
+        shutil.copyfile(i['tempfile'],i['filepath'])
 
     except:
         log("ERROR","%s: Unable to copy tempfile (%s) to target " \
-            "(%s)" % (log_prefix,temp.name,i['filepath']))
+            "(%s)" % (log_prefix,i['tempfile'],i['filepath']))
 
     else:
         log("DEBUG","%s: Content copied from tempfile (%s) to " \
-            "final destination (%s)" % (log_prefix,temp.name, \
+            "final destination (%s)" % (log_prefix,i['tempfile'], \
             i['filepath']))
 
         if not add_file_to_database(i):
@@ -2000,22 +1841,19 @@ def uploader():
 
         else:
             # Log the activity
-            dblog('Uploaded %s/%s, %s bytes' % (i['tag'],i['filename'],i['size']),i['client'],i['tag'],i['filename'])
+            text = 'Client %s uploaded %s/%s successfully, %s bytes, checksum %s' % (i['client'],i['tag'],i['filename'],i['size'],i['checksum'])
+            dblog('%s' % text)
+            log("INFO","%s" % (text))
             status = True
 
     # Clean up the temporary file
-    temp.close()
+    # Nginx will handle this
 
     response = flask.make_response(flask.render_template('uploader.html'))
 
     if status:
-        purge_tag(i['tag'])
-
-        purge('/thumbnail/%s/%s' % (i['tag'],i['filename']))
-        purge('/%s/file/%s' % (i['tag'],i['filename']))
 
         response.headers['status'] = '200'
-
     else:
         response.headers['status'] = '501'
 
@@ -2057,8 +1895,6 @@ def maintenance():
                 dblog("Tag %s has been removed due to expiry." % (tag), \
                     tag = tag)
 
-                purge_tag(tag)
-
             else:
                 log("ERROR","%s: Unable to remove." % (tag))
                 dblog("Failed to remove tag %s. It has expired." % (tag), \
@@ -2080,3 +1916,4 @@ def robots():
 if __name__ == '__main__':
     app.debug = True
     app.run(host='0.0.0.0')
+

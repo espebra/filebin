@@ -19,7 +19,7 @@
   {% else %}
     <li>
   {% endif %}
-    <a href="/admin/{{ tag }}/{{ key }}/configuration">
+    <a href="/{{ tag }}?v=configuration&key={{ key }}">
       Configuration
     </a>
   </li>
@@ -28,7 +28,7 @@
   {% else %}
     <li>
   {% endif %}
-    <a href="/admin/{{ tag }}/{{ key }}/files">
+    <a href="/{{ tag }}?v=files&key={{ key }}">
       Files
     </a>
   </li>
