@@ -125,7 +125,8 @@ def log(priority,text):
 # Verify the flask.request. Return True if the flask.request is OK, False if it isn't.
 def verify(tag = False, filename = False):
 
-    illegal_tags = ['thumbnails','files','static']
+    illegal_tags = ['thumbnails','files','static','temp','app','conf', \
+                    'lost+found']
     if tag:
         # We want to have a long tag
         if len(tag) < 10:
