@@ -1212,14 +1212,14 @@ def about():
     host = get_header('host')
     response = flask.make_response(flask.render_template("about.html", \
         title = "About", host = host))
-    response.headers['cache-control'] = 'max-age=86400, must-revalidate'
+    response.headers['cache-control'] = 'max-age=3600 must-revalidate'
     return response
 
 @app.route("/")
 def index():
     client = get_client()
     response = flask.make_response(flask.render_template("index.html", title = "Online storage at your fingertips"))
-    response.headers['cache-control'] = 'max-age=86400, must-revalidate'
+    response.headers['cache-control'] = 'max-age=3600, must-revalidate'
     return response
 
 def report(tag):
@@ -1274,7 +1274,7 @@ def report(tag):
         tag = tag, submitted = submitted, \
         title = "Report tag %s" % (tag)))
 
-    response.headers['cache-control'] = 'max-age=86400, must-revalidate'
+    response.headers['cache-control'] = 'max-age=3600, must-revalidate'
     return response
 
 @app.route("/<tag>/", methods = ['POST', 'GET'])
@@ -1362,7 +1362,7 @@ def tag_html(tag,page):
         datetime_found = datetime_found, \
         title = "Tag %s" % (tag)))
 
-    response.headers['cache-control'] = 'max-age=86400, must-revalidate'
+    response.headers['cache-control'] = 'max-age=3600, must-revalidate'
     return response
 
 def tag_playlist(tag):
@@ -1434,7 +1434,7 @@ def thumbnail(tag,filename):
         if os.path.isfile(filepath):
             # Output image files directly to the client browser
             response = flask.make_response(flask.send_file(filepath))
-            response.headers['cache-control'] = 'max-age=86400, must-revalidate'
+            response.headers['cache-control'] = 'max-age=3600, must-revalidate'
             return response
 
     flask.abort(404)
@@ -1691,7 +1691,7 @@ def download():
     else:
         tags = get_public_tags()
         response = flask.make_response(flask.render_template("download.html" , tags = tags, title = "Download"))
-        response.headers['cache-control'] = 'max-age=86400, must-revalidate'
+        response.headers['cache-control'] = 'max-age=3600, must-revalidate'
         return response
 
 #@app.route("/callback-upload", methods = ['GET', 'POST'])
@@ -1910,7 +1910,7 @@ def maintenance():
 def robots():
     response = flask.make_response(flask.render_template('robots.txt'))
     response.headers['content-type'] = 'text/plain'
-    response.headers['cache-control'] = 'max-age=86400, must-revalidate'
+    response.headers['cache-control'] = 'max-age=3600, must-revalidate'
     return response
 
 if __name__ == '__main__':
