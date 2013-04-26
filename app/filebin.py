@@ -1415,31 +1415,6 @@ def tag_json(tag):
     h.add('cache-control', 'max-age=7200, must-revalidate')
     return flask.Response(ret, mimetype='text/json', headers = h)
 
-@app.route("/thumbnails/<tag>/<filename>")
-def thumbnail(tag,filename):
-    if verify(tag,filename):
-
-        conf = get_tag_configuration(tag)
-        try:
-            conf['blocked']
-
-        except:
-            pass
-
-        else:
-            if conf['blocked'] == True:
-                flask.abort(403)
-
-        filepath = get_path(tag,filename,True)
-        #log("DEBUG","Deliver thumbnail from %s" % (filepath))
-        if os.path.isfile(filepath):
-            # Output image files directly to the client browser
-            response = flask.make_response(flask.send_file(filepath))
-            response.headers['cache-control'] = 'max-age=3600, must-revalidate'
-            return response
-
-    flask.abort(404)
-
 def admin_files(tag,key):
     client = get_client()
     filename = False
