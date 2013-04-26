@@ -27,6 +27,7 @@ import subprocess
 
 import flask
 import werkzeug
+import pygeoip
 
 # Import smtplib for the actual sending function
 import smtplib
@@ -46,6 +47,8 @@ app.config.from_pyfile('/etc/filebin/local.cfg', silent=True)
 app.config.from_pyfile('../conf/local.cfg', silent=True)
 
 app.debug = True
+
+GEOIP = pygeoip.Database('GeoIP.dat')
 
 # Generate tag
 def generate_tag():
@@ -594,6 +597,10 @@ def get_last(count = False, files = False, tags = False, reports = False):
            l['downloads'] = entry['downloads']
            l['client'] = entry['client']
 
+           info = GEOIP.lookup(l['client'])
+           if info.country:
+               l['country'] = info.country
+
            ret.append(l)
 
     if reports == True:
@@ -612,6 +619,10 @@ def get_last(count = False, files = False, tags = False, reports = False):
            l['tag'] = tag
            l['client'] = entry['client']
            l['reason'] = entry['reason']
+
+           info = GEOIP.lookup(l['client'])
+           if info.country:
+               l['country'] = info.country
 
            ret.append(l)
 
@@ -634,6 +645,10 @@ def get_last(count = False, files = False, tags = False, reports = False):
 
            if 'client' in entry:
                l['client'] = entry['client']
+
+               info = GEOIP.lookup(l['client'])
+               if info.country:
+                   l['country'] = info.country
 
            try:
                l['days_left'] = get_tag_lifetime(tag)
