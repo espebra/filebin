@@ -64,6 +64,7 @@
       <thead>
         <th>Timestamp</th>
         <th>Tag</th>
+        <th>Client</th>
         <th>Files</th>
         <th>TTL</th>
       </thead>
@@ -72,6 +73,11 @@
       <tr>
         <td>{{ f.time }} UTC</td>
         <td><a href="/{{ f.tag }}">{{ f.tag }}</a></td>
+        <td>
+          {% if f.client %}
+            {{ f.client }}
+          {% endif %}
+        </td>
         <td>{{ f.files }}</td>
         <td>{% if f.days_left %}
                {{ f.days_left }} days

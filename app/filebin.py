@@ -412,12 +412,6 @@ def generate_thumbnails(tag):
                             "in tag %s with mimetype %s" \
                             % (filename,tag,mimetype))
 
-#def generate_download_serial():
-#    now = datetime.datetime.utcnow()
-#    md5 = hashlib.md5()
-#    md5.update(now.strftime("%Y%m%d%H"))
-#    return md5.hexdigest()
-
 def get_tag_lifetime(tag):
     days = False
     conf = get_tag_configuration(tag)
@@ -638,6 +632,9 @@ def get_last(count = False, files = False, tags = False, reports = False):
            l['tag'] = tag
            l['ttl'] = entry['ttl']
 
+           if 'client' in l:
+               l['client'] = entry['client']
+
            try:
                l['days_left'] = get_tag_lifetime(tag)
 
@@ -694,6 +691,7 @@ def create_default_tag_configuration(tag,key):
                      'key'         : hashed_key,
                      'ttl'         : 2,
                      'expose'      : 'private',
+                     'client'      : get_client(),
                      'permission'  : 'rw',
                      'preview'     : 'on',
                      'registered'  : now.strftime("%Y%m%d%H%M%S")
@@ -1522,6 +1520,7 @@ def admin_configuration(tag,key):
                          '$set' : {
                            'ttl' : ttl,
                            'expose' : expose,
+                           'client' : get_client(),
                            'permission' : permission,
                            'preview' : preview
                          }
