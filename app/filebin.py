@@ -1201,9 +1201,10 @@ def overview_files():
     for tag in tags:
        f = get_files_in_tag(tag)
        for entry in f:
-           info = GEOIP.lookup(entry['client'])
-           if info.country:
-               entry['country'] = info.country
+           if 'client' in entry:
+               info = GEOIP.lookup(entry['client'])
+               if info.country:
+                   entry['country'] = info.country
        files[tag] = f
 
     response = flask.make_response(flask.render_template("overview_files.html", files = files, active = 'files', title = "Files"))
