@@ -115,7 +115,7 @@ Nginx
             uwsgi_send_timeout         6000;
             client_max_body_size       1024M;
             client_body_buffer_size    128k;
-            uwsgi_pass unix:/run/shm/filebin.net.sock;
+            uwsgi_pass unix:/run/shm/filebin.sock;
         }
     }
 
@@ -124,13 +124,13 @@ Uwsgi (filebin.yaml)
     uwsgi:
         uid: nginx
         gid: nginx
-        socket: /run/shm/filebin.net.sock
+        socket: /run/shm/filebin.sock
         post-buffering: 0
         plugins: http,python
         processes: 15
         module: filebin
         callable: app
-        chdir: /srv/www/http/filebin.net/app/
+        chdir: /srv/www/filebin/app/
         no-orphans: true
         log-date: true
         master: true
