@@ -1673,6 +1673,7 @@ def download():
 @app.route("/callback-upload", methods = ['POST'])
 def callback_upload():
     status = False
+    start = time.time()
 
     i = {}
     i['client']            = get_client()
@@ -1821,8 +1822,8 @@ def callback_upload():
             log("INFO","%s" % (text))
             status = True
 
-    # Clean up the temporary file
-    # Nginx will handle this
+    elapsed = time.time() - start
+    log("INFO","%s: Callback duration was %d seconds" % (log_prefix,elapsed))
 
     response = flask.make_response(flask.render_template('uploader.html'))
 
