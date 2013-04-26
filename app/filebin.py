@@ -1826,14 +1826,14 @@ def callback_upload():
     # Uploading to temporary file is complete. Will now copy the contents 
     # to the final target destination.
     try:
-        shutil.copyfile(i['tempfile'],i['filepath'])
+        shutil.move(i['tempfile'],i['filepath'])
 
     except:
-        log("ERROR","%s: Unable to copy tempfile (%s) to target " \
+        log("ERROR","%s: Unable to move tempfile (%s) to target " \
             "(%s)" % (log_prefix,i['tempfile'],i['filepath']))
 
     else:
-        log("DEBUG","%s: Content copied from tempfile (%s) to " \
+        log("DEBUG","%s: Content moved from tempfile (%s) to " \
             "final destination (%s)" % (log_prefix,i['tempfile'], \
             i['filepath']))
 
