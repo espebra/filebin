@@ -229,6 +229,7 @@ def get_files_in_tag(tag, page = False, per_page = app.config['FILES_PER_PAGE'])
             i['size'] = "%.2f" % (f['size'] / 1024 / round(1024))
             #i['bandwidth'] = "%.2f" % ((f['downloads'] * f['size']) / 1024 / round(1024))
             i['uploaded'] = f['uploaded']
+            i['client'] = f['client']
             i['uploaded_iso'] = datetime.datetime.strptime(str(f['uploaded']), \
                                     "%Y%m%d%H%M%S")
 
@@ -1198,7 +1199,12 @@ def overview_files():
     files = {}
     tags = get_tags()
     for tag in tags:
-       files[tag] = get_files_in_tag(tag)
+       f = get_files_in_tag(tag)
+       for entry in f:
+           info = GEOIP.lookup(entry['client'])
+           if info.country:
+               entry['country'] = info.country
+       files[tag] = f
 
     response = flask.make_response(flask.render_template("overview_files.html", files = files, active = 'files', title = "Files"))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
