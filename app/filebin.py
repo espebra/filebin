@@ -531,9 +531,12 @@ def get_log(year = False,month = False,day = False,tag = False):
 
            if 'client' in entry:
                l['client'] = entry['client']
-               info = GEOIP.lookup(l['client'])
-               if info.country:
-                   l['country'] = info.country
+               try:
+                   info = GEOIP.lookup(l['client'])
+                   if info.country:
+                       l['country'] = info.country
+               except:
+                   pass
 
            if 'tag' in entry:
                l['tag'] = entry['tag']
@@ -603,9 +606,12 @@ def get_last(count = False, files = False, tags = False, reports = False):
            l['downloads'] = entry['downloads']
            l['client'] = entry['client']
 
-           info = GEOIP.lookup(l['client'])
-           if info.country:
-               l['country'] = info.country
+           try:
+               info = GEOIP.lookup(l['client'])
+               if info.country:
+                   l['country'] = info.country
+           except:
+               pass
 
            ret.append(l)
 
@@ -626,9 +632,12 @@ def get_last(count = False, files = False, tags = False, reports = False):
            l['client'] = entry['client']
            l['reason'] = entry['reason']
 
-           info = GEOIP.lookup(l['client'])
-           if info.country:
-               l['country'] = info.country
+           try:
+               info = GEOIP.lookup(l['client'])
+               if info.country:
+                   l['country'] = info.country
+           except:
+               pass
 
            ret.append(l)
 
@@ -652,9 +661,12 @@ def get_last(count = False, files = False, tags = False, reports = False):
            if 'client' in entry:
                l['client'] = entry['client']
 
-               info = GEOIP.lookup(l['client'])
-               if info.country:
-                   l['country'] = info.country
+               try:
+                   info = GEOIP.lookup(l['client'])
+                   if info.country:
+                       l['country'] = info.country
+               except:
+                   pass
 
            try:
                l['days_left'] = get_tag_lifetime(tag)
@@ -1200,11 +1212,13 @@ def overview_files():
     tags = get_tags()
     for tag in tags:
        f = get_files_in_tag(tag)
-       for entry in f:
-           if 'client' in entry:
-               info = GEOIP.lookup(entry['client'])
+       for l in f:
+           try:
+               info = GEOIP.lookup(l['client'])
                if info.country:
-                   entry['country'] = info.country
+                   l['country'] = info.country
+           except:
+               pass
        files[tag] = f
 
     response = flask.make_response(flask.render_template("overview_files.html", files = files, active = 'files', title = "Files"))
