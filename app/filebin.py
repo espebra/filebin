@@ -632,7 +632,7 @@ def get_last(count = False, files = False, tags = False, reports = False):
            l['tag'] = tag
            l['ttl'] = entry['ttl']
 
-           if 'client' in l:
+           if 'client' in entry:
                l['client'] = entry['client']
 
            try:
