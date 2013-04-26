@@ -27,6 +27,8 @@ import subprocess
 
 import flask
 import werkzeug
+
+# https://code.google.com/p/python-geoip/
 import pygeoip
 
 # Import smtplib for the actual sending function
