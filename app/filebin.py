@@ -1835,7 +1835,7 @@ def callback_upload():
         else:
             # Log the activity
             text = 'Client %s uploaded %s/%s successfully, %s bytes, checksum %s' % (i['client'],i['tag'],i['filename'],i['size'],i['checksum'])
-            dblog('%s' % text)
+            dblog('%s' % (text), tag = i['tag'], client = i['client'], filename = i['filename'])
             log("INFO","%s" % (text))
             status = True
 
