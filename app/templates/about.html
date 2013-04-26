@@ -36,13 +36,13 @@
     <div class="span4">
       <h3>API features</h3>
       <h4>Uploading files</h4>
-      <p>To upload a file, simply issue a POST request towards the URI <i>/uploader</i> with the request headers <i>x-filename</i>, <i>x-size</i> (in bytes), <i>x-tag</i> and <i>x-checksum</i> (md5 checksum) set. The body of the request should contain the contents of the file.</p>
+      <p>To upload a file, simply issue a POST request to http://{{ host }}/uploader with the headers <i>x-filename</i>, <i>x-size</i> (in bytes), <i>x-tag</i> and <i>x-checksum</i> (md5 checksum) set. The body of the request should contain the contents of the file.</p>
     
       <h4>Listing contents of a tag</h4>
-      <p>Tags can be listed in json format at the URI <i>/[tag]?v=json</i> or as a list at <i>/[tag]?v=playlist</i>.
+      <p>Tags can be listed in json format at http://{{ host }}/<i>tag</i>?v=json or as a list at http://{{ host }}/<i>tag</i>?v=playlist.
     
       <h4>Downloading files</h4>
-      <p>Files can be downloaded at the URI <i>http://{{ host }}/[tag]/[filename]</i>.
+      <p>Files can be downloaded at http://{{ host }}/<i>tag</i>/<i>filename</i>.
     </div>
   </div>
 </div>
