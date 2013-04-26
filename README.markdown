@@ -29,14 +29,43 @@ Nginx
 -------
     server {
         listen   80;
-        listen   [::]:80 default ipv6only=on;
+        listen   [::]:80;
     
+        access_log /var/log/nginx/filebin.net-access.log;
+        server_name www.filebin.net;
+        rewrite ^(.*) http://filebin.net$1 permanent;
+    }
+
+    server {
+        listen   80;
+        listen   [::]:80;
+    
+        access_log /var/log/nginx/filebin.net-access.log;
         root /srv/www/filebin/files/;
         index index.html index.htm;
     
-        server_name localhost;
+        server_name filebin.net;
+    
+        # http://aspyct.org/blog/2012/08/20/setting-up-http-cache-and-gzip-with-nginx/
+        gzip on;
+        gzip_http_version 1.1;
+        gzip_vary on;
+        gzip_comp_level 6;
+        gzip_proxied any;
+        gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript text/x-js;
+        gzip_buffers 16 8k;
+        gzip_disable "MSIE [1-6]\.(?!.*SV1)";
+        server_tokens off;
+    
+        # For historical compability
+        rewrite ^/([^/]+)/file/(.*) http://filebin.net/$1/$2 permanent;
+        rewrite ^/admin/([^/]+)/([^/]+)/(.+) http://filebin.net/$1?v=configuration&key=$2 permanent;
     
         location /static {
+            root /srv/www/filebin/;
+        }
+    
+        location /thumbnails {
             root /srv/www/filebin/;
         }
     
@@ -59,7 +88,11 @@ Nginx
             proxy_set_header           x-client    $remote_addr;
             proxy_set_body             off;
             proxy_redirect             off;
-            proxy_pass                 http://localhost/callback-upload;
+    
+            # A high timeout is necessary to let the backend calculate the
+            # checksum and move the (potentially large) file into place.
+            proxy_read_timeout         3600;
+            proxy_pass                 http://filebin.net/callback-upload;
         }
     
         location /overview {
@@ -73,7 +106,6 @@ Nginx
             allow   1.2.3.4;
             deny    all;
         }
-    
         location / { try_files $uri @filebin; }
         location @filebin {
             include uwsgi_params;
@@ -83,7 +115,7 @@ Nginx
             uwsgi_send_timeout         6000;
             client_max_body_size       1024M;
             client_body_buffer_size    128k;
-            uwsgi_pass unix:/run/shm/filebin.sock;
+            uwsgi_pass unix:/run/shm/filebin.net.sock;
         }
     }
 
@@ -92,13 +124,16 @@ Uwsgi (filebin.yaml)
     uwsgi:
         uid: nginx
         gid: nginx
-        socket: /run/shm/filebin.sock
+        socket: /run/shm/filebin.net.sock
         post-buffering: 0
         plugins: http,python
-        processes: 4
+        processes: 15
         module: filebin
         callable: app
-        chdir: /srv/www/filebin/app/
+        chdir: /srv/www/http/filebin.net/app/
+        no-orphans: true
+        log-date: true
+        master: true
 
 TODO
 ----
