@@ -25,6 +25,7 @@
       <tr>
         <th>Time</th>
         <th>Client</th>
+        <th>Country</th>
         <th>Description</th>
         <th>Links</th>
       </tr>
@@ -33,6 +34,11 @@
       <tr>
         <td>{{ l.time }} UTC</td>
         <td>{{ l.client }}</td>
+        <td>
+          {% if l.country %}
+            {{ l.country }}
+          {% endif %}
+        </td>
         <td>{{ l.description }}</td>
         <td>
           <ul>

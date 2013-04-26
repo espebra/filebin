@@ -530,6 +530,9 @@ def get_log(year = False,month = False,day = False,tag = False):
 
            if 'client' in entry:
                l['client'] = entry['client']
+               info = GEOIP.lookup(l['client'])
+               if info.country:
+                   l['country'] = info.country
 
            if 'tag' in entry:
                l['tag'] = entry['tag']
