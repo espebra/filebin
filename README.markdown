@@ -7,7 +7,7 @@ Requirements
 Some Python modules, MongoDB and Apache or Nginx+uwsgi.
 
 For ubuntu:
-    sudo apt-get install mongodb-server python-pymongo python-jinja2 python-flask python-werkzeug python-magic python-pythonmagick python-pyexiv2 
+    sudo apt-get install mongodb-server python-pymongo python-jinja2 python-flask python-werkzeug python-magic python-pythonmagick python-pyexiv2 uwsgi uwsgi-plugin-python
 
 Additional configuration
 ========================
@@ -136,7 +136,9 @@ Uwsgi (filebin.yaml)
         master: true
 
 TODO
-----
+====
 * Statistics in the admin interface.
 * Proper MD5 checksumming during upload.
 * Client side error handling.
+* Fix the blocking feature which is broken now, or even add a remove by request feature to let users knowing tags remove them.
+
