@@ -26,7 +26,7 @@ Logrotate
     }
 
 Nginx 
--------
+-----
     server {
         listen   80;
         listen   [::]:80;
@@ -120,7 +120,7 @@ Nginx
     }
 
 Uwsgi (filebin.yaml)
--------
+--------------------
     uwsgi:
         uid: nginx
         gid: nginx
@@ -134,6 +134,10 @@ Uwsgi (filebin.yaml)
         no-orphans: true
         log-date: true
         master: true
+
+Periodic tasks
+--------------
+http://filebin.net/maintenance will generate thumbnails and remove expired tags for you. Configure a cron job to GET this URL periodically to ensure that these tasks are being executed. It will return 200 if the tasks are executed successfully.
 
 TODO
 ====
