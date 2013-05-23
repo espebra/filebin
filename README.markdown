@@ -41,9 +41,12 @@ Nginx
         listen   [::]:80;
     
         access_log /var/log/nginx/filebin.net-access.log;
+
+        # Please note that the root path should point to the directory where
+        # the tags and files are being stored.
         root /srv/www/filebin/files/;
+
         index index.html index.htm;
-    
         server_name filebin.net;
     
         # http://aspyct.org/blog/2012/08/20/setting-up-http-cache-and-gzip-with-nginx/
@@ -106,6 +109,9 @@ Nginx
             allow   1.2.3.4;
             deny    all;
         }
+
+        # Try to serve the file if the file exists, or let the web application
+        # handle the request.
         location / { try_files $uri @filebin; }
         location @filebin {
             include uwsgi_params;
