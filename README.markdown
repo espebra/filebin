@@ -71,7 +71,7 @@ Nginx
         location /thumbnails {
             root /srv/www/filebin/;
         }
-    
+
         location /uploader {
             limit_except POST          { deny all; }
     
@@ -105,6 +105,13 @@ Nginx
         }
     
         location /monitor {
+            try_files $uri @filebin;
+            allow   1.2.3.4;
+            deny    all;
+        }
+
+        # Restrict world access to the maintenance uri
+        location /maintenance {
             try_files $uri @filebin;
             allow   1.2.3.4;
             deny    all;
