@@ -152,6 +152,10 @@ Periodic tasks
 --------------
 http://filebin.net/maintenance will generate thumbnails and remove expired tags for you. Configure a cron job to GET this URL periodically to ensure that these tasks are being executed. It will return 200 if the tasks are executed successfully.
 
+License
+=======
+The filebin web application is licensed under GNU Affero General Public License <http://www.gnu.org/licenses/agpl.html>. Some of the modules used (flask, geoip, jinja, werkzeug, etc) are or may be under other licenses.
+
 TODO
 ====
 * Statistics in the admin interface.
