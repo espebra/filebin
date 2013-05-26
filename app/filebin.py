@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2013 Espen Braastad
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -409,29 +409,32 @@ def generate_thumbnails(tag):
                 % (tag, filename))
 
         else:
-            if m.match(mimetype):
-                # Decide the name of the files here
-                thumbfile = get_path(tag,filename,True)
-                filepath = get_path(tag,filename)
+            if mimetype:
+                if m.match(mimetype):
+                    # Decide the name of the files here
+                    thumbfile = get_path(tag,filename,True)
+                    filepath = get_path(tag,filename)
 
-                # TODO: Should also check if filepath is newer than thumbfile!
-                if not os.path.exists(thumbfile):
-                    log("DEBUG","Create thumbnail (%s) of file (%s)" \
-                        % (thumbfile,filepath))
+                    # TODO: Should also check if filepath is newer than 
+                    # thumbfile!
+                    if not os.path.exists(thumbfile):
+                        log("DEBUG","Create thumbnail (%s) of file (%s)" \
+                            % (thumbfile,filepath))
 
-                    try:
-                        im = PythonMagick.Image(filepath)
-                        im.scale('%dx%d' % (app.config['THUMBNAIL_WIDTH'], app.config['THUMBNAIL_HEIGHT']))
-                        im.write(str(thumbfile))
+                        try:
+                            im = PythonMagick.Image(filepath)
+                            im.scale('%dx%d' % (app.config['THUMBNAIL_WIDTH'], \
+                                app.config['THUMBNAIL_HEIGHT']))
+                            im.write(str(thumbfile))
 
-                    except:
-                        log("ERROR","Unable to generate thumbnail for file " \
-                            "%s in tag %s with mimetype %s" \
-                            % (filename,tag,mimetype))
-                    else:
-                        log("INFO","Generated thumbnail for file %s " \
-                            "in tag %s with mimetype %s" \
-                            % (filename,tag,mimetype))
+                        except:
+                            log("ERROR","Unable to generate thumbnail for " \
+                                "file %s in tag %s with mimetype %s" \
+                                % (filename,tag,mimetype))
+                        else:
+                            log("INFO","Generated thumbnail for file %s " \
+                                "in tag %s with mimetype %s" \
+                                % (filename,tag,mimetype))
 
 def get_tag_lifetime(tag):
     days = False
