@@ -65,8 +65,6 @@ app.config.from_pyfile('../conf/local.cfg', silent=True)
 
 app.debug = True
 
-GEOIP = pygeoip.Database('GeoIP.dat')
-
 # Generate tag
 def generate_tag():
     chars = string.ascii_lowercase + string.digits
@@ -511,6 +509,27 @@ def get_log_days(tag = False):
 
     return d
 
+def get_country(ip):
+    geoip = False
+
+    if not ip:
+        return False
+
+    if ip.find(".") != -1:
+        # ipv4
+        geoip = pygeoip.Database('GeoIP.dat')
+
+    elif ip.find(":") != -1:
+        # ipv6
+        geoip = pygeoip.Database('GeoIPv6.dat')
+
+    if geoip:
+        info = geoip.lookup(ip)
+        if info.country:
+            return info.country
+
+    return False
+
 def get_log(year = False,month = False,day = False,tag = False):
     ret = []
     col = dbopen('log')
@@ -550,9 +569,7 @@ def get_log(year = False,month = False,day = False,tag = False):
            if 'client' in entry:
                l['client'] = entry['client']
                try:
-                   info = GEOIP.lookup(l['client'])
-                   if info.country:
-                       l['country'] = info.country
+                   l['country'] = get_country(l['client'])
                except:
                    pass
 
@@ -625,9 +642,7 @@ def get_last(count = False, files = False, tags = False, reports = False):
            l['client'] = entry['client']
 
            try:
-               info = GEOIP.lookup(l['client'])
-               if info.country:
-                   l['country'] = info.country
+               l['country'] = get_country(l['client'])
            except:
                pass
 
@@ -651,9 +666,7 @@ def get_last(count = False, files = False, tags = False, reports = False):
            l['reason'] = entry['reason']
 
            try:
-               info = GEOIP.lookup(l['client'])
-               if info.country:
-                   l['country'] = info.country
+               l['country'] = get_country(l['client'])
            except:
                pass
 
@@ -680,9 +693,7 @@ def get_last(count = False, files = False, tags = False, reports = False):
                l['client'] = entry['client']
 
                try:
-                   info = GEOIP.lookup(l['client'])
-                   if info.country:
-                       l['country'] = info.country
+                   l['country'] = get_country(l['client'])
                except:
                    pass
 
@@ -1232,9 +1243,7 @@ def overview_files():
        f = get_files_in_tag(tag)
        for l in f:
            try:
-               info = GEOIP.lookup(l['client'])
-               if info.country:
-                   l['country'] = info.country
+               l['country'] = get_country(l['client'])
            except:
                pass
        files[tag] = f
