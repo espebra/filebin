@@ -517,16 +517,19 @@ def get_country(ip):
 
     if ip.find(".") != -1:
         # ipv4
-        geoip = pygeoip.Database('GeoIP.dat')
+        geoip = pygeoip.GeoIP('GeoIP.dat', pygeoip.MEMORY_CACHE)
 
     elif ip.find(":") != -1:
         # ipv6
-        geoip = pygeoip.Database('GeoIPv6.dat')
+        geoip = pygeoip.GeoIP('GeoIPv6.dat', pygeoip.MEMORY_CACHE)
 
     if geoip:
-        info = geoip.lookup(ip)
-        if info.country:
-            return info.country
+        try:
+            country = geoip.country_code_by_addr(ip)
+            return country
+
+        except:
+            pass
 
     return False
 
