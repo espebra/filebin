@@ -1234,6 +1234,32 @@ def overview_tags():
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
 
+@app.route("/overview/map/")
+@app.route("/overview/map")
+def overview_map():
+    client = get_client()
+    dblog("Show map overview", client = client)
+
+    files = {}
+    countries = {}
+    tags = get_tags()
+    for tag in tags:
+       f = get_files_in_tag(tag)
+       for l in f:
+           try:
+               country = get_country(l['client'])
+               if not country in countries:
+                   countries[country] = 0
+
+               countries[country] += 1
+               
+           except:
+               pass
+
+    response = flask.make_response(flask.render_template("overview_map.html", countries = countries, active = 'map', title = "Map"))
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
+    return response
+
 @app.route("/overview/files/")
 @app.route("/overview/files")
 def overview_files():

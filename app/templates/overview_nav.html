@@ -12,6 +12,15 @@
       Dashboard
     </a>
   </li>
+  {% if active == 'map' %}
+    <li class="active">
+  {% else %}
+    <li>
+  {% endif %}
+    <a href="/overview/map">
+      World map
+    </a>
+  </li>
   {% if active == 'logs' %}
     <li class="active">
   {% else %}

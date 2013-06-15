@@ -1,0 +1,33 @@
+{% include "header.html" %}
+
+{% include "overview_nav.html" %}
+
+<script type='text/javascript' src='https://www.google.com/jsapi'></script>
+<script type='text/javascript'>
+ google.load('visualization', '1', {'packages': ['geomap']});
+ google.setOnLoadCallback(drawMap);
+
+  function drawMap() {
+    var data = google.visualization.arrayToDataTable([
+      ['Country', 'Active files'],
+      {% for country in countries %}
+        ['{{ country }}', '{{ countries[country] }}'],
+      {% endfor %}
+    ]);
+
+    var options = {};
+    options['dataMode'] = 'regions';
+    options['height'] = '694';
+    options['width'] = '1112';
+
+    var container = document.getElementById('map_canvas');
+    var geomap = new google.visualization.GeoMap(container);
+    geomap.draw(data, options);
+};
+</script>
+
+<p>This graph visualizes the number of files uploaded from the different countries in the world. Tags that are expired are not shown.</p>
+<div id='map_canvas'></div>
+
+{% include "footer.html" %}
+
