@@ -46,7 +46,7 @@
              <li>T: <a href="/{{ l.tag }}">{{ l.tag }}</a></li>
           {% endif %}
           {% if l.filename %}
-             <li>F: <a href="/{{ l.tag }}/file/{{ l.filename }}">{{ l.filename }}</a></li>
+             <li>F: <a href="/{{ l.tag }}/{{ l.filename }}">{{ l.filename }}</a></li>
           {% endif %}
           {% if l.referer %}
              <li>R: {{ l.referer }}</li>

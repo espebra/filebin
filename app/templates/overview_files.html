@@ -26,7 +26,7 @@
                </tr>
                    {% for f in files[tag] %}
                        <tr>
-                         <td class="span3"><a href="/{{ tag }}/file/{{ f.filename }}">{{ f.filename }}</a></td>
+                         <td class="span3"><a href="/{{ tag }}/{{ f.filename }}">{{ f.filename }}</a></td>
                          <td class="span2">{{ f.mimetype }}</td>
                          <td class="span2">{{ f.size }} MB</td>
                          <td class="span2">

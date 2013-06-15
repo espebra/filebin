@@ -61,7 +61,7 @@
           {% endif %}
         </td>
         <td>{{ f.mimetype }}</td>
-        <td><a href="/{{ f.tag }}/file/{{ f.filename }}">{{ f.filename }}</a></td>
+        <td><a href="/{{ f.tag }}/{{ f.filename }}">{{ f.filename }}</a></td>
       </tr>
     {% endfor %}
     </table>
