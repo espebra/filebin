@@ -1248,13 +1248,12 @@ def overview_map():
        for l in f:
            try:
                country = get_country(l['client'])
-               if not country in countries:
-                   countries[country] = 0
-
                if country:
                    if len(country) == 2:
+                       if not country in countries:
+                           countries[country] = 0
+
                        countries[country] += 1
-               
            except:
                pass
 
@@ -1409,6 +1408,9 @@ def tag_page(tag,page = 1):
 
     elif view == 'files':
         return admin_files(tag,key)
+
+    elif view == 'map':
+        return admin_map(tag,key)
 
     else:
         return tag_html(tag, page)
@@ -1568,6 +1570,41 @@ def admin_files(tag,key):
         tag = tag, key = key, files = files, conf = conf, active = 'files', \
         status = status, filename = filename, \
         title = "Administration for %s" % (tag)))
+    response.headers['cache-control'] = 'max-age=0, must-revalidate'
+    return response
+
+def admin_map(tag,key):
+    client = get_client()
+
+    if not verify(tag):
+        flask.abort(400)
+
+    # Let's hash the admin key
+    hashed_key = hash_key(key)
+
+    if not authenticate_key(tag,hashed_key):
+        time.sleep(app.config['FAILURE_SLEEP'])
+        flask.abort(401)
+
+    conf = get_tag_configuration(tag)
+
+    files = get_files_in_tag(tag)
+    countries = {}
+    for l in files:
+        try:
+            country = get_country(l['client'])
+            if country:
+                if len(country) == 2:
+                    if not country in countries:
+                        countries[country] = 0
+
+                    countries[country] += 1
+        except:
+            pass
+
+    response = flask.make_response(flask.render_template("admin_map.html", \
+        tag = tag, key = key, countries = countries, conf = conf, \
+        active = 'map', title = "Administration for %s" % (tag)))
     response.headers['cache-control'] = 'max-age=0, must-revalidate'
     return response
 

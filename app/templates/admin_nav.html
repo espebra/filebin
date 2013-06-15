@@ -32,6 +32,15 @@
       Files
     </a>
   </li>
+  {% if active == 'map' %}
+    <li class="active">
+  {% else %}
+    <li>
+  {% endif %}
+    <a href="/{{ tag }}?v=map&key={{ key }}">
+      World map
+    </a>
+  </li>
   <!--
   {% if active == 'statistics' %}
     <li class="active">
