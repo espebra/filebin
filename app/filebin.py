@@ -1251,7 +1251,9 @@ def overview_map():
                if not country in countries:
                    countries[country] = 0
 
-               countries[country] += 1
+               if country:
+                   if len(country) == 2:
+                       countries[country] += 1
                
            except:
                pass
