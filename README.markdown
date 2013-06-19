@@ -126,7 +126,9 @@ Nginx
             uwsgi_param                REMOTE_PORT $remote_port;
             uwsgi_read_timeout         6000;
             uwsgi_send_timeout         6000;
-            client_max_body_size       1024M;
+
+            # Disable max body size to allow huge archives to be downloaded.
+            client_max_body_size       0;
             client_body_buffer_size    128k;
             uwsgi_pass unix:/run/shm/filebin.sock;
         }
