@@ -59,6 +59,8 @@ Nginx
         gzip_buffers 16 8k;
         gzip_disable "MSIE [1-6]\.(?!.*SV1)";
         server_tokens off;
+
+        client_max_body_size       0;
     
         # For historical compability
         rewrite ^/([^/]+)/file/(.*) http://filebin.net/$1/$2 permanent;
@@ -78,7 +80,6 @@ Nginx
             client_body_temp_path      /srv/www/filebin/temp;
             client_body_in_file_only   clean;
             client_body_buffer_size    128K;
-            client_max_body_size       0;
     
             proxy_pass_request_headers on;
             proxy_set_header           host        $host;
@@ -127,8 +128,9 @@ Nginx
             uwsgi_read_timeout         6000;
             uwsgi_send_timeout         6000;
 
-            # Disable max body size to allow huge archives to be downloaded.
-            client_max_body_size       0;
+            # Disable max temp file size to allow huge archives
+            uwsgi_max_temp_file_size   0;
+
             client_body_buffer_size    128k;
             uwsgi_pass unix:/run/shm/filebin.sock;
         }
