@@ -14,7 +14,7 @@
 {% if tags|count > 0 %}
   <h6>Public tags</h6>
   {% for tag in tags %}
-    <a href="http://filebin.net/{{ tag }}">{{ tag }}</a>
+    <a href="/{{ tag }}">{{ tag }}</a>
   {% endfor %}
 {% endif %}
 
