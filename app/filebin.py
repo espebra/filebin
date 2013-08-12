@@ -421,18 +421,33 @@ def generate_thumbnails(tag):
 
                         try:
                             im = PythonMagick.Image(filepath)
-                            im.scale('%dx%d' % (app.config['THUMBNAIL_WIDTH'], \
-                                app.config['THUMBNAIL_HEIGHT']))
-                            im.write(str(thumbfile))
-
                         except:
-                            log("ERROR","Unable to generate thumbnail for " \
-                                "file %s in tag %s with mimetype %s" \
+                            log("ERROR","Unable to load file %s in tag %s " \
+                                "with mimetype %s to generate thumbnail image" \
                                 % (filename,tag,mimetype))
                         else:
-                            log("INFO","Generated thumbnail for file %s " \
-                                "in tag %s with mimetype %s" \
-                                % (filename,tag,mimetype))
+                            try:
+                                im.scale('%dx%d' % ( \
+                                    app.config['THUMBNAIL_WIDTH'], \
+                                    app.config['THUMBNAIL_HEIGHT']))
+                            except:
+                                log("ERROR","Unable to scale image %s in " \
+                                    "tag %s with mimetype %s to generate " \
+                                    "thumbnail image" \
+                                    % (filename,tag,mimetype))
+                            else:
+                                try:
+                                    im.write(str(thumbfile))
+                                except:
+                                    log("ERROR","Unable to write thumbnail " \
+                                        "image of %s in " \
+                                        "tag %s with mimetype %s to %s " \
+                                        % (filename,tag,mimetype, \
+                                        str(thumbfile)))
+                                else:
+                                    log("INFO","Generated thumbnail for " \
+                                        "file %s in tag %s with mimetype %s" \
+                                        % (filename,tag,mimetype))
 
 def get_tag_lifetime(tag):
     days = False
