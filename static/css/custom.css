@@ -51,6 +51,10 @@ form {
 }
 */
 
+.dragndrop {
+    border: dashed 8px #999999;
+}
+
 #fileSelect {
     display: none;
     margin-top: 30px;
