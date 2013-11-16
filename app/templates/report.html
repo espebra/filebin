@@ -1,6 +1,6 @@
 {% include "header.html" %}
 
-  <div class="hero-unit">
+  <div class="jumbotron">
     <h1>Report tag</h1>
   </div>
 
@@ -10,21 +10,19 @@
     </div>
     <a href="/{{ tag }}">Go back</a>
   {% elif submitted == -1%}
-    <div class="alert alert-error">
+    <div class="alert alert-danger">
       <strong>Ops!</strong> We failed to receive your report. Please try again later.
     </div>
     <a href="/{{ tag }}">Go back</a>
   {% else %}
     <p>You are about to report the tag <a href="/{{ tag }}">{{ tag }}</a> for moderation. Please explain below:</p>
-    <form class="form-horizontal" method="POST" action="">
-      <fieldset>
-        <div class="control-group">
-          <textarea name="reason" rows="3" cols="40" placeholder="This tag should be moderated because ..."></textarea>
-        </div>
-        <div class="control-group">
-          <input type="submit" class="btn btn-danger btn-large" value="Send report!"/> <a class="btn btn-primary btn-large" href="/{{ tag }}">Cancel</a>
-        </div>
-      </fieldset>
+    <form role="form" method="POST" action="">
+      <div class="form-group">
+        <textarea name="reason" rows="5" cols="80" placeholder="This tag should be moderated because ..."></textarea>
+      </div>
+      <div class="form-group">
+        <input type="submit" class="btn btn-danger btn-large" value="Send report!"/> <a class="btn btn-primary btn-large" href="/{{ tag }}">Cancel</a>
+      </div>
     </form>
   {% endif %}
 

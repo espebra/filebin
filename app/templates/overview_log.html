@@ -2,7 +2,7 @@
 
 {% include "overview_nav.html" %}
 
-<div class="span1">
+<div class="col-md-1">
   <ul class="unstyled">
   {% for d in days %}
     <li>
@@ -16,7 +16,7 @@
   </ul>
 </div>
 
-<div class="span10">
+<div class="col-md-10">
   <p>{{ log|count }} log entries found from {{ date }}.</p>
   
   {% if log|count > 0 %}

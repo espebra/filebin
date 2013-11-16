@@ -1,18 +1,20 @@
 {% include "header.html" %}
 
-<div class="hero-unit">
+<div class="jumbotron">
   <h1>Download</h1>
   <p>Files are grouped together in tags. To view the files in a tag, please submit the tag below.</p>
   <p>
-    <form class="form-inline" method="POST" action="">
-      <input type="text" class="input-small" placeholder="tag" name="tag" value=""/>
-      <input type="submit" class="btn btn-success" value="Proceed..."/>
+    <form class="form-inline" role="form" method="POST" action="">
+      <label>
+        <input type="text" class="form-control" placeholder="tag" name="tag" value=""/>
+        <input type="submit" class="btn btn-success" value="Proceed..."/>
+      </label>
     </form>
   </p>
 </div>
 
 {% if tags|count > 0 %}
-  <h6>Public tags</h6>
+  <h5>Public tags</h5>
   {% for tag in tags %}
     <a href="/{{ tag }}">{{ tag }}</a>
   {% endfor %}

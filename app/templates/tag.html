@@ -1,143 +1,140 @@
 {% include "header.html" %}
 
-<div class="row">
-  <div class="span12">
-    {% if conf['blocked'] %}
-      <div class="hero-unit">
-        <h1>Uh oh,</h1>
-        <p>The tag you are trying to access has been blocked.</p>
-      </div>
-    
-    {% elif num_files == 0 %}
-      <div class="hero-unit">
-        <h1>Uh oh,</h1>
-        <p>The tag you are trying to access does not contain any files.
-        
-          {% if conf['permission'] is defined and conf['permission'] != 'rw' %}
-            The tag is read only.
-          {% endif %}
-        </p>
-        <p>
-          <a class="btn btn-primary btn-large" href="/">
-            Go to the front page
-          </a>
-          {% if conf['permission'] == 'rw' or conf['permission'] is not defined %}
-            <a class="btn btn-primary btn-large" href="/upload/{{ tag }}">
-              Upload files to this tag
-            </a>
-          {% endif %}
-        </p>
-      </div>
-    {% else %}
-      <div class="hero-unit">
-        {% if conf['expose'] == 'public' %}
-          <h1>Public tag</h1>
-        {% else %}
-          <h1>Private tag</h1>
-        {% endif %}
-    
-        <p>
-          {% if num_files > 1 %}
-            The {{ num_files }} files stored in tag {{ tag }} are listed below. 
-          {% else %}
-            The file stored in tag {{ tag }} is listed below. 
-          {% endif %}
-    
-          {% if conf['permission'] == 'rw' %}
-            You may upload more files to the tag.
-          {% endif %}
-    
-          {% if valid_days %}
-            {% if valid_days > 1 %}
-              It will expire in {{ valid_days + 1 }} days.
-            {% elif valid_days == 1 %}
-              It will expire tomorrow.
-            {% elif valid_days == 0 %}
-              The tag will expire today.
-            {% elif valid_days == -1 %}
-              <!-- It will never expire. -->
-            {% endif %}
-          {% else %}
-            It has already expired, and will be removed soon.
-          {% endif %}
-          </p>
-          <p>
-            <a class="btn btn-primary btn-large" href="/upload/">
-              Upload files to a new tag
-            </a>
-            {% if conf['permission'] == 'rw' %}
-              <a class="btn btn-primary btn-large" href="/upload/{{ tag }}">
-                Upload more files to this tag
-              </a>
-            {% endif %}
-            <a class="btn btn-success btn-large" href="/archive/{{ tag }}">
-              Download {{ num_files }} files in one archive (zip)
-            </a>
-          </p>
-      </div>
-    </div>
+{% if conf['blocked'] %}
+  <div class="jumbotron">
+    <h1>Uh oh,</h1>
+    <p>The tag you are trying to access has been blocked.</p>
   </div>
 
-  <div class="row">
-    <div class="span12">
-      {% if conf['preview'] == 'on' %}
-        {% include "pages.html" %}
-        <ul class="thumbnails">
-          {% for file in files %}
-            {% if file.thumbnail %}
-              <li class="span3">
-                <a href="/{{ tag }}/{{ file.filename }}" rel="tooltip" title="{{ file.filename }}{% if file.captured_iso %}, {{ file.captured_iso }}{% endif %}">
-                  <div class="thumbnail">
-                    <img src="/thumbnails/{{ tag }}/{{ file.filename }}"/>
-                  </div>
-                </a>
-              </li>
-            {% endif %}
-          {% endfor %}
-        </ul>
+{% elif num_files == 0 %}
+  <div class="jumbotron">
+    <h1>Uh oh,</h1>
+    <p>The tag you are trying to access does not contain any files.
+    
+      {% if conf['permission'] is defined and conf['permission'] != 'rw' %}
+        The tag is read only.
       {% endif %}
-    </div>
+    </p>
+    <p>
+      <a class="btn btn-primary btn-large" href="/">
+        Go to the front page
+      </a>
+      {% if conf['permission'] == 'rw' or conf['permission'] is not defined %}
+        <a class="btn btn-primary btn-large" href="/upload/{{ tag }}">
+          Upload files to this tag
+        </a>
+      {% endif %}
+    </p>
   </div>
+{% else %}
+  <div class="jumbotron">
+    {% if conf['expose'] == 'public' %}
+      <h1>Public tag</h1>
+    {% else %}
+      <h1>Private tag</h1>
+    {% endif %}
 
-  <div class="row">
-    <div class="span12">
-      <table class="table table-striped">
-      <thead>
-      <tr>
-        <th class="span3">File name</th>
-        <th class="span2">File type</th>
-        <th class="span2">File size</th>
-        <th class="span3">Uploaded at</th>
-        {% if datetime_found %}
-          <th class="span3">Captured at</th>
+    <p>
+      {% if num_files > 1 %}
+        The {{ num_files }} files stored in tag {{ tag }} are listed below. 
+      {% else %}
+        The file stored in tag {{ tag }} is listed below. 
+      {% endif %}
+
+      {% if conf['permission'] == 'rw' %}
+        You may upload more files to the tag.
+      {% endif %}
+
+      {% if valid_days %}
+        {% if valid_days > 1 %}
+          It will expire in {{ valid_days + 1 }} days.
+        {% elif valid_days == 1 %}
+          It will expire tomorrow.
+        {% elif valid_days == 0 %}
+          The tag will expire today.
+        {% elif valid_days == -1 %}
+          <!-- It will never expire. -->
         {% endif %}
-      </thead>
-      {% for file in files %}
-        <tr>
-          <td class="span3"><a href="/{{ tag }}/{{ file.filename }}">{{ file.filename }}</a>
-            {% if conf['preview'] == 'on' %}
-              {% if file.thumbnail %}
-                <i class="icon-camera" rel="tooltip" title="This file has a thumbnail."></i>
-              {% endif %}
+      {% else %}
+        It has already expired, and will be removed soon.
+      {% endif %}
+      </p>
+      <p>
+        <a class="btn btn-primary btn-large" href="/upload/">
+          Upload files to a new tag
+        </a>
+        {% if conf['permission'] == 'rw' %}
+          <a class="btn btn-primary btn-large" href="/upload/{{ tag }}">
+            Upload more files to this tag
+          </a>
+        {% endif %}
+        <a class="btn btn-success btn-large" href="/archive/{{ tag }}">
+          Download {{ num_files }} files in one archive (zip)
+        </a>
+      </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    {% if conf['preview'] == 'on' %}
+      {% include "pages.html" %}
+      <ul class="thumbnails">
+        {% for file in files %}
+          {% if file.thumbnail %}
+            <li class="col-md-3">
+              <a href="/{{ tag }}/{{ file.filename }}" rel="tooltip" title="{{ file.filename }}{% if file.captured_iso %}, {{ file.captured_iso }}{% endif %}">
+                <div class="thumbnail">
+                  <img src="/thumbnails/{{ tag }}/{{ file.filename }}"/>
+                </div>
+              </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <table class="table table-striped">
+    <thead>
+    <tr>
+      <th class="col-md-3">File name</th>
+      <th class="col-md-2">File type</th>
+      <th class="col-md-2">File size</th>
+      <th class="col-md-3">Uploaded at</th>
+      {% if datetime_found %}
+        <th class="col-md-3">Captured at</th>
+      {% endif %}
+    </thead>
+    {% for file in files %}
+      <tr>
+        <td class="col-md-3"><a href="/{{ tag }}/{{ file.filename }}">{{ file.filename }}</a>
+          {% if conf['preview'] == 'on' %}
+            {% if file.thumbnail %}
+              <i class="icon-camera" rel="tooltip" title="This file has a thumbnail."></i>
+            {% endif %}
+          {% endif %}
+        </td>
+        <td class="col-md-2">{{ file.mimetype }}</td>
+        <td class="col-md-2">{{ file.size }} MB</td>
+        <td class="col-md-3">{{ file.uploaded_iso }} UTC</td>
+        {% if datetime_found %}
+          <td class="col-md-3">
+            {% if file.captured_iso %}
+              {{ file.captured_iso }}
             {% endif %}
           </td>
-          <td class="span2">{{ file.mimetype }}</td>
-          <td class="span2">{{ file.size }} MB</td>
-          <td class="span3">{{ file.uploaded_iso }} UTC</td>
-          {% if datetime_found %}
-            <td class="span3">
-              {% if file.captured_iso %}
-                {{ file.captured_iso }}
-              {% endif %}
-            </td>
-          {% endif %}
-        </tr>
-      {% endfor %}
-      </table>
-    </div>
+        {% endif %}
+      </tr>
+    {% endfor %}
+    </table>
   </div>
+</div>
 
-  {% include "pages.html" %}
+{% include "pages.html" %}
 
 {% endif %}
 

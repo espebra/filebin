@@ -48,9 +48,7 @@
           ev.stopPropagation();
           ev.preventDefault();
 
-          dropZone.style["backgroundColor"] = "#d9edf7";
-          dropZone.style["borderColor"] = "#bce8f1";
-          dropZone.style["color"] = "#3a87ad";
+          dropZone.style["backgroundColor"] = "#eeeeee";
 
           var files = ev.dataTransfer.files;
           addFileListItems(files);
@@ -69,16 +67,12 @@
           ev.stopPropagation();
           ev.preventDefault();
           this.style["backgroundColor"] = "#f2dede";
-          this.style["borderColor"] = "#eed3d7";
-          this.style["color"] = "#b94a48";
       }
   
       this.dragExit = function (ev) {
           ev.stopPropagation();
           ev.preventDefault();
-          dropZone.style["backgroundColor"] = "#d9edf7";
-          dropZone.style["borderColor"] = "#bce8f1";
-          dropZone.style["color"] = "#3a87ad";
+          dropZone.style["backgroundColor"] = "#eeeeee";
       }
 
       this.stopProp = function (ev) {
@@ -303,34 +297,30 @@
   }
 </script>
 
-<div class="hero-unit">
+<div class="jumbotron" id="fileDrop">
   <h1>Upload</h1>
-  <p>Uploading files is easy as dropping the files into the blue box below, and then waiting until each file upload completes.</p>
-  <p>The files will be made available at <a href="/{{ tag }}">http://{{ host }}/{{ tag }}</a>. You can share the files with others by distributing the address or the tag {{ tag }}.</p>
+  <p>Drag and drop files into this box to upload. The files will be made available at <a href="/{{ tag }}">http://{{ host }}/{{ tag }}</a>.</p>
 {% if key %}
-  <p>The default configuration can be modified in the <a target="_blank" href="/{{ tag }}?v=configuration&key={{ key }}">administration interface</a>. You might want to keep the address somewhere safe as this is the one and only time it will be shown.</p>
+  <p>You may change the configuration using the <a target="_blank" href="/{{ tag }}?v=configuration&key={{ key }}">administration interface</a>. Keep the address somewhere safe as this is the one and only time it will be shown.</p>
 {% endif %}
-  <div class="small pull-right"><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Alternate upload</a></div>
+  <div class="small pull-right"><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Show upload form</a></div>
 </div>
  
-<div id="fileDrop">
-    <p>Drop files here to upload</p>
-</div>
-
-
 <div id="fileSelect">
-    <div class="small pull-right"><a href="#" id="fileSelect-hide" onclick="showHide('fileSelect'); return false;">Hide alternate upload</a></div>
-    <p>
-        <form action="" method="post" enctype="multipart/form-data">
-            <div class="controls">
-                <input class="input-file" type="file" id="fileField" name="fileField" multiple value="Browse..."/>
-            </div>
-        </form>
-    </p>
-    <p>
-      <a id="upload" class="btn" href="#" title="Upload all files in list">Upload files</a>
-      <a id="reset" class="btn" href="#" title="Remove all files from list">Clear list</a>
-    </p>
+<!--
+  <div class="pull-right"><a href="#" id="fileSelect-hide" onclick="showHide('fileSelect'); return false;">Hide upload form</a></div>
+-->
+
+  <form role="form" action="" method="post" enctype="multipart/form-data">
+  <div class="form-group">
+    <input type="file" id="fileField" name="fileField" multiple value="Browse..."/>
+  </div>
+  </form>
+
+  <div class="form-group">
+    <a id="upload" class="btn btn-primary" href="#" title="Upload all files in list">Upload files</a>
+    <a id="reset" class="btn btn-default" href="#" title="Remove all files from list">Clear list</a>
+  </div>
 </div>
 
 <h6><div id="fileCount"></div></h6>

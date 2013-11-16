@@ -51,11 +51,11 @@ $(document).on("click", ".open-delete", function () {
     <tbody>
       {% for f in files %}
         <tr>
-          <td class="span3"><a href="/{{ tag }}/{{ f.filename }}">{{ f.filename }}</a></td>
-          <td class="span2">{{ f.mimetype }}</td>
-          <td class="span2">{{ f.size }} MB</td>
-          <td class="span2">{{ f.uploaded_iso }}</td>
-          <td class="span1">
+          <td class="col-md-3"><a href="/{{ tag }}/{{ f.filename }}">{{ f.filename }}</a></td>
+          <td class="col-md-2">{{ f.mimetype }}</td>
+          <td class="col-md-2">{{ f.size }} MB</td>
+          <td class="col-md-2">{{ f.uploaded_iso }}</td>
+          <td class="col-md-1">
             <a data-toggle="modal" href="#delete" class="open-delete btn btn-mini btn-danger" data-id="{{ f.filename }}">
               <i class="icon-trash icon-white"></i>
             </a></p>
