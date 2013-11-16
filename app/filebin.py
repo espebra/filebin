@@ -1780,9 +1780,8 @@ def upload_to_tag(tag):
         key = generate_key()
         create_default_tag_configuration(tag,key)
 
-    num_files = len(get_files_in_tag(tag))
     response = flask.make_response(flask.render_template("upload.html", \
-        tag = tag, key = key, num_files = num_files, host = host, \
+        tag = tag, key = key, host = host, \
         title = "Upload to tag %s" % (tag)))
 
     # Cannot have to long TTL here as it will show the link to the

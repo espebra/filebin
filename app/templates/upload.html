@@ -142,7 +142,7 @@
               var divContainer = document.createElement("div");
               divContainer.className = "progress progress-striped active";
               var divLoader = document.createElement("div");
-              divLoader.className = "bar";
+              divLoader.className = "progress-bar";
               li.appendChild(divContainer);
               divContainer.appendChild(divLoader);
               fileList.appendChild(li);
@@ -229,7 +229,7 @@
                   var divBar = li.getElementsByTagName("div")[1];
                   divBar.style["width"] = "100%";
                   divContainer.className = "progress";
-                  divBar.className = "bar bar-success";
+                  divBar.className = "progress-bar progress-bar-success";
                   for (var i = 0; i < ps.length; i++) {
                       if (ps[i].className == "loader") {
                           counter_uploading -= 1;
@@ -301,15 +301,16 @@
   <h1>Upload</h1>
   <p>Drag and drop files into this box to upload. The files will be made available at <a href="/{{ tag }}">http://{{ host }}/{{ tag }}</a>.</p>
 {% if key %}
-  <p>You may change the configuration using the <a target="_blank" href="/{{ tag }}?v=configuration&key={{ key }}">administration interface</a>. Keep the address somewhere safe as this is the one and only time it will be shown.</p>
+  <p>
+    While waiting for the uploads to complete, it is recommended that you bookmark the address to the <a target="_blank" href="/{{ tag }}?v=configuration&key={{ key }}">administration interface</a> as this is the one and only time it will be shown.
+  </p>
 {% endif %}
-  <div class="small pull-right"><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Show upload form</a></div>
+  <div class="small pull-right"><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Unable to drag and drop?</a></div>
 </div>
  
 <div id="fileSelect">
-<!--
+  <p>The upload form below can be used by browsers and devices with missing drag and drop functionality, such as mobile phones and tablets.</p> 
   <div class="pull-right"><a href="#" id="fileSelect-hide" onclick="showHide('fileSelect'); return false;">Hide upload form</a></div>
--->
 
   <form role="form" action="" method="post" enctype="multipart/form-data">
   <div class="form-group">

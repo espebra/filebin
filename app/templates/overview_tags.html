@@ -23,20 +23,20 @@
         <td class="col-md-2">{{ tags[tag]['size'] }} MB</td>
         <td class="col-md-2">
             {% if tags[tag]['conf']['permission'] == 'rw' %}
-                 <span class="badge badge-warning"><i class="icon-upload icon-white"></i> <i class="icon-download icon-white"></i></span>
+                 <span class="badge badge-warning"><span class="glyphicon glyphicon-upload"></span> <span class="glyphicon glyphicon-download"></span></span>
             {% else %}
-                 <span class="badge badge-success"><i class="icon-download icon-white"></i></span>
+                 <span class="badge badge-success"><span class="glyphicon glyphicon-download"></span></span>
             {% endif %}
             {% if tags[tag]['conf']['expose'] == 'private' %}
-                 <span class="badge badge-success"><i class="icon-user icon-white"></i></span>
+                 <span class="badge badge-success"><span class="glyphicon glyphicon-user"></span></span>
             {% else %}
-                 <span class="badge badge-warning"><i class="icon-globe icon-white"></i></span>
+                 <span class="badge badge-warning"><span class="glyphicon glyphicon-globe"></i></span>
             {% endif %}
             {% if tags[tag]['reported'] %}
-                 <span class="badge"><i class="icon-exclamation-sign icon-white"></i></span>
+                 <span class="badge"><span class="glyphicon glyphicon-exclamation-sign"></span></span>
             {% endif %}
             {% if tags[tag]['conf']['blocked'] %}
-                 <span class="badge badge-important"><i class="icon-lock icon-white"></i></span>
+                 <span class="badge badge-important"><span class="glyphicon glyphicon-lock"></span></span>
             {% endif %}
         </td>
         <td class="col-md-2">

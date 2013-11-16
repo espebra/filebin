@@ -2,11 +2,11 @@
   <h1>Administration</h1>
   <p>Tag {{ tag }}.</p>
   <p>
-    <a class="btn btn-primary btn-large" href="/{{ tag }}">
+    <a class="btn btn-primary btn-lg" href="/{{ tag }}">
       View tag
     </a>
     {% if conf['permission'] == 'rw' %}
-      <a class="btn btn-primary btn-large" href="/upload/{{ tag }}">
+      <a class="btn btn-primary btn-lg" href="/upload/{{ tag }}">
         Upload files to this tag
       </a>
     {% endif %}

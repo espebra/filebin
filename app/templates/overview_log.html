@@ -2,18 +2,16 @@
 
 {% include "overview_nav.html" %}
 
-<div class="col-md-1">
-  <ul class="unstyled">
+<div class="col-md-2">
+  <div class="list-group">
   {% for d in days %}
-    <li>
     {% if d == date %}
-      <span class="label label-info">{{ d }}</span>
+      <a href="#" class="list-group-item active">{{ d }}</a>
     {% else %}
-      <a href="/overview/log/{{ d }}"><span class="label">{{ d }}</span></a>
+      <a href="/overview/log/{{ d }}" class="list-group-item">{{ d }}</a>
     {% endif %}
-    </li>
   {% endfor %}
-  </ul>
+  </div>
 </div>
 
 <div class="col-md-10">

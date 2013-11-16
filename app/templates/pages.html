@@ -3,9 +3,9 @@
   <h6>Navigation</h6>
   {% for p in range(1, pages+1) %}
     {% if page == p %}
-      <span class="label label-info">{{ p }}</span>
+      <span class="label label-primary">{{ p }}</span>
     {% else %}
-      <a href="/{{ tag }}/page/{{ p }}/"><span class="label">{{ p }}</span></a>
+      <a href="/{{ tag }}/page/{{ p }}/"><span class="label label-default">{{ p }}</span></a>
     {% endif %}
   {% endfor %}
 {% endif %}

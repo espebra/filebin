@@ -16,11 +16,11 @@
       {% endif %}
     </p>
     <p>
-      <a class="btn btn-primary btn-large" href="/">
+      <a class="btn btn-primary btn-lg" href="/">
         Go to the front page
       </a>
       {% if conf['permission'] == 'rw' or conf['permission'] is not defined %}
-        <a class="btn btn-primary btn-large" href="/upload/{{ tag }}">
+        <a class="btn btn-primary btn-lg" href="/upload/{{ tag }}">
           Upload files to this tag
         </a>
       {% endif %}
@@ -58,42 +58,40 @@
       {% else %}
         It has already expired, and will be removed soon.
       {% endif %}
-      </p>
-      <p>
-        <a class="btn btn-primary btn-large" href="/upload/">
-          Upload files to a new tag
+    </p>
+    <p>
+      <a class="btn btn-primary btn-lg" href="/upload/">
+        Upload files to a new tag
+      </a>
+      {% if conf['permission'] == 'rw' %}
+        <a class="btn btn-primary btn-lg" href="/upload/{{ tag }}">
+          Upload more files to this tag
         </a>
-        {% if conf['permission'] == 'rw' %}
-          <a class="btn btn-primary btn-large" href="/upload/{{ tag }}">
-            Upload more files to this tag
-          </a>
-        {% endif %}
-        <a class="btn btn-success btn-large" href="/archive/{{ tag }}">
-          Download {{ num_files }} files in one archive (zip)
-        </a>
-      </p>
+      {% endif %}
+      <a class="btn btn-success btn-lg" href="/archive/{{ tag }}">
+        Download {{ num_files }} files in one archive (zip)
+      </a>
+    </p>
   </div>
-</div>
+
+{% include "pages.html" %}
 
 <div class="row">
-  <div class="col-md-12">
-    {% if conf['preview'] == 'on' %}
-      {% include "pages.html" %}
-      <ul class="thumbnails">
-        {% for file in files %}
-          {% if file.thumbnail %}
-            <li class="col-md-3">
-              <a href="/{{ tag }}/{{ file.filename }}" rel="tooltip" title="{{ file.filename }}{% if file.captured_iso %}, {{ file.captured_iso }}{% endif %}">
-                <div class="thumbnail">
-                  <img src="/thumbnails/{{ tag }}/{{ file.filename }}"/>
-                </div>
-              </a>
-            </li>
-          {% endif %}
-        {% endfor %}
-      </ul>
-    {% endif %}
-  </div>
+  {% if conf['preview'] == 'on' %}
+    <ul class="list-unstyled">
+      {% for file in files %}
+        {% if file.thumbnail %}
+          <li class="col-md-3">
+            <a href="/{{ tag }}/{{ file.filename }}" rel="tooltip" title="{{ file.filename }}{% if file.captured_iso %}, {{ file.captured_iso }}{% endif %}">
+              <div class="thumbnail">
+                <img class="img-responsive img-rounded" src="/thumbnails/{{ tag }}/{{ file.filename }}"/>
+              </div>
+            </a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
 </div>
 
 <div class="row">
@@ -114,7 +112,7 @@
         <td class="col-md-3"><a href="/{{ tag }}/{{ file.filename }}">{{ file.filename }}</a>
           {% if conf['preview'] == 'on' %}
             {% if file.thumbnail %}
-              <i class="icon-camera" rel="tooltip" title="This file has a thumbnail."></i>
+              <span class="glyphicon glyphicon-camera" rel="tooltip" title="This file has a thumbnail."></span>
             {% endif %}
           {% endif %}
         </td>

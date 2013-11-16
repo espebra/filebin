@@ -12,25 +12,29 @@ $(document).on("click", ".open-delete", function () {
 });
 </script>
 
-<div id="delete" class="modal hide fade in" style="display: none; ">  
-  <form action="" method="POST">
-    <input type="hidden" name="action" value="delete"/>
-    <div class="modal-header">  
-      <h3>Please confirm</h3>  
+<div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="" method="POST">
+        <input type="hidden" name="action" value="delete"/>
+        <div class="modal-header">  
+          <h3>Please confirm</h3>  
+        </div>  
+        <div class="modal-body">  
+          <p id="areyousure"></p>
+          <input type="hidden" name="filename" id="filename" value=""/>
+        </div>  
+        <div class="modal-footer">  
+          <button type="submit" class="btn btn-danger">Yes</button>
+          <a href="#" class="btn btn-success" data-dismiss="modal">No</a>  
+        </div>  
+      </form>
     </div>  
-    <div class="modal-body">  
-      <p id="areyousure"></p>
-      <input type="hidden" name="filename" id="filename" value=""/>
-    </div>  
-    <div class="modal-footer">  
-      <button type="submit" class="btn btn-danger">Yes</button>
-      <a href="#" class="btn btn-success" data-dismiss="modal">No</a>  
-    </div>  
-  </form>
+  </div>  
 </div>  
 
 {% if status == -1 %}
-  <div class="alert alert-error">
+  <div class="alert alert-danger">
     <strong>Warning!</strong> Unable to remove the file.
   </div>
 {% elif status == 1 %}
@@ -56,8 +60,8 @@ $(document).on("click", ".open-delete", function () {
           <td class="col-md-2">{{ f.size }} MB</td>
           <td class="col-md-2">{{ f.uploaded_iso }}</td>
           <td class="col-md-1">
-            <a data-toggle="modal" href="#delete" class="open-delete btn btn-mini btn-danger" data-id="{{ f.filename }}">
-              <i class="icon-trash icon-white"></i>
+            <a data-toggle="modal" href="#delete" class="open-delete btn btn-danger btn-xs" data-id="{{ f.filename }}">
+              <span class="glyphicon glyphicon-trash"></span>
             </a></p>
           </td>
         </tr>
