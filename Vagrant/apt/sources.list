@@ -1,0 +1,5 @@
+deb mirror://mirrors.ubuntu.com/mirrors.txt precise main universe
+deb mirror://mirrors.ubuntu.com/mirrors.txt precise-updates main universe
+deb mirror://mirrors.ubuntu.com/mirrors.txt precise-backports main universe
+deb mirror://mirrors.ubuntu.com/mirrors.txt precise-security main universe
+
