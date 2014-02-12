@@ -166,6 +166,4 @@ TODO
 * Proper MD5 checksumming during upload.
 * Client side error handling.
 * Fix the blocking feature which is broken now, or even add a remove by request feature to let users knowing tags remove them.
-* Calculate the upload speed in bps and show it during upload progress.
-* Add Vagrant configuration to make it easy to get development environments up and running.
 
