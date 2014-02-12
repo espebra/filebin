@@ -205,8 +205,21 @@
   
       var uploadFile = function (file, li) {
           if (li && file) {
+              var lastLoaded = 0;
+              var lastTime = (new Date()).getTime();
+              var timeStarted = lastTime;
+              var etaStr = "";
               var xhr = new XMLHttpRequest(),
                   upload = xhr.upload;
+
+              printSpeed = function(speed) {
+                var unit = " kb/s ";
+                if (speed >= 1024) {
+                  unit = " Mb/s ";
+                  speed /=1024;
+                }
+                return (speed.toFixed(1) + unit);
+              };
 
               upload.addEventListener("progress", function (ev) {
                   if (ev.lengthComputable) {
@@ -216,7 +229,17 @@
                       for (var i = 0; i < ps.length; i++) {
                           if (ps[i].className == "loader") {
                               var percent = (ev.loaded / ev.total) * 100;
-                              ps[i].textContent = "Uploading... " + percent.toFixed(2) + "%";
+                              var curTime = (new Date()).getTime();
+                              var speed = (ev.loaded - lastLoaded) / (curTime - lastTime);
+                              lastTime = curTime;
+                              lastLoaded = ev.loaded;
+                              if (curTime - timeStarted > 180000) {
+                                // show eta if upload lasts long
+                                var timeToComplete = (curTime - timeStarted) * (ev.total / ev.loaded);
+                                etaStr = " ETA: " +(new Date(curTime + timeToComplete)).toUTCString();
+                              } 
+
+                              ps[i].textContent = "Uploading at " + printSpeed(speed) + percent.toFixed(2) + "% " + etaStr;
                               ps[i].style["color"] = "#000000";
                               break;
                           }
