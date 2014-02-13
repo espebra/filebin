@@ -239,7 +239,7 @@
                                 etaStr = " ETA: " +(new Date(curTime + timeToComplete)).toUTCString();
                               } 
 
-                              ps[i].textContent = "Uploading at " + printSpeed(speed) + percent.toFixed(2) + "% " + etaStr;
+                              ps[i].textContent = "Uploading at " + printSpeed(speed) + ", " + percent.toFixed(2) + "% " + etaStr;
                               ps[i].style["color"] = "#000000";
                               break;
                           }
