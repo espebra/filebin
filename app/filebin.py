@@ -1854,14 +1854,16 @@ def callback_upload():
     log("INFO","Callback received [%s]." % (i))
  
     # The input values are to be trusted at this point
+    # New flask.request from client
+    log_prefix = '%s -> %s/%s' % (i['client'],i['tag'],i['filename'])
+
     conf = get_tag_configuration(i['tag'])
     if conf:
         # The tag is read only
         if conf['permission'] != 'rw':
+            log("DEBUG","%s: The tag is read only, aborting." % log_prefix)
             flask.abort(401)
 
-    # New flask.request from client
-    log_prefix = '%s -> %s/%s' % (i['client'],i['tag'],i['filename'])
     log("INFO","%s: Upload request received, the file size is %d bytes. User " \
         "agent: %s" % (log_prefix,i['reported_size'],i['useragent']))
 
@@ -1889,22 +1891,24 @@ def callback_upload():
         log("DEBUG","%s: Checksum OK!" % (log_prefix))
 
     else:
-        log("DEBUG","%s: Checksum mismatch! (%s != %s)" % ( \
+        log("DEBUG","%s: Checksum mismatch! (%s != %s) (proper client side checksumming is not yet implemented)" % ( \
             log_prefix, i['reported_checksum'], i['checksum']))
         # TODO: Should abort here
 
     # Detect file type
     try:
         mimetype = get_mimetype(i['tempfile'])
-
     except:
         log("DEBUG","%s: Unable to detect mime type on %s" % \
             (log_prefix, i['tempfile']))
-
     else:
-        i['mimetype'] = mimetype
-        log("DEBUG","%s: Detected mime type %s on %s" % \
-            (log_prefix, mimetype, i['tempfile']))
+        if mimetype:
+            i['mimetype'] = mimetype
+            log("DEBUG","%s: Detected mime type %s on %s" % \
+                (log_prefix, mimetype, i['tempfile']))
+        else:
+            log("DEBUG","%s: No mime type found in %s" % \
+                (log_prefix, i['tempfile']))
 
     captured = False
     if mimetype:
@@ -1915,7 +1919,6 @@ def callback_upload():
              if captured_dt:
                  try:
                      captured = int(captured_dt.strftime("%Y%m%d%H%M%S"))
-
                  except:
                      captured = captured_dt
 
@@ -1923,13 +1926,18 @@ def callback_upload():
         i['captured'] = captured
         log("DEBUG","%s: Captured at %s" % (log_prefix, captured))
 
+    if os.path.exists(i['tempfile']):
+        log("DEBUG","%s: The temp file %s exists locally" % \
+            (log_prefix,i['tempfile']))
+    else:
+        log("ERROR","%s: The temp file %s does not exist locally" % \
+            (log_prefix,i['tempfile']))
+
     try:
         stat = os.stat(i['tempfile'])
-
     except:
         log("ERROR","%s: Unable to read size of temp file" % ( \
             log_prefix,i['tempfile']))
-
     else:
         i['size'] = int(stat.st_size)
 
@@ -1939,7 +1947,12 @@ def callback_upload():
                 (log_prefix,i['tempfile']))
             flask.abort(400)
 
-        if i['size'] != i['reported_size']:
+        # Verify that the file size is equal to the one reported by the client
+        # before uploading.
+        if i['size'] == i['reported_size']:
+            log("DEBUG","%s: The uploaded file (%s) size is correct (%d bytes)." % \
+                (log_prefix,i['tempfile'],i['size']))
+        else:
             log("ERROR","%s: The uploaded file %s was %d bytes, but should " \
                 "have been %d bytes. Aborting." % \
                 (log_prefix,i['tempfile'],i['size'],i['reported_size']))
