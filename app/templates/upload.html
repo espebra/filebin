@@ -40,7 +40,7 @@
           if (counter_completed == counter_queue) {
               fileCount.textContent = text + ", all done!";
         } else {
-              fileCount.textContent = text + ", please wait ...";
+              fileCount.textContent = text + ".";
         }
       }
 
@@ -213,9 +213,9 @@
                   upload = xhr.upload;
 
               printSpeed = function(speed) {
-                var unit = " kb/s";
+                var unit = " KB/s";
                 if (speed >= 1024) {
-                  unit = " Mb/s";
+                  unit = " MB/s";
                   speed /=1024;
                 }
                 return (speed.toFixed(1) + unit);
@@ -235,7 +235,7 @@
                               lastLoaded = ev.loaded;
                               if (curTime - timeStarted > 180000) {
                                 // show eta if upload lasts long
-                                var timeToComplete = (curTime - timeStarted) * (ev.total / ev.loaded);
+                                var timeToComplete = (curTime - timeBtarted) * (ev.total / ev.loaded);
                                 etaStr = " ETA: " +(new Date(curTime + timeToComplete)).toUTCString();
                               } 
 
