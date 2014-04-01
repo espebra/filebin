@@ -90,7 +90,6 @@ def get_pages_for_tag(tag):
 
 # Generate path to save the file
 def get_path(tag = False, filename = False, thumbnail = False):
-
     # Use two levels of directories, just for, eh, scalability
     #m = re.match('^(.)(.)',tag)
     #a = m.group(1)
@@ -98,7 +97,11 @@ def get_path(tag = False, filename = False, thumbnail = False):
 
     # Make sure the filename is safe
     if filename:
-        filename = werkzeug.utils.secure_filename(filename)
+        try:
+            filename = werkzeug.utils.secure_filename(filename)
+        except:
+            log("DEBUG","Unable to secure filename %s" % (filename))
+            return False
 
     if thumbnail == True:
         path = '%s/%s' % (app.config['THUMBNAIL_DIRECTORY'],tag)
@@ -106,14 +109,13 @@ def get_path(tag = False, filename = False, thumbnail = False):
         if filename:
             #path = '%s/%s-thumb.jpg' % (path,filename)
             path = '%s/%s' % (path,filename)
-
     else:
         path = '%s/%s' % (app.config['FILE_DIRECTORY'],tag)
 
         if filename:
             path = '%s/%s' % (path,filename)
 
-    return str(path)
+    return path
 
 # Function to calculate the md5 checksum for a file on the local file system
 def md5_for_file(target):
@@ -220,31 +222,43 @@ def get_files_in_tag(tag, page = False, per_page = app.config['FILES_PER_PAGE'])
         else:
             skip = (int(page)-1) * per_page
             cursor = col.find({'tag' : tag},skip = skip, limit = per_page, sort = [('captured',1),('filename',1)])
-
     except:
+        log("DEBUG","%s: Unable to find files in tag in the database." % (tag))
         cursor = False
 
     if cursor:
         for f in cursor:
-            filename = f['filename']
             i = {}
-            i['filename'] = f['filename']
-            #i['downloads'] = int(f['downloads'])
-            i['mimetype'] = f['mimetype']
+            if 'filename' in f:
+                i['filename'] = f['filename']
+
+            if 'mimetype' in f:
+                i['mimetype'] = f['mimetype']
 
             if 'md5sum' in f:
                 i['md5'] = f['md5sum']
+
             if 'checksum' in f:
                 i['md5'] = f['checksum']
 
-            i['filepath'] = get_path(tag,filename)
-            i['size_bytes'] = f['size']
+            if 'size' in f:
+                i['size_bytes'] = f['size']
+
+            if 'uploaded' in f:
+                i['uploaded'] = f['uploaded']
+
+            if 'client' in f:
+                i['client'] = f['client']
+
+            i['filepath'] = get_path(tag,f['filename'])
             i['size'] = "%.2f" % (f['size'] / 1024 / round(1024))
-            #i['bandwidth'] = "%.2f" % ((f['downloads'] * f['size']) / 1024 / round(1024))
-            i['uploaded'] = f['uploaded']
-            i['client'] = f['client']
-            i['uploaded_iso'] = datetime.datetime.strptime(str(f['uploaded']), \
-                                    "%Y%m%d%H%M%S")
+
+            if 'uploaded' in f:
+                try:
+                    i['uploaded_iso'] = datetime.datetime.strptime(str(f['uploaded']), \
+                        "%Y%m%d%H%M%S")
+                except:
+                    pass
 
             if 'captured' in f:
                 try:
@@ -256,13 +270,12 @@ def get_files_in_tag(tag, page = False, per_page = app.config['FILES_PER_PAGE'])
             # Add thumbnail path if the tag should show thumbnails and the
             # thumbnail for this filename exists.
             if conf['preview'] == 'on':
-                thumbfile = get_path(tag,filename,True)
+                thumbfile = get_path(tag,f['filename'],True)
                 if os.path.exists(thumbfile):
                     i['thumbnail'] = True
 
             #files[filename] = i 
             files.append(i)
-
     return files
 
 def get_header(header):
@@ -388,7 +401,15 @@ def generate_thumbnails(tag):
 
     thumbnail_dir = get_path(tag, thumbnail = True)
     if not os.path.exists(thumbnail_dir):
-        os.makedirs(thumbnail_dir)
+        try:
+            os.makedirs(thumbnail_dir)
+        except:
+            log("ERROR","An error occurred when trying to create directory " \
+                "%s for tag %s" % (thumbnail_dir,tag))
+        else:
+            log("DEBUG","Directory %s for tag %s was successfully created." \
+                 % (thumbnail_dir,tag))
+
         if not os.path.exists(thumbnail_dir):
             log("ERROR","Unable to create directory %s for tag %s" % \
                 (thumbnail_dir,tag))
@@ -401,11 +422,10 @@ def generate_thumbnails(tag):
 
         try:
             mimetype = f['mimetype']
-
         except:
             log("DEBUG","Unable to read mimetype for tag %s, filename %s" \
                 % (tag, filename))
-
+            return False
         else:
             if mimetype:
                 if m.match(mimetype):
@@ -425,6 +445,7 @@ def generate_thumbnails(tag):
                             log("ERROR","Unable to load file %s in tag %s " \
                                 "with mimetype %s to generate thumbnail image" \
                                 % (filename,tag,mimetype))
+                            return False
                         else:
                             try:
                                 im.scale('%dx%d' % ( \
@@ -435,6 +456,7 @@ def generate_thumbnails(tag):
                                     "tag %s with mimetype %s to generate " \
                                     "thumbnail image" \
                                     % (filename,tag,mimetype))
+                                return False
                             else:
                                 try:
                                     im.write(str(thumbfile))
@@ -444,10 +466,12 @@ def generate_thumbnails(tag):
                                         "tag %s with mimetype %s to %s " \
                                         % (filename,tag,mimetype, \
                                         str(thumbfile)))
+                                    return False
                                 else:
                                     log("INFO","Generated thumbnail for " \
                                         "file %s in tag %s with mimetype %s" \
                                         % (filename,tag,mimetype))
+    return True
 
 def get_tag_lifetime(tag):
     days = False
@@ -854,13 +878,16 @@ def clean_log():
     days = int(app.config['NUMBER_OF_DAYS_TO_KEEP_LOGS'])
     dt = datetime.datetime.now() - datetime.timedelta(days = days)
 
-    d =  {
-             'time' : {
-                 '$lt' : int(dt.strftime("%Y%m%d%H%M%S"))
+    try:
+        d =  {
+                 'time' : {
+                     '$lt' : int(dt.strftime("%Y%m%d%H%M%S"))
+                 }
              }
-         }
 
-    col.remove(d)
+        col.remove(d)
+    except:
+        log("ERROR","Unable to clean the database log.")
 
 def dblog(description,client = False,tag = False,filename = False):
     referer = get_header('referer')
@@ -1467,9 +1494,13 @@ def tag_html(tag,page):
 
     try:
         valid_days = get_tag_lifetime(tag)
-
     except:
         valid_days = False
+
+    #h = werkzeug.Headers()
+    ##h.add('Content-Disposition', 'inline' % (tag))
+    #h.add('cache-control', 'max-age=7200, must-revalidate')
+    #return flask.Response({}, mimetype='text/json', headers = h)
 
     response = flask.make_response(flask.render_template("tag.html", \
         tag = tag, files = files, conf = conf, num_files = num_files, \
