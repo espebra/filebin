@@ -440,11 +440,12 @@ def generate_thumbnails(tag):
                             % (thumbfile,filepath))
 
                         try:
-                            im = PythonMagick.Image(filepath)
-                        except:
+                            im = PythonMagick.Image(str(filepath))
+                        except Exception as e:
                             log("ERROR","Unable to load file %s in tag %s " \
-                                "with mimetype %s to generate thumbnail image" \
-                                % (filename,tag,mimetype))
+                                "with mimetype %s to generate thumbnail " \
+                                "image: %s" \
+                                % (filepath,tag,mimetype,e))
                             return False
                         else:
                             try:
