@@ -1783,7 +1783,8 @@ def archive(tag):
     for f in files:
         filepath = get_path(tag,f['filename'])
         files_to_archive.append(filepath)
-        #log("INFO","Zip tag %s, file path %s" % (tag,filepath))
+
+    log("INFO","%s: Archive contains %d files" % (log_prefix, len(files_to_archive)))
 
     h = werkzeug.Headers()
     #h.add('Content-Length', '314572800')
