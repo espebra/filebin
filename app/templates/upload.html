@@ -233,13 +233,17 @@
                               var speed = (ev.loaded - lastLoaded) / (curTime - lastTime);
                               lastTime = curTime;
                               lastLoaded = ev.loaded;
-                              if (curTime - timeStarted > 180000) {
-                                // show eta if upload lasts long
-                                var timeToComplete = (curTime - timeStarted) * (ev.total / ev.loaded);
-                                etaStr = ". ETA " +(new Date(curTime + timeToComplete)).toLocaleTimeString();
+                              if (curTime - timeStarted > 120000) {
+                                elapsed = curTime - timeStarted;
+                                percent_done = (ev.loaded / ev.total) * 100;
+                                //percent_remaining = 100 - percent_done;
+                                ratio = 100 / percent_done;
+                                total_time = ratio * elapsed;
+                                eta = (new Date(timeStarted + total_time)).toLocaleTimeString();
+                                etaStr = "ETA " + eta + ". ";
                               } 
 
-                              ps[i].textContent = "Uploading at " + printSpeed(speed) + ", " + percent.toFixed(2) + "% " + etaStr;
+                              ps[i].textContent = percent.toFixed(2) + "% done. " + etaStr + "Uploading at " + printSpeed(speed) + ".";
                               ps[i].style["color"] = "#000000";
                               break;
                           }
