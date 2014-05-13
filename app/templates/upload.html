@@ -236,7 +236,7 @@
                               if (curTime - timeStarted > 180000) {
                                 // show eta if upload lasts long
                                 var timeToComplete = (curTime - timeStarted) * (ev.total / ev.loaded);
-                                etaStr = " ETA: " +(new Date(curTime + timeToComplete)).toUTCString();
+                                etaStr = ". ETA " +(new Date(curTime + timeToComplete)).toLocaleTimeString();
                               } 
 
                               ps[i].textContent = "Uploading at " + printSpeed(speed) + ", " + percent.toFixed(2) + "% " + etaStr;
