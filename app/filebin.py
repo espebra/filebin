@@ -1749,8 +1749,12 @@ def admin_configuration(tag,key):
 @app.route("/archive/<tag>")
 def archive(tag):
     client = get_client()
-    def stream_archive(files_to_archive):
-        command = "/usr/bin/zip -j - %s" % (" ".join(files_to_archive))
+    def stream_archive(tag):
+        log_prefix = '%s archive' % (tag)
+        tag_path = get_path(tag)
+        log("INFO","%s: Streaming directory %s" % (log_prefix, tag_path))
+
+        command = "/usr/bin/zip -j - %s/*" % (tag_path)
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell = True, close_fds = True)
         f = fcntl.fcntl(p.stdout, fcntl.F_GETFL)
 
@@ -1778,19 +1782,10 @@ def archive(tag):
     log_prefix = '%s archive -> %s' % (tag,client)
     log("INFO","%s: Archive download request received" % (log_prefix))
 
-    files = get_files_in_tag(tag)
-    files_to_archive = []
-    for f in files:
-        filepath = get_path(tag,f['filename'])
-        files_to_archive.append(filepath)
-
-    log("INFO","%s: Archive contains %d files" % (log_prefix, len(files_to_archive)))
-
     h = werkzeug.Headers()
-    #h.add('Content-Length', '314572800')
     h.add('Content-Disposition', 'attachment; filename=%s.zip' % (tag))
     h.add('cache-control', 'max-age=7200, must-revalidate')
-    return flask.Response(stream_archive(files_to_archive), mimetype='application/zip', headers = h, direct_passthrough = True)
+    return flask.Response(stream_archive(tag), mimetype='application/zip', headers = h, direct_passthrough = True)
 
 @app.route("/upload/<tag>/")
 @app.route("/upload/<tag>")
