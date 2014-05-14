@@ -208,6 +208,7 @@
               var lastLoaded = 0;
               var lastTime = (new Date()).getTime();
               var timeStarted = lastTime;
+              var show_eta = 0;
               var etaStr = "";
               var xhr = new XMLHttpRequest(),
                   upload = xhr.upload;
@@ -233,14 +234,21 @@
                               var speed = (ev.loaded - lastLoaded) / (curTime - lastTime);
                               lastTime = curTime;
                               lastLoaded = ev.loaded;
-                              if (curTime - timeStarted > 120000) {
-                                elapsed = curTime - timeStarted;
-                                percent_done = (ev.loaded / ev.total) * 100;
-                                //percent_remaining = 100 - percent_done;
-                                ratio = 100 / percent_done;
-                                total_time = ratio * elapsed;
-                                eta = (new Date(timeStarted + total_time)).toLocaleTimeString();
-                                etaStr = "ETA " + eta + ". ";
+
+                              elapsed = curTime - timeStarted;
+                              percent_done = (ev.loaded / ev.total) * 100;
+                              ratio = 100 / percent_done;
+                              total_time = ratio * elapsed;
+
+                              // Decide if ETA should be shown or not.
+                              if (elapsed > 5000 && total_time > 180000 && show_eta == 0) {
+                                  show_eta = 1;
+                              }
+
+                              // Generate ETA text, if ETA should be shown.
+                              if (show_eta == 1) {
+                                  eta = (new Date(timeStarted + total_time)).toLocaleTimeString();
+                                  etaStr = "ETA " + eta + ". ";
                               } 
 
                               ps[i].textContent = percent.toFixed(2) + "% done. " + etaStr + "Uploading at " + printSpeed(speed) + ".";
