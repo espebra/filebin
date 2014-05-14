@@ -1509,7 +1509,7 @@ def tag_html(tag,page):
         datetime_found = datetime_found, \
         title = "Tag %s" % (tag)))
 
-    response.headers['cache-control'] = 'max-age=3600, must-revalidate'
+    response.headers['cache-control'] = 'max-age=300, must-revalidate'
     return response
 
 def tag_playlist(tag):
