@@ -1,3 +1,0 @@
-total-number-of-files: {{ num_files }}
-total-size-in-bytes: {{ size }}
-tags-count: {{ tags|count }}
