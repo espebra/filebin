@@ -25,6 +25,10 @@ func writeLog(level string, text string) {
 	if err != nil {
 		fmt.Print("Error writing to file: %v", err)
 	}
+
+	if config.Global.Verbose {
+		fmt.Print(text)
+	}
 }
 
 func Error(text string) {
