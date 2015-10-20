@@ -14,65 +14,71 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var cfg = config.Global
+
 func main() {
-	flag.StringVar(&config.Global.Filedir, "filedir", config.Global.Filedir,
-		"Files directory")
+	flag.StringVar(&cfg.Filedir, "filedir",
+		cfg.Filedir, "Files directory")
 
-	flag.StringVar(&config.Global.Tempdir, "tempdir", config.Global.Tempdir,
-		"Temp directory")
+	flag.StringVar(&cfg.Tempdir, "tempdir",
+		cfg.Tempdir, "Temp directory")
 
-	flag.StringVar(&config.Global.Logfile, "logfile", config.Global.Logfile,
-		"Path to log file")
+	flag.StringVar(&cfg.Logfile, "logfile",
+		cfg.Logfile, "Path to log file")
 
-	flag.StringVar(&config.Global.Thumbdir, "thumbdir", config.Global.Thumbdir,
-		"Path to thumbnail directory")
+	//flag.StringVar(&cfg.Thumbdir, "thumbdir",
+	//	cfg.Thumbdir, "Path to thumbnail directory")
 
-	flag.StringVar(&config.Global.Database, "database", config.Global.Database,
-		"Path to database file")
+	flag.StringVar(&cfg.Database, "database",
+		cfg.Database, "Path to database file")
 
-	flag.StringVar(&config.Global.Host, "host", config.Global.Host,
-		"Listen host")
+	flag.StringVar(&cfg.Host, "host",
+		cfg.Host, "Listen host")
 
-	flag.IntVar(&config.Global.Port, "port", config.Global.Port, "Listen port")
+	flag.IntVar(&cfg.Port, "port",
+		cfg.Port, "Listen port")
 
-	flag.IntVar(&config.Global.Readtimeout, "readtimeout",
-		config.Global.Readtimeout, "Read timeout in seconds")
+	flag.IntVar(&cfg.Readtimeout, "readtimeout",
+		cfg.Readtimeout, "Read timeout in seconds")
 
-	flag.IntVar(&config.Global.Writetimeout, "writetimeout",
-		config.Global.Writetimeout, "Write timeout in seconds")
+	flag.IntVar(&cfg.Writetimeout, "writetimeout",
+		cfg.Writetimeout, "Write timeout in seconds")
 
-	flag.IntVar(&config.Global.Maxheaderbytes, "maxheaderbytes",
-		config.Global.Maxheaderbytes, "Max header bytes.")
+	flag.IntVar(&cfg.Maxheaderbytes, "maxheaderbytes",
+		cfg.Maxheaderbytes, "Max header bytes.")
 
-	flag.IntVar(&config.Global.Pagination, "pagination",
-		config.Global.Pagination, "Files to show per page for pagination.")
+	//flag.IntVar(&cfg.Pagination, "pagination",
+	//	cfg.Pagination,
+	//	"Files to show per page for pagination.")
 
-	flag.StringVar(&config.Global.GeoIP2, "geoip2",
-		config.Global.GeoIP2, "Path to the GeoIP2 database file.")
+	//flag.StringVar(&cfg.GeoIP2, "geoip2",
+	//	cfg.GeoIP2, "Path to the GeoIP2 database file.")
 
-	flag.BoolVar(&config.Global.Verbose, "verbose", config.Global.Verbose,
-		"Verbose stdout.")
+	flag.BoolVar(&cfg.Verbose, "verbose",
+		cfg.Verbose, "Verbose stdout.")
 
-	flag.StringVar(&config.Global.TriggerNewTag, "trigger-new-tag",
-		config.Global.TriggerNewTag, "Trigger to execute when a new tag is created.")
+	//flag.StringVar(&cfg.TriggerNewTag, "trigger-new-tag",
+	//	cfg.TriggerNewTag,
+	//	"Trigger to execute when a new tag is created.")
 
-	flag.StringVar(&config.Global.TriggerUploadedFile, "trigger-uploaded-file",
-		config.Global.TriggerUploadedFile,
-		"Trigger to execute when a file is uploaded.")
+	//flag.StringVar(&cfg.TriggerUploadedFile,
+	//	"trigger-uploaded-file",
+	//	cfg.TriggerUploadedFile,
+	//	"Trigger to execute when a file is uploaded.")
 
-	flag.StringVar(&config.Global.TriggerExpiredTag, "trigger-expired-tag",
-		config.Global.TriggerExpiredTag,
-		"Trigger to execute when a tag expires.")
+	//flag.StringVar(&cfg.TriggerExpiredTag, "trigger-expired-tag",
+	//	cfg.TriggerExpiredTag,
+	//	"Trigger to execute when a tag expires.")
 
 	flag.Parse()
 
-	//if (!IsDir(config.Global.Logdir)) {
+	//if (!IsDir(cfg.Logdir)) {
 	//    fmt.Println("The specified log directory is not a directory: ",
-	//        config.Global.Logdir)
+	//        cfg.Logdir)
 	//    os.Exit(2)
 	//}
 
-	//logfile := filepath.Join(config.Global.Logdir, "filebin.log")
+	//logfile := filepath.Join(cfg.Logdir, "filebin.log")
 	//f, err := os.OpenFile(logfile, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	//if err != nil {
 	//    fmt.Print("Error opening file: %v", err)
@@ -82,64 +88,64 @@ func main() {
 	//Info = log.New(f, " ", log.Ldate|log.Ltime|log.Lshortfile)
 	//Database = log.New(f, " ", log.Ldate|log.Ltime|log.Lshortfile)
 
-	if config.Global.Port < 1 || config.Global.Port > 65535 {
+	if cfg.Port < 1 || cfg.Port > 65535 {
 		log.Fatal("Invalid port number, aborting.")
 	}
 
-	if config.Global.Readtimeout < 1 || config.Global.Readtimeout > 3600 {
+	if cfg.Readtimeout < 1 || cfg.Readtimeout > 3600 {
 		log.Fatal("Invalid read timeout, aborting.")
 	}
 
-	if config.Global.Writetimeout < 1 || config.Global.Writetimeout > 3600 {
+	if cfg.Writetimeout < 1 || cfg.Writetimeout > 3600 {
 		log.Fatal("Invalid write timeout, aborting.")
 	}
 
-	if config.Global.Maxheaderbytes < 1 ||
-		config.Global.Maxheaderbytes > 2 << 40 {
+	if cfg.Maxheaderbytes < 1 ||
+		cfg.Maxheaderbytes > 2 << 40 {
 		log.Fatal("Invalid max header bytes, aborting.")
 	}
 
-	//if (!IsDir(config.Global.Tempdir)) {
-	//    Info.Fatal("The directory " + config.Global.Tempdir +
+	//if (!IsDir(cfg.Tempdir)) {
+	//    Info.Fatal("The directory " + cfg.Tempdir +
 	//        " does not exist.")
 	//    os.Exit(2)
 	//}
 
-	//if (!IsDir(config.Global.Filedir)) {
-	//    Info.Fatal("The directory " + config.Global.Filedir +
+	//if (!IsDir(cfg.Filedir)) {
+	//    Info.Fatal("The directory " + cfg.Filedir +
 	//        " does not exist.")
 	//    os.Exit(2)
 	//}
 
-	//if _, err := os.Stat(config.Global.GeoIP2); err == nil {
-	//    gi, err = geoip2.Open(config.Global.GeoIP2)
+	//if _, err := os.Stat(cfg.GeoIP2); err == nil {
+	//    gi, err = geoip2.Open(cfg.GeoIP2)
 	//    if err != nil {
-	//        Info.Print("Could not open GeoIP2 database ", config.Global.GeoIP2,
+	//        Info.Print("Could not open GeoIP2 database ", cfg.GeoIP2,
 	//            ": ", err)
 	//    }
 	//    defer gi.Close()
 	//} else {
-	//    Info.Print("GeoIP2 database does not exist: ", config.Global.GeoIP2)
+	//    Info.Print("GeoIP2 database does not exist: ", cfg.GeoIP2)
 	//}
 
-	if config.Global.Verbose {
-		fmt.Println("Host: " + config.Global.Host)
-		fmt.Println("Port: " + strconv.Itoa(config.Global.Port))
+	if cfg.Verbose {
+		fmt.Println("Host: " + cfg.Host)
+		fmt.Println("Port: " + strconv.Itoa(cfg.Port))
 		fmt.Println("Read timeout: " +
-			strconv.Itoa(config.Global.Readtimeout) + " seconds")
+			strconv.Itoa(cfg.Readtimeout) + " seconds")
 		fmt.Println("Write timeout: " +
-			strconv.Itoa(config.Global.Writetimeout) + " seconds")
+			strconv.Itoa(cfg.Writetimeout) + " seconds")
 		fmt.Println("Max header bytes: " +
-			strconv.Itoa(config.Global.Maxheaderbytes))
-		fmt.Println("Files directory: " + config.Global.Filedir)
-		fmt.Println("Thumbnail directory: " + config.Global.Thumbdir)
-		fmt.Println("Temp directory: " + config.Global.Tempdir)
-		fmt.Println("Log file: " + config.Global.Logfile)
-		fmt.Println("GeoIP2 database: " + config.Global.GeoIP2)
-		fmt.Println("Pagination: " + strconv.Itoa(config.Global.Pagination))
-		fmt.Println("Trigger New tag: " + config.Global.TriggerNewTag)
-		fmt.Println("Trigger Uploaded file: " + config.Global.TriggerUploadedFile)
-		fmt.Println("Trigger Expired tag: " + config.Global.TriggerExpiredTag)
+			strconv.Itoa(cfg.Maxheaderbytes))
+		fmt.Println("Files directory: " + cfg.Filedir)
+		fmt.Println("Thumbnail directory: " + cfg.Thumbdir)
+		fmt.Println("Temp directory: " + cfg.Tempdir)
+		fmt.Println("Log file: " + cfg.Logfile)
+		fmt.Println("GeoIP2 database: " + cfg.GeoIP2)
+		fmt.Println("Pagination: " + strconv.Itoa(cfg.Pagination))
+		fmt.Println("Trigger New tag: " + cfg.TriggerNewTag)
+		fmt.Println("Trigger Uploaded file: " + cfg.TriggerUploadedFile)
+		fmt.Println("Trigger Expired tag: " + cfg.TriggerExpiredTag)
 	}
 
 	//err = Setup()
@@ -147,9 +153,9 @@ func main() {
 	//    Error.Println("Database setup error: ", err)
 	//}
 
-	log.Info("Filebin server starting on " + config.Global.Host + ":" +
-		strconv.Itoa(config.Global.Port) + " from directory " +
-		config.Global.Filedir)
+	log.Info("Filebin server starting on " + cfg.Host + ":" +
+		strconv.Itoa(cfg.Port) + " from directory " +
+		cfg.Filedir)
 
 	router := mux.NewRouter()
 	http.Handle("/", httpInterceptor(router))
@@ -175,8 +181,8 @@ func main() {
 	//    http.FileServer(http.Dir("static")))
 	//http.Handle("/static/", fileServer)
 
-	err := http.ListenAndServe(config.Global.Host + ":" +
-		strconv.Itoa(config.Global.Port), nil)
+	err := http.ListenAndServe(cfg.Host + ":" +
+		strconv.Itoa(cfg.Port), nil)
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -202,7 +208,7 @@ func httpInterceptor(router http.Handler) http.Handler {
 		finishTime := time.Now().UTC()
 		elapsedTime := finishTime.Sub(startTime)
 
-		log.Info("Status " + w.Status)
+		//log.Info("Status " + w.Status)
 		log.Info("Processing time: " + elapsedTime.String())
 	})
 }
