@@ -14,7 +14,7 @@ func writeLog(level string, text string) {
 	t := time.Now()
 	text = t.Format("Mon Jan _2 15:04:05 MST 2006") + " [" + level + "] " + text + "\n"
 
-	f, err := os.OpenFile(config.Global.Logfile, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	f, err := os.OpenFile(config.Global.Logdir + "/foo", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Print("Error opening file: %v", err)
 		return

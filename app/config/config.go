@@ -8,7 +8,7 @@ type Configuration struct {
 	Maxheaderbytes      int
 	Filedir             string
 	Tempdir             string
-	Logfile             string
+	Logdir              string
 	Thumbdir            string
 	GeoIP2              string
 	Verbose             bool
@@ -30,7 +30,7 @@ func init() {
 		Maxheaderbytes: 1 << 20,
 		Filedir: "/srv/filebin/files",
 		Tempdir: "/srv/filebin/temp",
-		Logfile: "/var/log/filebin/filebin.log",
+		Logdir: "/var/log/filebin",
 		Thumbdir: "/srv/filebin/thumbnails",
 		Database: "/srv/filebin/filebin.db",
 		GeoIP2: "/srv/filebin/GeoLite2-Country.mmdb",

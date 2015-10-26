@@ -9,22 +9,27 @@ import (
 	"io"
 	"encoding/json"
 
-	"github.com/espebra/filebin/app/config"
-	"github.com/espebra/filebin/app/log"
 	"github.com/gorilla/mux"
+	"github.com/golang/glog"
+
+	"github.com/espebra/filebin/app/config"
+	"github.com/espebra/filebin/app/api"
+	//"github.com/espebra/filebin/app/log"
 )
 
 var cfg = config.Global
 
 func main() {
+	defer glog.Flush()
+
 	flag.StringVar(&cfg.Filedir, "filedir",
 		cfg.Filedir, "Files directory")
 
 	flag.StringVar(&cfg.Tempdir, "tempdir",
 		cfg.Tempdir, "Temp directory")
 
-	flag.StringVar(&cfg.Logfile, "logfile",
-		cfg.Logfile, "Path to log file")
+	flag.StringVar(&cfg.Logdir, "logdir",
+		cfg.Logdir, "Path to log directory")
 
 	//flag.StringVar(&cfg.Thumbdir, "thumbdir",
 	//	cfg.Thumbdir, "Path to thumbnail directory")
@@ -57,52 +62,47 @@ func main() {
 	flag.BoolVar(&cfg.Verbose, "verbose",
 		cfg.Verbose, "Verbose stdout.")
 
-	//flag.StringVar(&cfg.TriggerNewTag, "trigger-new-tag",
-	//	cfg.TriggerNewTag,
-	//	"Trigger to execute when a new tag is created.")
+	flag.StringVar(&cfg.TriggerNewTag, "trigger-new-tag",
+		cfg.TriggerNewTag,
+		"Trigger to execute when a new tag is created.")
 
-	//flag.StringVar(&cfg.TriggerUploadedFile,
-	//	"trigger-uploaded-file",
-	//	cfg.TriggerUploadedFile,
-	//	"Trigger to execute when a file is uploaded.")
+	flag.StringVar(&cfg.TriggerUploadedFile,
+		"trigger-uploaded-file",
+		cfg.TriggerUploadedFile,
+		"Trigger to execute when a file is uploaded.")
 
-	//flag.StringVar(&cfg.TriggerExpiredTag, "trigger-expired-tag",
-	//	cfg.TriggerExpiredTag,
-	//	"Trigger to execute when a tag expires.")
+	flag.StringVar(&cfg.TriggerExpiredTag, "trigger-expired-tag",
+		cfg.TriggerExpiredTag,
+		"Trigger to execute when a tag expires.")
 
 	flag.Parse()
-
+	
 	//if (!IsDir(cfg.Logdir)) {
 	//    fmt.Println("The specified log directory is not a directory: ",
 	//        cfg.Logdir)
 	//    os.Exit(2)
 	//}
 
-	//logfile := filepath.Join(cfg.Logdir, "filebin.log")
-	//f, err := os.OpenFile(logfile, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-	//if err != nil {
-	//    fmt.Print("Error opening file: %v", err)
-	//}
-	//defer f.Close()
-	//Error = log.New(f, " ", log.Ldate|log.Ltime|log.Lshortfile)
-	//Info = log.New(f, " ", log.Ldate|log.Ltime|log.Lshortfile)
-	//Database = log.New(f, " ", log.Ldate|log.Ltime|log.Lshortfile)
+	flag.Lookup("logtostderr").Value.Set("false")
+	flag.Lookup("log_dir").Value.Set(cfg.Logdir)
+	flag.Lookup("log_dir").Value.Set(cfg.Logdir)
+	flag.Lookup("v").Value.Set("100")
 
 	if cfg.Port < 1 || cfg.Port > 65535 {
-		log.Fatal("Invalid port number, aborting.")
+		glog.Fatal("Invalid port number, aborting.")
 	}
 
 	if cfg.Readtimeout < 1 || cfg.Readtimeout > 3600 {
-		log.Fatal("Invalid read timeout, aborting.")
+		glog.Fatal("Invalid read timeout, aborting.")
 	}
 
 	if cfg.Writetimeout < 1 || cfg.Writetimeout > 3600 {
-		log.Fatal("Invalid write timeout, aborting.")
+		glog.Fatal("Invalid write timeout, aborting.")
 	}
 
 	if cfg.Maxheaderbytes < 1 ||
 		cfg.Maxheaderbytes > 2 << 40 {
-		log.Fatal("Invalid max header bytes, aborting.")
+		glog.Fatal("Invalid max header bytes, aborting.")
 	}
 
 	//if (!IsDir(cfg.Tempdir)) {
@@ -138,11 +138,11 @@ func main() {
 		fmt.Println("Max header bytes: " +
 			strconv.Itoa(cfg.Maxheaderbytes))
 		fmt.Println("Files directory: " + cfg.Filedir)
-		fmt.Println("Thumbnail directory: " + cfg.Thumbdir)
+		//fmt.Println("Thumbnail directory: " + cfg.Thumbdir)
 		fmt.Println("Temp directory: " + cfg.Tempdir)
-		fmt.Println("Log file: " + cfg.Logfile)
-		fmt.Println("GeoIP2 database: " + cfg.GeoIP2)
-		fmt.Println("Pagination: " + strconv.Itoa(cfg.Pagination))
+		fmt.Println("Log dir: " + cfg.Logdir)
+		//fmt.Println("GeoIP2 database: " + cfg.GeoIP2)
+		//fmt.Println("Pagination: " + strconv.Itoa(cfg.Pagination))
 		fmt.Println("Trigger New tag: " + cfg.TriggerNewTag)
 		fmt.Println("Trigger Uploaded file: " + cfg.TriggerUploadedFile)
 		fmt.Println("Trigger Expired tag: " + cfg.TriggerExpiredTag)
@@ -153,12 +153,18 @@ func main() {
 	//    Error.Println("Database setup error: ", err)
 	//}
 
-	log.Info("Filebin server starting on " + cfg.Host + ":" +
+	glog.Info("Filebin server starting on " + cfg.Host + ":" +
 		strconv.Itoa(cfg.Port) + " from directory " +
 		cfg.Filedir)
 
 	router := mux.NewRouter()
 	http.Handle("/", httpInterceptor(router))
+	router.HandleFunc("/", makeHandler(api.Upload)).Methods("POST")
+	//mux := http.NewServeMux()
+	//mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+        //	fmt.Fprintf(w, "generic user handler: %v\n", req.URL.Path)
+	//})
+	//mux.HandleFunc("/", api.Upload)
 
 	//router.HandleFunc("/dashboard{_:/?}", ViewDashboard).Methods("GET", "HEAD")
 
@@ -169,12 +175,11 @@ func main() {
 	//router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/page/{page:[0-9]+}{_:/?}",
 	//    ViewTag).Methods("GET", "HEAD")
 	//router.HandleFunc("/{tag:[A-Za-z0-9_-]+}{_:/?}", ViewTag).Methods("GET", "HEAD")
-	//router.HandleFunc("/{tag:[A-Za-z0-9_-]+}", UploadToTag).Methods("POST")
 	//router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", ViewFile).Methods("GET", "HEAD")
 
-	////router.HandleFunc("/user{_:/?}", user.GetHomePage).Methods("GET")
-	////router.HandleFunc("/user/view/{id:[0-9]+}", user.GetViewPage).Methods("GET")
-	////router.HandleFunc("/user/{id:[0-9]+}", user.GetViewPage).Methods("GET")
+	//router.HandleFunc("/user{_:/?}", user.GetHomePage).Methods("GET")
+	//router.HandleFunc("/user/view/{id:[0-9]+}", user.GetViewPage).Methods("GET")
+	//router.HandleFunc("/user/{id:[0-9]+}", user.GetViewPage).Methods("GET")
 
 	//// CSS and Javascript
 	//fileServer := http.StripPrefix("/static/",
@@ -185,7 +190,13 @@ func main() {
 		strconv.Itoa(cfg.Port), nil)
 
 	if err != nil {
-		log.Fatal(err.Error())
+		glog.Fatal(err.Error())
+	}
+}
+
+func makeHandler(fn func (http.ResponseWriter, *http.Request, config.Configuration)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fn(w, r, cfg)
 	}
 }
 
@@ -200,8 +211,8 @@ func httpInterceptor(router http.Handler) http.Handler {
 		//Error.SetPrefix("Reqid " + ReqId + ": ")
 		//Database.SetPrefix("Reqid " + ReqId + ": ")
 
-		log.Info("Request from " + r.RemoteAddr)
-		log.Info(r.Method + " " + r.RequestURI)
+		glog.Info("Request from " + r.RemoteAddr)
+		glog.Info(r.Method + " " + r.RequestURI)
 
 		router.ServeHTTP(w, r)
 
@@ -209,7 +220,7 @@ func httpInterceptor(router http.Handler) http.Handler {
 		elapsedTime := finishTime.Sub(startTime)
 
 		//log.Info("Status " + w.Status)
-		log.Info("Processing time: " + elapsedTime.String())
+		glog.Info("Processing time: " + elapsedTime.String())
 	})
 }
 
@@ -224,6 +235,7 @@ func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d inte
 	for header, value := range h {
 		w.Header().Set(header, value)
 	}
+	//w.Header().Set("Server", "filebin")
 
 	w.WriteHeader(status)
 	//log.Info("Status " + strconv.Itoa(status))
