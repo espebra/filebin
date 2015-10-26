@@ -19,6 +19,11 @@ import (
 	"github.com/espebra/filebin/app/output"
 )
 
+type Link struct {
+	Rel	string
+	Href	string
+}
+
 type File struct {
     Filename            string       `json:"filename"`
     Tag                 string       `json:"tag"`
@@ -34,7 +39,7 @@ type File struct {
     //UpdatedAt           time.Time    `json:"updated"`
     CreatedAtReadable   string       `json:"-"`
     //UpdatedAtReadable   string       `json:"-"`
-    Link                string       `json:"link"`
+    Links               []Link
 }
 
 func init() {
@@ -191,13 +196,22 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	f := File { }
 	f.Filename = filename
 	f.Tag = tag
-	f.Link = "/" + tag + "/" + filename
 	f.Bytes = uint64(nBytes)
 	f.Verified = verified
 	f.Md5 = calculated_md5
 	f.RemoteAddr = r.RemoteAddr
 	f.CreatedAt = time.Now()
 	f.UserAgent = r.Header.Get("User-Agent")
+
+	fileLink := Link {}
+	fileLink.Rel = "file"
+	fileLink.Href = cfg.Baseurl + "/" + tag + "/" + filename
+	f.Links = append(f.Links, fileLink)
+
+	tagLink := Link {}
+	tagLink.Rel = "tag"
+	tagLink.Href = cfg.Baseurl + "/" + tag
+	f.Links = append(f.Links, tagLink)
 
 	buff := make([]byte, 512)
 	fp.Seek(0, 0)

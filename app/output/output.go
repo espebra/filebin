@@ -20,7 +20,7 @@ func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d inte
         for header, value := range h {
                 w.Header().Set(header, value)
         }
-        //w.Header().Set("Server", "filebin")
+        w.Header().Set("Server", "filebin")
 
         w.WriteHeader(status)
         //log.Info("Status " + strconv.Itoa(status))

@@ -7,6 +7,7 @@ type Configuration struct {
 	Writetimeout        int
 	Maxheaderbytes      int
 	Filedir             string
+	Baseurl             string
 	Tempdir             string
 	Logdir              string
 	Thumbdir            string
@@ -28,6 +29,7 @@ func init() {
 		Readtimeout: 3600,
 		Writetimeout: 3600,
 		Maxheaderbytes: 1 << 20,
+		Baseurl: "http://localhost:31337",
 		Filedir: "/srv/filebin/files",
 		Tempdir: "/srv/filebin/temp",
 		Logdir: "/var/log/filebin",

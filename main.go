@@ -22,6 +22,9 @@ var cfg = config.Global
 func main() {
 	defer glog.Flush()
 
+	flag.StringVar(&cfg.Baseurl, "baseurl",
+		cfg.Baseurl, "Baseurl directory")
+
 	flag.StringVar(&cfg.Filedir, "filedir",
 		cfg.Filedir, "Files directory")
 
@@ -137,6 +140,7 @@ func main() {
 			strconv.Itoa(cfg.Writetimeout) + " seconds")
 		fmt.Println("Max header bytes: " +
 			strconv.Itoa(cfg.Maxheaderbytes))
+		fmt.Println("Baseurl: " + cfg.Baseurl)
 		fmt.Println("Files directory: " + cfg.Filedir)
 		//fmt.Println("Thumbnail directory: " + cfg.Thumbdir)
 		fmt.Println("Temp directory: " + cfg.Tempdir)
