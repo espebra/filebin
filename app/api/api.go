@@ -1,7 +1,7 @@
 package api
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -33,7 +33,7 @@ type File struct {
 	BytesReadable		string		`json:"bytes_prefixed"`
 	MIME			string		`json:"mime"`
 	Verified		bool		`json:"verified"`
-	Md5			string		`json:"md5"`
+	SHA256			string		`json:"sha256"`
 	RemoteAddr		string		`json:"remote-addr"`
 	UserAgent		string		`json:"user-agent"`
 	CreatedAt		time.Time	`json:"created"`
@@ -81,7 +81,7 @@ func cmdHandler(cmd *exec.Cmd) error {
 	return err
 }
 
-func md5sum(filePath string) ([]byte, error) {
+func sha256sum(filePath string) ([]byte, error) {
     var result []byte
     file, err := os.Open(filePath)
     if err != nil {
@@ -89,7 +89,7 @@ func md5sum(filePath string) ([]byte, error) {
     }
     defer file.Close()
 
-    hash := md5.New()
+    hash := sha256.New()
     if _, err := io.Copy(hash, file); err != nil {
         return result, err
     }
@@ -164,11 +164,11 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 		glog.Info("Generated tag: " + tag)
 	}
 
-	md5 := r.Header.Get("content-md5")
-	if (md5 == "") {
-		glog.Info("md5 checksum was not provided")
+	sha256 := r.Header.Get("content-sha256")
+	if (sha256 == "") {
+		glog.Info("sha256 checksum was not provided")
 	} else {
-		glog.Info("Provided md5 checksum: ", md5)
+		glog.Info("Provided sha256 checksum: ", sha256)
 	}
 
 	var tagdir = filepath.Join(cfg.Filedir, tag)
@@ -207,21 +207,21 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	}
 
 	var verified = false
-	var calculated_md5 = ""
-	if b, err := md5sum(fpath); err != nil {
-		glog.Info("Error occurred while calculating md5 checksum: ", err)
+	var calculated_sha256 = ""
+	if b, err := sha256sum(fpath); err != nil {
+		glog.Info("Error occurred while calculating sha256 checksum: ", err)
 		http.Error(w, "Upload failed", http.StatusInternalServerError);
 		return
 	} else {
-		calculated_md5 = hex.EncodeToString(b)
-		glog.Info("Calculated md5 checksum: " + calculated_md5)
-		if md5 == calculated_md5 {
-			glog.Info("md5 checksum verified")
+		calculated_sha256 = hex.EncodeToString(b)
+		glog.Info("Calculated sha256 checksum: " + calculated_sha256)
+		if sha256 == calculated_sha256 {
+			glog.Info("sha256 checksum verified")
 			verified = true
 		} else {
-			if md5 != "" {
-				glog.Info("md5 checksum verification failed")
-				http.Error(w, "md5 verification failed",
+			if sha256 != "" {
+				glog.Info("sha256 checksum verification failed")
+				http.Error(w, "sha256 verification failed",
 				http.StatusConflict);
 				return
 			}
@@ -233,7 +233,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	f.Tag = tag
 	f.Bytes = uint64(nBytes)
 	f.Verified = verified
-	f.Md5 = calculated_md5
+	f.SHA256 = calculated_sha256
 	f.RemoteAddr = r.RemoteAddr
 	f.UserAgent = r.Header.Get("User-Agent")
 

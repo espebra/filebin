@@ -28,8 +28,8 @@ func main() {
 	flag.StringVar(&cfg.Filedir, "filedir",
 		cfg.Filedir, "Files directory")
 
-	flag.StringVar(&cfg.Tempdir, "tempdir",
-		cfg.Tempdir, "Temp directory")
+//	flag.StringVar(&cfg.Tempdir, "tempdir",
+//		cfg.Tempdir, "Temp directory")
 
 	flag.StringVar(&cfg.Logdir, "logdir",
 		cfg.Logdir, "Path to log directory")
@@ -65,15 +65,15 @@ func main() {
 	flag.BoolVar(&cfg.Verbose, "verbose",
 		cfg.Verbose, "Verbose stdout.")
 
-	flag.StringVar(&cfg.TriggerNewTag, "trigger-new-tag",
-		cfg.TriggerNewTag,
-		"Trigger to execute when a new tag is created.")
+//	flag.StringVar(&cfg.TriggerNewTag, "trigger-new-tag",
+//		cfg.TriggerNewTag,
+//		"Trigger to execute when a new tag is created.")
 
-//	flag.StringVar(&cfg.TriggerUploadedFile,
-//		"trigger-uploaded-file",
-//		cfg.TriggerUploadedFile,
-//		"Trigger to execute when a file is uploaded.")
-//
+	flag.StringVar(&cfg.TriggerUploadedFile,
+		"trigger-uploaded-file",
+		cfg.TriggerUploadedFile,
+		"Trigger to execute when a file is uploaded.")
+
 //	flag.StringVar(&cfg.TriggerExpiredTag, "trigger-expired-tag",
 //		cfg.TriggerExpiredTag,
 //		"Trigger to execute when a tag expires.")
@@ -147,9 +147,9 @@ func main() {
 		fmt.Println("Log dir: " + cfg.Logdir)
 		//fmt.Println("GeoIP2 database: " + cfg.GeoIP2)
 		//fmt.Println("Pagination: " + strconv.Itoa(cfg.Pagination))
-		fmt.Println("Trigger New tag: " + cfg.TriggerNewTag)
+		//fmt.Println("Trigger New tag: " + cfg.TriggerNewTag)
 		fmt.Println("Trigger Uploaded file: " + cfg.TriggerUploadedFile)
-		fmt.Println("Trigger Expired tag: " + cfg.TriggerExpiredTag)
+		//fmt.Println("Trigger Expired tag: " + cfg.TriggerExpiredTag)
 	}
 
 	//err = Setup()
