@@ -69,14 +69,14 @@ func main() {
 		cfg.TriggerNewTag,
 		"Trigger to execute when a new tag is created.")
 
-	flag.StringVar(&cfg.TriggerUploadedFile,
-		"trigger-uploaded-file",
-		cfg.TriggerUploadedFile,
-		"Trigger to execute when a file is uploaded.")
-
-	flag.StringVar(&cfg.TriggerExpiredTag, "trigger-expired-tag",
-		cfg.TriggerExpiredTag,
-		"Trigger to execute when a tag expires.")
+//	flag.StringVar(&cfg.TriggerUploadedFile,
+//		"trigger-uploaded-file",
+//		cfg.TriggerUploadedFile,
+//		"Trigger to execute when a file is uploaded.")
+//
+//	flag.StringVar(&cfg.TriggerExpiredTag, "trigger-expired-tag",
+//		cfg.TriggerExpiredTag,
+//		"Trigger to execute when a tag expires.")
 
 	flag.Parse()
 	

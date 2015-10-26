@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"math/rand"
 	"os"
+	"os/exec"
 	"path"
 	"encoding/hex"
 	"time"
@@ -44,6 +45,40 @@ type File struct {
 
 func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
+}
+
+func triggerNewTagHandler(c string, tag string) {
+	if c != "" {
+		glog.Info("Executing trigger-new-tag: " + c)
+		cmd := exec.Command(c, tag)
+		cmdHandler(cmd)
+	}
+}
+
+func triggerUploadedFileHandler(c string, tag string, filename string) {
+	if c != "" {
+		glog.Info("Executing trigger-uploaded-file: " + c)
+		cmd := exec.Command(c, tag, filename)
+		cmdHandler(cmd)
+	}
+}
+
+func triggerExpiredTagHandler(c string, tag string) {
+	if c != "" {
+		glog.Info("Executing trigger-expired-tag: " + c)
+		cmd := exec.Command(c, tag)
+		cmdHandler(cmd)
+	}
+}
+
+func cmdHandler(cmd *exec.Cmd) error {
+	err := cmd.Start()
+	if err == nil {
+		glog.Info("Trigger command executed successfully")
+	} else {
+		glog.Error("Trigger command failed: ", err)
+	}
+	return err
 }
 
 func md5sum(filePath string) ([]byte, error) {
@@ -225,6 +260,8 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	_, err = fp.Read(buff)
 	f.MIME = http.DetectContentType(buff)
 	defer fp.Close()
+
+	triggerUploadedFileHandler(cfg.TriggerUploadedFile, tag, filename)
 
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
