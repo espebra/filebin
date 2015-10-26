@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"net/http"
 	"time"
-	"io"
-	"encoding/json"
+	//"io"
+	//"encoding/json"
 
 	"github.com/gorilla/mux"
 	"github.com/golang/glog"
@@ -224,22 +224,4 @@ func httpInterceptor(router http.Handler) http.Handler {
 	})
 }
 
-func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d interface{}) {
-	dj, err := json.MarshalIndent(d, "", "    ")
-	if err != nil {
-		fmt.Print("Unable to convert response to json: ", err)
-		http.Error(w, "Failed while generating a response", http.StatusInternalServerError)
-		return
-	}
 
-	for header, value := range h {
-		w.Header().Set(header, value)
-	}
-	//w.Header().Set("Server", "filebin")
-
-	w.WriteHeader(status)
-	//log.Info("Status " + strconv.Itoa(status))
-	io.WriteString(w, string(dj))
-	//Info.Print("Output: ", string(dj))
-	fmt.Print("Response status: " + strconv.Itoa(status))
-}

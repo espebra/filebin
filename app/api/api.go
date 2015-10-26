@@ -1,8 +1,14 @@
 package api
 
 import (
+	"crypto/md5"
 	"math/rand"
+	"os"
 	"path"
+	"encoding/hex"
+	"time"
+	"strconv"
+	"io"
 	"strings"
 	"regexp"
 	"net/http"
@@ -10,7 +16,58 @@ import (
 	//"github.com/gorilla/mux"
 	"github.com/golang/glog"
 	"github.com/espebra/filebin/app/config"
+	"github.com/espebra/filebin/app/output"
 )
+
+type File struct {
+    Filename            string       `json:"filename"`
+    Tag                 string       `json:"tag"`
+    Bytes               uint64       `json:"bytes"`
+    //BytesReadable       string       `json:"-"`
+    Verified            bool         `json:"verified"`
+    Md5                 string       `json:"md5"`
+    MIME                string       `json:"mime"`
+    //DateTimeReadable    string       `json:"-"`
+    RemoteAddr          string       `json:"remote-addr"`
+    UserAgent           string       `json:"user-agent"`
+    CreatedAt           time.Time    `json:"created"`
+    //UpdatedAt           time.Time    `json:"updated"`
+    CreatedAtReadable   string       `json:"-"`
+    //UpdatedAtReadable   string       `json:"-"`
+    Link                string       `json:"link"`
+}
+
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
+
+func md5sum(filePath string) ([]byte, error) {
+    var result []byte
+    file, err := os.Open(filePath)
+    if err != nil {
+        return result, err
+    }
+    defer file.Close()
+
+    hash := md5.New()
+    if _, err := io.Copy(hash, file); err != nil {
+        return result, err
+    }
+   
+    return hash.Sum(result), nil
+}
+
+func isDir(path string) bool {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	if fi.IsDir() {
+		return true
+	} else {
+		return false
+	}
+}
 
 func randomString(n int) string {
 	var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
@@ -76,18 +133,81 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 
 	var tagdir = filepath.Join(cfg.Filedir, tag)
 
-	//if (IsDir(tagdir)) {
-	//	Info.Print("The directory " + tagdir + " exists")
-	//} else {
-	//	Info.Print("The directory " + tagdir + " does not exist. Creating.")
-	//	err := os.Mkdir(tagdir, 0700)
-	//	if err != nil {
-	//		Info.Print("Unable to create directory " + tagdir + ": ", err)
-	//		http.Error(w, "", http.StatusInternalServerError);
-	//		return
-	//	}
-	//}
+	if (isDir(tagdir)) {
+		glog.Info("The directory " + tagdir + " exists")
+	} else {
+		glog.Info("The directory " + tagdir + " does not exist. Creating.")
+		err := os.Mkdir(tagdir, 0700)
+		if err != nil {
+			glog.Info("Unable to create directory " + tagdir + ": ", err)
+			http.Error(w, "", http.StatusInternalServerError);
+			return
+		}
+	}
 
-	http.Error(w,"Tag " + tag + ", filename: " + filename + ", tagdir: " + tagdir, 200)
-	return
+	var fpath = filepath.Join(tagdir, filename)
+	glog.Info("Writing data to " + fpath)
+	fp, err := os.Create(fpath)
+	defer fp.Close()
+	if err != nil {
+		glog.Info("Unable to create file " + fpath + ": ", err)
+		http.Error(w, "", http.StatusInternalServerError);
+		return
+	}
+
+	nBytes, err := io.Copy(fp, r.Body)
+	if err != nil {
+		glog.Info("Unable to copy request body to file " +
+			fpath + ": ", err)
+		http.Error(w, "", http.StatusInternalServerError);
+		return
+	} else {
+		glog.Info("Upload complete after " +
+			strconv.FormatInt(nBytes, 10) + " bytes")
+	}
+
+	var verified = false
+	var calculated_md5 = ""
+	if b, err := md5sum(fpath); err != nil {
+		glog.Info("Error occurred while calculating md5 checksum: ", err)
+		http.Error(w, "Upload failed", http.StatusInternalServerError);
+		return
+	} else {
+		calculated_md5 = hex.EncodeToString(b)
+		glog.Info("Calculated md5 checksum: " + calculated_md5)
+		if md5 == calculated_md5 {
+			glog.Info("md5 checksum verified")
+			verified = true
+		} else {
+			if md5 != "" {
+				glog.Info("md5 checksum verification failed")
+				http.Error(w, "md5 verification failed",
+				http.StatusConflict);
+				return
+			}
+		}
+	}
+
+	f := File { }
+	f.Filename = filename
+	f.Tag = tag
+	f.Link = "/" + tag + "/" + filename
+	f.Bytes = uint64(nBytes)
+	f.Verified = verified
+	f.Md5 = calculated_md5
+	f.RemoteAddr = r.RemoteAddr
+	f.CreatedAt = time.Now()
+	f.UserAgent = r.Header.Get("User-Agent")
+
+	buff := make([]byte, 512)
+	fp.Seek(0, 0)
+	_, err = fp.Read(buff)
+	f.MIME = http.DetectContentType(buff)
+	defer fp.Close()
+
+	headers := make(map[string]string)
+	headers["Content-Type"] = "application/json"
+
+	var status = 200
+	output.JSONresponse(w, status, headers, f)
 }
