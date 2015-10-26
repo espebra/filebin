@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"path/filepath"
 	//"github.com/gorilla/mux"
+	"github.com/dustin/go-humanize"
 	"github.com/golang/glog"
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/output"
@@ -25,21 +26,20 @@ type Link struct {
 }
 
 type File struct {
-    Filename            string       `json:"filename"`
-    Tag                 string       `json:"tag"`
-    Bytes               uint64       `json:"bytes"`
-    //BytesReadable       string       `json:"-"`
-    Verified            bool         `json:"verified"`
-    Md5                 string       `json:"md5"`
-    MIME                string       `json:"mime"`
-    //DateTimeReadable    string       `json:"-"`
-    RemoteAddr          string       `json:"remote-addr"`
-    UserAgent           string       `json:"user-agent"`
-    CreatedAt           time.Time    `json:"created"`
-    //UpdatedAt           time.Time    `json:"updated"`
-    CreatedAtReadable   string       `json:"-"`
-    //UpdatedAtReadable   string       `json:"-"`
-    Links               []Link
+	Filename		string		`json:"filename"`
+	Tag			string		`json:"tag"`
+	Bytes			uint64		`json:"bytes"`
+	BytesReadable		string		`json:"bytes_prefixed"`
+	MIME			string		`json:"mime"`
+	Verified		bool		`json:"verified"`
+	Md5			string		`json:"md5"`
+	RemoteAddr		string		`json:"remote-addr"`
+	UserAgent		string		`json:"user-agent"`
+	CreatedAt		time.Time	`json:"created"`
+	CreatedAtReadable	string		`json:"created_relative"`
+	ExpiresAt		time.Time	`json:"expires"`
+	ExpiresAtReadable	string		`json:"expires_relative"`
+	Links			[]Link		`json:"links"`
 }
 
 func init() {
@@ -200,8 +200,15 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	f.Verified = verified
 	f.Md5 = calculated_md5
 	f.RemoteAddr = r.RemoteAddr
-	f.CreatedAt = time.Now()
 	f.UserAgent = r.Header.Get("User-Agent")
+
+	f.CreatedAt = time.Now().UTC()
+	f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
+
+	f.BytesReadable = humanize.Bytes(f.Bytes)
+	f.CreatedAtReadable = humanize.Time(f.CreatedAt)
+	f.ExpiresAtReadable = humanize.Time(f.ExpiresAt)
+
 
 	fileLink := Link {}
 	fileLink.Rel = "file"
