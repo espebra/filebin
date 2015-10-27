@@ -173,21 +173,16 @@ func detectMIME(path string) (string, error) {
 		return "", err
 	}
 	defer fp.Close()
-
 	buff := make([]byte, 512)
-
 	_, err = fp.Seek(0, 0)
 	if err != nil {
 		return "", err
 	}
-
 	_, err = fp.Read(buff)
 	if err != nil {
 		return "", err
 	}
-
 	mime := http.DetectContentType(buff)
-
 	return mime, err
 }
 
@@ -268,14 +263,17 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	f.SHA256 = calculated_sha256
 	f.RemoteAddr = r.RemoteAddr
 	f.UserAgent = r.Header.Get("User-Agent")
-
 	f.CreatedAt = time.Now().UTC()
 	f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
-
 	f.BytesReadable = humanize.Bytes(f.Bytes)
 	f.CreatedAtReadable = humanize.Time(f.CreatedAt)
 	f.ExpiresAtReadable = humanize.Time(f.ExpiresAt)
-
+	f.MIME, err = detectMIME(fpath)
+	if err != nil {
+		glog.Info("Unable to detect MIME for file " + fpath + ":", err)
+		http.Error(w, "", http.StatusInternalServerError);
+		return
+	}
 
 	fileLink := Link {}
 	fileLink.Rel = "file"
@@ -286,13 +284,6 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	tagLink.Rel = "tag"
 	tagLink.Href = cfg.Baseurl + "/" + tag
 	f.Links = append(f.Links, tagLink)
-
-	f.MIME, err = detectMIME(fpath)
-	if err != nil {
-		glog.Info("Unable to detect MIME for file " + fpath + ":", err)
-		http.Error(w, "", http.StatusInternalServerError);
-		return
-	}
 
 	triggerUploadedFileHandler(cfg.TriggerUploadedFile, tag, filename)
 
