@@ -4,3 +4,4 @@ check:
 get-deps:
 	go get github.com/dustin/go-humanize
 	go get github.com/golang/glog
+	go get github.com/gorilla/mux
