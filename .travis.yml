@@ -3,6 +3,9 @@ language: go
 go:
   - 1.4
 
+install:
+  - make get-deps
+
 script:
   - make check
 
