@@ -29,6 +29,10 @@ func TestTriggers(t *testing.T) {
 
 func TestSha256Sum(t *testing.T) {
 	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	defer os.Remove(file.Name())
 	file.WriteString("some content")
 	file.Sync()
@@ -103,5 +107,24 @@ func TestValidTag(t *testing.T) {
 
 	if validTag("../foo") == true {
 		t.Fatal("Tag contains invalid characters")
+	}
+}
+
+func TestEnsureDirectoryExists(t *testing.T) {
+	// Use TempDir to figure out the path to a valid directory
+	dir, err := ioutil.TempDir(os.TempDir(), "prefix")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Remove the directory and keep the path
+	err = os.Remove(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	
+	// Try to create the directory using our function
+	err = ensureDirectoryExists(dir)
+	if err != nil {
+		t.Fatal("This directory cannot be created:", err)
 	}
 }

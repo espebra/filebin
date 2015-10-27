@@ -137,6 +137,17 @@ func validTag(tag string) (bool) {
 	}
 }
 
+func ensureDirectoryExists(tagdir string) error {
+	var err error
+	if (isDir(tagdir)) {
+		glog.Info("The directory " + tagdir + " exists")
+	} else {
+		glog.Info("The directory " + tagdir + " does not exist. Creating.")
+		err = os.Mkdir(tagdir, 0700)
+	}
+	return err
+}
+
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	//params := mux.Vars(r)
 
@@ -169,17 +180,11 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	}
 
 	var tagdir = filepath.Join(cfg.Filedir, tag)
-
-	if (isDir(tagdir)) {
-		glog.Info("The directory " + tagdir + " exists")
-	} else {
-		glog.Info("The directory " + tagdir + " does not exist. Creating.")
-		err := os.Mkdir(tagdir, 0700)
-		if err != nil {
-			glog.Info("Unable to create directory " + tagdir + ": ", err)
-			http.Error(w, "", http.StatusInternalServerError);
-			return
-		}
+	err := ensureDirectoryExists(tagdir)
+	if err != nil {
+		glog.Info("Unable to directory " + tagdir + ": ", err)
+		http.Error(w, "", http.StatusInternalServerError);
+		return
 	}
 
 	var fpath = filepath.Join(tagdir, filename)
