@@ -10,7 +10,7 @@ install:
 
 script:
   - make check
-  - goveralls -coverprofile=coverage.out -service=travis-ci -repotoken ScR600zoS1GsDTmGSydufqvejP4bBpJj3
+  - goveralls -repotoken ScR600zoS1GsDTmGSydufqvejP4bBpJj3
 
 branches:
   only:
