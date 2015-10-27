@@ -47,28 +47,25 @@ func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 
-func triggerNewTagHandler(c string, tag string) {
-	if c != "" {
-		glog.Info("Executing trigger-new-tag: " + c)
-		cmd := exec.Command(c, tag)
-		cmdHandler(cmd)
-	}
+func triggerNewTagHandler(c string, tag string) error {
+	glog.Info("Executing trigger-new-tag: " + c)
+	cmd := exec.Command(c, tag)
+	err := cmdHandler(cmd)
+	return err
 }
 
-func triggerUploadedFileHandler(c string, tag string, filename string) {
-	if c != "" {
-		glog.Info("Executing trigger-uploaded-file: " + c)
-		cmd := exec.Command(c, tag, filename)
-		cmdHandler(cmd)
-	}
+func triggerUploadedFileHandler(c string, tag string, filename string) error {
+	glog.Info("Executing trigger-uploaded-file: " + c)
+	cmd := exec.Command(c, tag, filename)
+	err := cmdHandler(cmd)
+	return err
 }
 
-func triggerExpiredTagHandler(c string, tag string) {
-	if c != "" {
-		glog.Info("Executing trigger-expired-tag: " + c)
-		cmd := exec.Command(c, tag)
-		cmdHandler(cmd)
-	}
+func triggerExpiredTagHandler(c string, tag string) error {
+	glog.Info("Executing trigger-expired-tag: " + c)
+	cmd := exec.Command(c, tag)
+	err := cmdHandler(cmd)
+	return err
 }
 
 func cmdHandler(cmd *exec.Cmd) error {
