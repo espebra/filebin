@@ -128,3 +128,49 @@ func TestEnsureDirectoryExists(t *testing.T) {
 		t.Fatal("This directory cannot be created:", err)
 	}
 }
+
+func TestWriteToFile(t *testing.T) {
+	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Remove(file.Name())
+	
+	//nBytes, err := writeToFile(file.Name(), content)
+	//if err != nil {
+	//	t.Fatal(err)
+	//}
+	//if nBytes != 6 {
+	//	t.Fatal("The amount of bytes was unexpected:", nBytes)
+	//}
+	
+}
+
+func TestDetectMIME(t *testing.T) {
+	var mime string
+	var err error
+
+	mime, err = detectMIME("testing/image.png")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if mime != "image/png" {
+		t.Fatal("Unable to detect mime type:", mime)
+	}
+
+	mime, err = detectMIME("testing/image.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if mime != "image/jpeg" {
+		t.Fatal("Unable to detect mime type:", mime)
+	}
+
+	mime, err = detectMIME("testing/image.gif")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if mime != "image/gif" {
+		t.Fatal("Unable to detect mime type:", mime)
+	}
+}

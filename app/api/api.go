@@ -148,6 +148,49 @@ func ensureDirectoryExists(tagdir string) error {
 	return err
 }
 
+func writeToFile(path string, body io.Reader) (int64, error) {
+	glog.Info("Writing data to " + path)
+	fp, err := os.Create(path)
+	defer fp.Close()
+	if err != nil {
+		return 0, err
+	}
+
+	nBytes, err := io.Copy(fp, body)
+	if err != nil {
+		return nBytes, err
+	} else {
+		glog.Info("Upload complete after " +
+			strconv.FormatInt(nBytes, 10) + " bytes")
+	}
+	return nBytes, nil
+}
+
+func detectMIME(path string) (string, error) {
+	var err error
+	fp, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer fp.Close()
+
+	buff := make([]byte, 512)
+
+	_, err = fp.Seek(0, 0)
+	if err != nil {
+		return "", err
+	}
+
+	_, err = fp.Read(buff)
+	if err != nil {
+		return "", err
+	}
+
+	mime := http.DetectContentType(buff)
+
+	return mime, err
+}
+
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	//params := mux.Vars(r)
 
@@ -188,24 +231,11 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	}
 
 	var fpath = filepath.Join(tagdir, filename)
-	glog.Info("Writing data to " + fpath)
-	fp, err := os.Create(fpath)
-	defer fp.Close()
+	nBytes, err := writeToFile(fpath, r.Body)
 	if err != nil {
-		glog.Info("Unable to create file " + fpath + ": ", err)
+		glog.Info("Unable to write file " + fpath + ":", err)
 		http.Error(w, "", http.StatusInternalServerError);
 		return
-	}
-
-	nBytes, err := io.Copy(fp, r.Body)
-	if err != nil {
-		glog.Info("Unable to copy request body to file " +
-			fpath + ": ", err)
-		http.Error(w, "", http.StatusInternalServerError);
-		return
-	} else {
-		glog.Info("Upload complete after " +
-			strconv.FormatInt(nBytes, 10) + " bytes")
 	}
 
 	var verified = false
@@ -257,11 +287,12 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	tagLink.Href = cfg.Baseurl + "/" + tag
 	f.Links = append(f.Links, tagLink)
 
-	buff := make([]byte, 512)
-	fp.Seek(0, 0)
-	_, err = fp.Read(buff)
-	f.MIME = http.DetectContentType(buff)
-	defer fp.Close()
+	f.MIME, err = detectMIME(fpath)
+	if err != nil {
+		glog.Info("Unable to detect MIME for file " + fpath + ":", err)
+		http.Error(w, "", http.StatusInternalServerError);
+		return
+	}
 
 	triggerUploadedFileHandler(cfg.TriggerUploadedFile, tag, filename)
 
