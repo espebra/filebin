@@ -87,3 +87,21 @@ func TestSanitizeFilename(t *testing.T) {
 		t.Fatal("Sanitizing failed:", str)
 	}
 }
+
+func TestValidTag(t *testing.T) {
+	if validTag("s") == true {
+		t.Fatal("Too short tag")
+	}
+
+	if validTag("s ") == true {
+		t.Fatal("Tag contains whitespace")
+	}
+
+	if validTag("/foo/bar") == true {
+		t.Fatal("Tag contains invalid characters")
+	}
+
+	if validTag("../foo") == true {
+		t.Fatal("Tag contains invalid characters")
+	}
+}
