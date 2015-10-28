@@ -3,7 +3,6 @@ package api
 import (
 	"testing"
 	"math/rand"
-	"encoding/hex"
 	"io/ioutil"
 	"os"
 )
@@ -41,9 +40,8 @@ func TestSha256Sum(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sum := hex.EncodeToString(checksum)
-	if sum != "290f493c44f5d63d06b374d0a5abd292fae38b92cab2fae5efefe1b0e9347f56" {
-		t.Fatal("Invalid checksum", sum)
+	if checksum != "290f493c44f5d63d06b374d0a5abd292fae38b92cab2fae5efefe1b0e9347f56" {
+		t.Fatal("Invalid checksum", checksum)
 	}
 }
 

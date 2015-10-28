@@ -37,8 +37,8 @@ func main() {
 	//flag.StringVar(&cfg.Thumbdir, "thumbdir",
 	//	cfg.Thumbdir, "Path to thumbnail directory")
 
-	flag.StringVar(&cfg.Database, "database",
-		cfg.Database, "Path to database file")
+	//flag.StringVar(&cfg.Database, "database",
+	//	cfg.Database, "Path to database file")
 
 	flag.StringVar(&cfg.Host, "host",
 		cfg.Host, "Listen host")
@@ -143,7 +143,7 @@ func main() {
 		fmt.Println("Baseurl: " + cfg.Baseurl)
 		fmt.Println("Files directory: " + cfg.Filedir)
 		//fmt.Println("Thumbnail directory: " + cfg.Thumbdir)
-		fmt.Println("Temp directory: " + cfg.Tempdir)
+		//fmt.Println("Temp directory: " + cfg.Tempdir)
 		fmt.Println("Log dir: " + cfg.Logdir)
 		//fmt.Println("GeoIP2 database: " + cfg.GeoIP2)
 		//fmt.Println("Pagination: " + strconv.Itoa(cfg.Pagination))

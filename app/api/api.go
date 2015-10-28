@@ -29,7 +29,7 @@ type Link struct {
 type File struct {
 	Filename		string		`json:"filename"`
 	Tag			string		`json:"tag"`
-	Bytes			uint64		`json:"bytes"`
+	Bytes			int64		`json:"bytes"`
 	BytesReadable		string		`json:"bytes_prefixed"`
 	MIME			string		`json:"mime"`
 	Verified		bool		`json:"verified"`
@@ -70,28 +70,26 @@ func triggerExpiredTagHandler(c string, tag string) error {
 
 func cmdHandler(cmd *exec.Cmd) error {
 	err := cmd.Start()
-	if err == nil {
-		glog.Info("Trigger command executed successfully")
-	} else {
+	if err != nil {
 		glog.Error("Trigger command failed: ", err)
 	}
 	return err
 }
 
-func sha256sum(filePath string) ([]byte, error) {
+func sha256sum(filePath string) (string, error) {
     var result []byte
     file, err := os.Open(filePath)
     if err != nil {
-        return result, err
+        return "", err
     }
     defer file.Close()
 
     hash := sha256.New()
     if _, err := io.Copy(hash, file); err != nil {
-        return result, err
+        return "", err
     }
    
-    return hash.Sum(result), nil
+    return hex.EncodeToString(hash.Sum(result)), nil
 }
 
 func isDir(path string) bool {
@@ -187,37 +185,37 @@ func detectMIME(path string) (string, error) {
 }
 
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
-	//params := mux.Vars(r)
+	f := File { }
+	f.Filename = r.Header.Get("filename")
 
-	filename := r.Header.Get("filename")
-	if (filename != "") {
-		filename = sanitizeFilename(filename)
+	if (f.Filename != "") {
+		f.Filename = sanitizeFilename(f.Filename)
 	}
 
-	if (filename == "") {
+	if (f.Filename == "") {
 		http.Error(w, "Filename invalid or not set.", 400)
 		return
 	}
 
-	tag := r.Header.Get("tag")
-	if tag != "" {
-		if (!validTag(tag)) {
-			http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
-			return
-		}
-	} else {
-		tag = randomString(16)
-		glog.Info("Generated tag: " + tag)
+	f.Tag = r.Header.Get("tag")
+	if f.Tag == "" {
+		f.Tag = randomString(16)
+		glog.Info("Generated tag: " + f.Tag)
 	}
 
-	sha256 := r.Header.Get("content-sha256")
-	if (sha256 == "") {
-		glog.Info("sha256 checksum was not provided")
-	} else {
-		glog.Info("Provided sha256 checksum: ", sha256)
+	if (!validTag(f.Tag)) {
+		http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
+		return
 	}
 
-	var tagdir = filepath.Join(cfg.Filedir, tag)
+	f.SHA256 = r.Header.Get("content-sha256")
+	if (f.SHA256 == "") {
+		glog.Info("SHA256 checksum was not provided")
+	} else {
+		glog.Info("Provided SHA256 checksum: ", f.SHA256)
+	}
+
+	var tagdir = filepath.Join(cfg.Filedir, f.Tag)
 	err := ensureDirectoryExists(tagdir)
 	if err != nil {
 		glog.Info("Unable to directory " + tagdir + ": ", err)
@@ -225,47 +223,41 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 		return
 	}
 
-	var fpath = filepath.Join(tagdir, filename)
-	nBytes, err := writeToFile(fpath, r.Body)
+	var fpath = filepath.Join(tagdir, f.Filename)
+	f.Bytes, err = writeToFile(fpath, r.Body)
 	if err != nil {
 		glog.Info("Unable to write file " + fpath + ":", err)
 		http.Error(w, "", http.StatusInternalServerError);
 		return
 	}
 
-	var verified = false
-	var calculated_sha256 = ""
-	if b, err := sha256sum(fpath); err != nil {
-		glog.Info("Error occurred while calculating sha256 checksum: ", err)
+	sha256, err := sha256sum(fpath)
+	if err != nil {
+		glog.Info("Error occurred while calculating SHA256 checksum: ", err)
 		http.Error(w, "Upload failed", http.StatusInternalServerError);
 		return
+	}
+
+	glog.Info("Calculated SHA256 checksum: " + sha256)
+	if f.SHA256 == "" {
+		f.SHA256 = sha256
 	} else {
-		calculated_sha256 = hex.EncodeToString(b)
-		glog.Info("Calculated sha256 checksum: " + calculated_sha256)
-		if sha256 == calculated_sha256 {
-			glog.Info("sha256 checksum verified")
-			verified = true
+		if sha256 == f.SHA256 {
+			glog.Info("SHA256 checksum verified")
+			f.Verified = true
 		} else {
-			if sha256 != "" {
-				glog.Info("sha256 checksum verification failed")
-				http.Error(w, "sha256 verification failed",
-				http.StatusConflict);
-				return
-			}
+			glog.Info("sha256 checksum verification failed")
+			http.Error(w, "SHA256 verification failed",
+			http.StatusConflict);
+			return
 		}
 	}
 
-	f := File { }
-	f.Filename = filename
-	f.Tag = tag
-	f.Bytes = uint64(nBytes)
-	f.Verified = verified
-	f.SHA256 = calculated_sha256
 	f.RemoteAddr = r.RemoteAddr
 	f.UserAgent = r.Header.Get("User-Agent")
 	f.CreatedAt = time.Now().UTC()
 	f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
-	f.BytesReadable = humanize.Bytes(f.Bytes)
+	f.BytesReadable = humanize.Bytes(uint64(f.Bytes))
 	f.CreatedAtReadable = humanize.Time(f.CreatedAt)
 	f.ExpiresAtReadable = humanize.Time(f.ExpiresAt)
 	f.MIME, err = detectMIME(fpath)
@@ -277,15 +269,17 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 
 	fileLink := Link {}
 	fileLink.Rel = "file"
-	fileLink.Href = cfg.Baseurl + "/" + tag + "/" + filename
+	fileLink.Href = cfg.Baseurl + "/" + f.Tag + "/" + f.Filename
 	f.Links = append(f.Links, fileLink)
 
 	tagLink := Link {}
 	tagLink.Rel = "tag"
-	tagLink.Href = cfg.Baseurl + "/" + tag
+	tagLink.Href = cfg.Baseurl + "/" + f.Tag
 	f.Links = append(f.Links, tagLink)
 
-	triggerUploadedFileHandler(cfg.TriggerUploadedFile, tag, filename)
+	if cfg.TriggerUploadedFile != "" {
+		triggerUploadedFileHandler(cfg.TriggerUploadedFile, f.Tag, f.Filename)
+	}
 
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
