@@ -219,7 +219,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	err := ensureDirectoryExists(tagdir)
 	if err != nil {
 		glog.Info("Unable to directory " + tagdir + ": ", err)
-		http.Error(w, "", http.StatusInternalServerError);
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
 		return
 	}
 
@@ -227,14 +227,14 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	f.Bytes, err = writeToFile(fpath, r.Body)
 	if err != nil {
 		glog.Info("Unable to write file " + fpath + ":", err)
-		http.Error(w, "", http.StatusInternalServerError);
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
 		return
 	}
 
 	sha256, err := sha256sum(fpath)
 	if err != nil {
 		glog.Info("Error occurred while calculating SHA256 checksum: ", err)
-		http.Error(w, "Upload failed", http.StatusInternalServerError);
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
 		return
 	}
 
@@ -263,7 +263,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	f.MIME, err = detectMIME(fpath)
 	if err != nil {
 		glog.Info("Unable to detect MIME for file " + fpath + ":", err)
-		http.Error(w, "", http.StatusInternalServerError);
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
 		return
 	}
 
