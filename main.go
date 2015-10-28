@@ -1,23 +1,32 @@
 package main
 
 import (
+	"math/rand"
 	"fmt"
 	"flag"
 	"strconv"
 	"net/http"
 	"time"
-	//"io"
-	//"encoding/json"
 
 	"github.com/gorilla/mux"
 	"github.com/golang/glog"
 
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/api"
-	//"github.com/espebra/filebin/app/log"
 )
 
 var cfg = config.Global
+
+type 
+
+func generateReqId(n int) string {
+        var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+        b := make([]rune, n)
+        for i := range b {
+                b[i] = letters[rand.Intn(len(letters))]
+        }
+        return string(b)
+}
 
 func main() {
 	defer glog.Flush()
@@ -200,6 +209,9 @@ func main() {
 
 func makeHandler(fn func (http.ResponseWriter, *http.Request, config.Configuration)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ReqId := generateReqId(16)
+		glog.Info("ReqId:", ReqId)
+		glog.Flush()
 		fn(w, r, cfg)
 	}
 }
@@ -209,11 +221,6 @@ func httpInterceptor(router http.Handler) http.Handler {
 		startTime := time.Now().UTC()
 
 		//var req = ParseRequest(r)
-		//ReqId := GenerateReqId(16)
-
-		//Info.SetPrefix("Reqid " + ReqId + ": ")
-		//Error.SetPrefix("Reqid " + ReqId + ": ")
-		//Database.SetPrefix("Reqid " + ReqId + ": ")
 
 		glog.Info("Request from " + r.RemoteAddr)
 		glog.Info(r.Method + " " + r.RequestURI)
