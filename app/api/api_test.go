@@ -24,6 +24,21 @@ func TestTriggers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	err = triggerNewTagHandler("unknowncommand", "tag")
+	if err == nil {
+		t.Fatal("This should fail")
+	}
+
+	err = triggerUploadedFileHandler("unknowncommand", "tag", "filename")
+	if err == nil {
+		t.Fatal("This should fail")
+	}
+
+	err = triggerExpiredTagHandler("unknowncommand", "tag")
+	if err == nil {
+		t.Fatal("This should fail")
+	}
 }
 
 func TestSha256Sum(t *testing.T) {
@@ -43,11 +58,21 @@ func TestSha256Sum(t *testing.T) {
 	if checksum != "290f493c44f5d63d06b374d0a5abd292fae38b92cab2fae5efefe1b0e9347f56" {
 		t.Fatal("Invalid checksum", checksum)
 	}
+
+	checksum, err = sha256sum("unknownfile")
+	if err == nil {
+		t.Fatal("This should fail")
+	}
 }
 
 func TestIsDir(t *testing.T) {
-	if isDir("/etc") == false {
-		t.Fatal("Unable to detect /etc as a directory")
+	dir, err := ioutil.TempDir(os.TempDir(), "prefix")
+	defer os.Remove(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if isDir(dir) != true {
+		t.Fatal("Unable to detect " + dir + " as a directory")
 	}
 
 	if isDir("/unknowndirectory") != false {
@@ -106,6 +131,10 @@ func TestValidTag(t *testing.T) {
 	if validTag("../foo") == true {
 		t.Fatal("Tag contains invalid characters")
 	}
+
+	if validTag("abcdefghijklmnop") == false {
+		t.Fatal("This tag is valid")
+	}
 }
 
 func TestEnsureDirectoryExists(t *testing.T) {
@@ -125,23 +154,43 @@ func TestEnsureDirectoryExists(t *testing.T) {
 	if err != nil {
 		t.Fatal("This directory cannot be created:", err)
 	}
-}
 
-func TestWriteToFile(t *testing.T) {
-	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	// Ensure that the directory is created
+	err = ensureDirectoryExists(dir)
+	if err != nil {
+		t.Fatal("This directory wasn't created:", err)
+	}
+
+	// Remove the directory to clean up
+	err = os.Remove(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	os.Remove(file.Name())
-	
-	//nBytes, err := writeToFile(file.Name(), content)
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
-	//if nBytes != 6 {
-	//	t.Fatal("The amount of bytes was unexpected:", nBytes)
-	//}
-	
+}
+
+func TestWriteToFile(t *testing.T) {
+	from_file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(from_file.Name())
+	from_file.WriteString("some content")
+	from_file.Sync()
+	from_file.Seek(0, 0)
+
+	to_file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Remove(to_file.Name())
+
+	nBytes, err := writeToFile(to_file.Name(), from_file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if nBytes != 12 {
+		t.Fatal("The amount of bytes was unexpected:", nBytes)
+	}
 }
 
 func TestDetectMIME(t *testing.T) {
