@@ -1,12 +1,15 @@
 package main
 
 import (
-	"math/rand"
+	"os"
+	"os/signal"
+	"syscall"
 	"fmt"
 	"flag"
+	"time"
 	"strconv"
 	"net/http"
-	"time"
+	"math/rand"
 
 	"github.com/gorilla/mux"
 	"github.com/golang/glog"
@@ -17,8 +20,6 @@ import (
 
 var cfg = config.Global
 
-type 
-
 func generateReqId(n int) string {
         var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
         b := make([]rune, n)
@@ -28,7 +29,20 @@ func generateReqId(n int) string {
         return string(b)
 }
 
+func teardown() {
+    glog.Flush()
+}
+
 func main() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, syscall.SIGTERM)
+	go func() {
+		<-c
+		teardown()
+		os.Exit(1)
+	}()
+
 	defer glog.Flush()
 
 	flag.StringVar(&cfg.Baseurl, "baseurl",
@@ -173,11 +187,7 @@ func main() {
 	router := mux.NewRouter()
 	http.Handle("/", httpInterceptor(router))
 	router.HandleFunc("/", makeHandler(api.Upload)).Methods("POST")
-	//mux := http.NewServeMux()
-	//mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-        //	fmt.Fprintf(w, "generic user handler: %v\n", req.URL.Path)
-	//})
-	//mux.HandleFunc("/", api.Upload)
+	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", makeHandler(api.FetchFile)).Methods("GET", "HEAD")
 
 	//router.HandleFunc("/dashboard{_:/?}", ViewDashboard).Methods("GET", "HEAD")
 
@@ -188,7 +198,6 @@ func main() {
 	//router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/page/{page:[0-9]+}{_:/?}",
 	//    ViewTag).Methods("GET", "HEAD")
 	//router.HandleFunc("/{tag:[A-Za-z0-9_-]+}{_:/?}", ViewTag).Methods("GET", "HEAD")
-	//router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", ViewFile).Methods("GET", "HEAD")
 
 	//router.HandleFunc("/user{_:/?}", user.GetHomePage).Methods("GET")
 	//router.HandleFunc("/user/view/{id:[0-9]+}", user.GetViewPage).Methods("GET")
@@ -209,29 +218,28 @@ func main() {
 
 func makeHandler(fn func (http.ResponseWriter, *http.Request, config.Configuration)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ReqId := generateReqId(16)
-		glog.Info("ReqId:", ReqId)
-		glog.Flush()
-		fn(w, r, cfg)
-	}
-}
-
-func httpInterceptor(router http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now().UTC()
 
 		//var req = ParseRequest(r)
 
 		glog.Info("Request from " + r.RemoteAddr)
 		glog.Info(r.Method + " " + r.RequestURI)
+		//ReqId := generateReqId(16)
+		//glog.Info("ReqId:", ReqId)
 
-		router.ServeHTTP(w, r)
+		fn(w, r, cfg)
 
 		finishTime := time.Now().UTC()
 		elapsedTime := finishTime.Sub(startTime)
 
 		//log.Info("Status " + w.Status)
 		glog.Info("Processing time: " + elapsedTime.String())
+	}
+}
+
+func httpInterceptor(router http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		router.ServeHTTP(w, r)
 	})
 }
 

@@ -14,7 +14,7 @@ import (
 	"regexp"
 	"net/http"
 	"path/filepath"
-	//"github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 	"github.com/dustin/go-humanize"
 	"github.com/golang/glog"
 	"github.com/espebra/filebin/app/config"
@@ -286,4 +286,26 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 
 	var status = 200
 	output.JSONresponse(w, status, headers, f)
+}
+
+func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
+    params := mux.Vars(r)
+    tag := params["tag"]
+    filename := params["filename"]
+
+    if (!validTag(tag)) {
+        http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
+        return
+    }
+
+    filename = sanitizeFilename(filename)
+    if (filename == "") {
+        http.Error(w, "Filename invalid or not set.", 400)
+        return
+    }
+
+    path := filepath.Join(cfg.Filedir, tag, filename)
+
+    w.Header().Set("Cache-Control", "max-age: 60")
+    http.ServeFile(w, r, path)
 }
