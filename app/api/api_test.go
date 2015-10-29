@@ -242,4 +242,24 @@ func TestDetectMIME(t *testing.T) {
 	if f.MIME != "image/gif" {
 		t.Fatal("Unable to detect mime type:", f.MIME)
 	}
+
+	f.SetFilename("unknownfile")
+	err = f.DetectMIME()
+	if err == nil {
+		t.Fatal("File does not exist.")
+	}
+	if f.MIME != "image/gif" {
+		t.Fatal("Unable to detect mime type:", f.MIME)
+	}
+}
+
+func TestGenerateLinks(t *testing.T) {
+	f := File {}
+	f.SetFilename("foo")
+	f.SetTag("validtag")
+	f.GenerateLinks("http://localhost:8080")
+
+	if len(f.Links) != 2 {
+		t.Fatal("Unexpected amount of links:", len(f.Links))
+	}
 }

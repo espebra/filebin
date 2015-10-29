@@ -65,6 +65,18 @@ func (f *File) SetFilename(s string) {
 	}
 }
 
+func (f *File) GenerateLinks(baseurl string) {
+	fileLink := Link {}
+	fileLink.Rel = "file"
+	fileLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename
+	f.Links = append(f.Links, fileLink)
+
+	tagLink := Link {}
+	tagLink.Rel = "tag"
+	tagLink.Href = baseurl + "/" + f.Tag
+	f.Links = append(f.Links, tagLink)
+}
+
 func (f *File) DetectMIME() error {
 	var err error
 	path := filepath.Join(f.TagDir, f.Filename)
@@ -270,16 +282,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	f.UserAgent = r.Header.Get("User-Agent")
 	f.CreatedAt = time.Now().UTC()
 	f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
-
-	fileLink := Link {}
-	fileLink.Rel = "file"
-	fileLink.Href = cfg.Baseurl + "/" + f.Tag + "/" + f.Filename
-	f.Links = append(f.Links, fileLink)
-
-	tagLink := Link {}
-	tagLink.Rel = "tag"
-	tagLink.Href = cfg.Baseurl + "/" + f.Tag
-	f.Links = append(f.Links, tagLink)
+	f.GenerateLinks(cfg.Baseurl)
 
 	if cfg.TriggerUploadedFile != "" {
 		triggerUploadedFileHandler(cfg.TriggerUploadedFile, f.Tag, f.Filename)
@@ -288,7 +291,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
 
-	var status = 200
+	var status = 201
 	output.JSONresponse(w, status, headers, f)
 }
 
