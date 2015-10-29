@@ -30,7 +30,7 @@ type Link struct {
 type File struct {
 	Filename		string		`json:"filename"`
 	Tag			string		`json:"tag"`
-	TagPath			string		`json:"-"`
+	TagDir			string		`json:"-"`
 
 	Bytes			int64		`json:"bytes"`
 	//BytesReadable		string		`json:"bytes_prefixed"`
@@ -65,6 +65,28 @@ func (f *File) SetFilename(s string) {
 	}
 }
 
+func (f *File) DetectMIME() error {
+	var err error
+	path := filepath.Join(f.TagDir, f.Filename)
+
+	fp, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer fp.Close()
+	buffer := make([]byte, 512)
+	_, err = fp.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+	_, err = fp.Read(buffer)
+	if err != nil {
+		return err
+	}
+	f.MIME = http.DetectContentType(buffer)
+	return nil
+}
+
 func (f *File) SetTag(s string) error {
 	var err error
 	if s == "" {
@@ -84,7 +106,7 @@ func (f *File) SetTag(s string) error {
 
 func (f *File) VerifySHA256(s string) error {
 	var err error
-	path := filepath.Join(f.TagPath, f.Filename)
+	path := filepath.Join(f.TagDir, f.Filename)
 	if f.SHA256 == "" {
 		f.SHA256, err = sha256sum(path)
 	}
@@ -101,12 +123,30 @@ func (f *File) VerifySHA256(s string) error {
 	return err
 }
 
+func (f *File) WriteFile(d io.Reader) error {
+	path := filepath.Join(f.TagDir, f.Filename)
+	glog.Info("Writing data to " + path)
+	fp, err := os.Create(path)
+	defer fp.Close()
+	if err != nil {
+		return err
+	}
+
+	f.Bytes, err = io.Copy(fp, d)
+	if err != nil {
+		return err
+	}
+	glog.Info("Upload complete after " + strconv.FormatInt(f.Bytes, 10) +
+		" bytes")
+	return nil
+}
+
 func (f *File) EnsureTagDirectoryExists() error {
 	var err error
-	if !isDir(f.TagPath) {
-		glog.Info("The directory " + f.TagPath + " does not exist. " +
+	if !isDir(f.TagDir) {
+		glog.Info("The directory " + f.TagDir + " does not exist. " +
 			"Creating.")
-		err = os.Mkdir(f.TagPath, 0700)
+		err = os.Mkdir(f.TagDir, 0700)
 	}
 	return err
 }
@@ -190,44 +230,6 @@ func validTag(tag string) (bool) {
 	}
 }
 
-func writeToFile(path string, body io.Reader) (int64, error) {
-	glog.Info("Writing data to " + path)
-	fp, err := os.Create(path)
-	defer fp.Close()
-	if err != nil {
-		return 0, err
-	}
-
-	nBytes, err := io.Copy(fp, body)
-	if err != nil {
-		return nBytes, err
-	} else {
-		glog.Info("Upload complete after " +
-			strconv.FormatInt(nBytes, 10) + " bytes")
-	}
-	return nBytes, nil
-}
-
-func detectMIME(path string) (string, error) {
-	var err error
-	fp, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-	defer fp.Close()
-	buff := make([]byte, 512)
-	_, err = fp.Seek(0, 0)
-	if err != nil {
-		return "", err
-	}
-	_, err = fp.Read(buff)
-	if err != nil {
-		return "", err
-	}
-	mime := http.DetectContentType(buff)
-	return mime, err
-}
-
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	var err error
 
@@ -239,23 +241,17 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 		return
 	}
 
-	f.TagPath = filepath.Join(cfg.Filedir, f.Tag)
-
-	//var sha256 = r.Header.Get("content-sha256")
-	//if (sha256 != "") {
-	//	glog.Info("Provided SHA256 checksum: ", sha256)
-	//}
-
+	f.TagDir = filepath.Join(cfg.Filedir, f.Tag)
 	err = f.EnsureTagDirectoryExists()
 	if err != nil {
-		glog.Error("Unable to create tag directory", f.TagPath)
+		glog.Error("Unable to create tag directory", f.TagDir)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
 		return
 	}
 
-	f.Bytes, err = writeToFile(filepath.Join(f.TagPath, f.Filename), r.Body)
+	err = f.WriteFile(r.Body)
 	if err != nil {
-		glog.Info("Unable to write file " + filepath.Join(f.TagPath, f.Filename) + ":", err)
+		glog.Info("Unable to write file " + filepath.Join(f.TagDir, f.Filename) + ":", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
 		return
 	}
@@ -265,20 +261,15 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 		http.Error(w, "Checksum did not match", http.StatusConflict);
 		return
 	}
+	err = f.DetectMIME()
+	if err != nil {
+		glog.Error("Unable to detect MIME from " + filepath.Join(f.TagDir, f.Filename) + ":", err)
+	}
 
 	f.RemoteAddr = r.RemoteAddr
 	f.UserAgent = r.Header.Get("User-Agent")
 	f.CreatedAt = time.Now().UTC()
 	f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
-	//f.BytesReadable = humanize.Bytes(uint64(f.Bytes))
-	//f.CreatedAtReadable = humanize.Time(f.CreatedAt)
-	//f.ExpiresAtReadable = humanize.Time(f.ExpiresAt)
-	f.MIME, err = detectMIME(filepath.Join(f.TagPath, f.Filename))
-	if err != nil {
-		glog.Info("Unable to detect MIME for file " + filepath.Join(f.TagPath, f.Filename) + ":", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
-		return
-	}
 
 	fileLink := Link {}
 	fileLink.Rel = "file"

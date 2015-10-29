@@ -148,7 +148,7 @@ func TestEnsureDirectoryExists(t *testing.T) {
 	
 	f := File {}
 	f.SetTag("foo")
-	f.TagPath = filepath.Join(dir, f.Tag)
+	f.TagDir = filepath.Join(dir, f.Tag)
 	err = f.EnsureTagDirectoryExists()
 	if err != nil {
 		t.Fatal("This directory cannot be created:", err)
@@ -168,6 +168,13 @@ func TestEnsureDirectoryExists(t *testing.T) {
 }
 
 func TestWriteToFile(t *testing.T) {
+	// Use TempDir to figure out the path to a valid directory
+	dir, err := ioutil.TempDir(os.TempDir(), "prefix")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(dir)
+
 	from_file, err := ioutil.TempFile(os.TempDir(), "prefix")
 	if err != nil {
 		t.Fatal(err)
@@ -177,46 +184,62 @@ func TestWriteToFile(t *testing.T) {
 	from_file.Sync()
 	from_file.Seek(0, 0)
 
-	to_file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	f := File {}
+	f.SetTag("foo")
+	f.SetFilename("bar")
+	f.TagDir = filepath.Join(dir, f.Tag)
+	err = f.EnsureTagDirectoryExists()
 	if err != nil {
 		t.Fatal(err)
 	}
-	os.Remove(to_file.Name())
-
-	nBytes, err := writeToFile(to_file.Name(), from_file)
+	err = f.WriteFile(from_file)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if nBytes != 12 {
-		t.Fatal("The amount of bytes was unexpected:", nBytes)
+	if f.Bytes != 12 {
+		t.Fatal("The amount of bytes was unexpected:", f.Bytes)
 	}
 }
 
 func TestDetectMIME(t *testing.T) {
-	var mime string
 	var err error
 
-	mime, err = detectMIME("testing/image.png")
+	f := File {}
+	err = f.SetTag("testdata")
 	if err != nil {
 		t.Fatal(err)
-	}
-	if mime != "image/png" {
-		t.Fatal("Unable to detect mime type:", mime)
 	}
 
-	mime, err = detectMIME("testing/image.jpg")
+	dir, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if mime != "image/jpeg" {
-		t.Fatal("Unable to detect mime type:", mime)
+	f.TagDir = filepath.Join(dir, f.Tag)
+
+	f.SetFilename("image.png")
+	err = f.DetectMIME()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f.MIME != "image/png" {
+		t.Fatal("Unable to detect mime type:", f.MIME)
 	}
 
-	mime, err = detectMIME("testing/image.gif")
+	f.SetFilename("image.jpg")
+	err = f.DetectMIME()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if mime != "image/gif" {
-		t.Fatal("Unable to detect mime type:", mime)
+	if f.MIME != "image/jpeg" {
+		t.Fatal("Unable to detect mime type:", f.MIME)
+	}
+
+	f.SetFilename("image.gif")
+	err = f.DetectMIME()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f.MIME != "image/gif" {
+		t.Fatal("Unable to detect mime type:", f.MIME)
 	}
 }
