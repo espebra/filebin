@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"io/ioutil"
 	"os"
+        "path/filepath"
 )
 
 func TestTriggers(t *testing.T) {
@@ -98,20 +99,20 @@ func TestRandomString(t *testing.T) {
 }
 
 func TestSanitizeFilename(t *testing.T) {
-	var str string
-	str = sanitizeFilename("foo")
-	if str != "foo" {
-		t.Fatal("Sanitizing failed:", str)
+	f := File {}
+	f.SetFilename("foo")
+	if f.Filename != "foo" {
+		t.Fatal("Sanitizing failed:", f.Filename)
 	}
 
-	str = sanitizeFilename(" foo!\"#$%&()= ")
-	if str != "foo________=" {
-		t.Fatal("Sanitizing failed:", str)
+	f.SetFilename(" foo!\"#$%&()= ")
+	if f.Filename != "foo________=" {
+		t.Fatal("Sanitizing failed:", f.Filename)
 	}
 
-	str = sanitizeFilename("/foo/bar/baz")
-	if str != "baz" {
-		t.Fatal("Sanitizing failed:", str)
+	f.SetFilename("/foo/bar/baz")
+	if f.Filename != "baz" {
+		t.Fatal("Sanitizing failed:", f.Filename)
 	}
 }
 
@@ -143,20 +144,18 @@ func TestEnsureDirectoryExists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Remove the directory and keep the path
-	err = os.Remove(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
+	defer os.Remove(dir)
 	
-	// Try to create the directory using our function
-	err = ensureDirectoryExists(dir)
+	f := File {}
+	f.SetTag("foo")
+	f.TagPath = filepath.Join(dir, f.Tag)
+	err = f.EnsureTagDirectoryExists()
 	if err != nil {
 		t.Fatal("This directory cannot be created:", err)
 	}
 
 	// Ensure that the directory is created
-	err = ensureDirectoryExists(dir)
+	err = f.EnsureTagDirectoryExists()
 	if err != nil {
 		t.Fatal("This directory wasn't created:", err)
 	}

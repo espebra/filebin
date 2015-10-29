@@ -187,7 +187,7 @@ func main() {
 	router := mux.NewRouter()
 	http.Handle("/", httpInterceptor(router))
 	router.HandleFunc("/", makeHandler(api.Upload)).Methods("POST")
-	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", makeHandler(api.FetchFile)).Methods("GET", "HEAD")
+	//router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", makeHandler(api.FetchFile)).Methods("GET", "HEAD")
 
 	//router.HandleFunc("/dashboard{_:/?}", ViewDashboard).Methods("GET", "HEAD")
 

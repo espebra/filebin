@@ -3,6 +3,7 @@ package api
 import (
 	"crypto/sha256"
 	"math/rand"
+	"errors"
 	"os"
 	"os/exec"
 	"path"
@@ -14,8 +15,8 @@ import (
 	"regexp"
 	"net/http"
 	"path/filepath"
-	"github.com/gorilla/mux"
-	"github.com/dustin/go-humanize"
+	//"github.com/gorilla/mux"
+	//"github.com/dustin/go-humanize"
 	"github.com/golang/glog"
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/output"
@@ -29,18 +30,85 @@ type Link struct {
 type File struct {
 	Filename		string		`json:"filename"`
 	Tag			string		`json:"tag"`
+	TagPath			string		`json:"-"`
+
 	Bytes			int64		`json:"bytes"`
-	BytesReadable		string		`json:"bytes_prefixed"`
+	//BytesReadable		string		`json:"bytes_prefixed"`
 	MIME			string		`json:"mime"`
 	Verified		bool		`json:"verified"`
 	SHA256			string		`json:"sha256"`
 	RemoteAddr		string		`json:"remote-addr"`
-	UserAgent		string		`json:"user-agent"`
+	UserAgent		string		`json:"-"`
 	CreatedAt		time.Time	`json:"created"`
-	CreatedAtReadable	string		`json:"created_relative"`
+	//CreatedAtReadable	string		`json:"created_relative"`
 	ExpiresAt		time.Time	`json:"expires"`
-	ExpiresAtReadable	string		`json:"expires_relative"`
+	//ExpiresAtReadable	string		`json:"expires_relative"`
 	Links			[]Link		`json:"links"`
+}
+
+func (f *File) SetFilename(s string) {
+	var sanitized = path.Base(path.Clean(s))
+
+	// Remove any trailing space to avoid ending on -
+	sanitized = strings.Trim(sanitized, " ")
+
+	// Remove all but valid chars
+	var valid = regexp.MustCompile("[^A-Za-z0-9-_=,. ]")
+	sanitized = valid.ReplaceAllString(sanitized, "_")
+
+	if sanitized == "" {
+		// Generate filename if not provided
+		f.Filename = randomString(16)
+		glog.Info("Generated filename: " + f.Filename)
+	} else {
+		f.Filename = sanitized
+	}
+}
+
+func (f *File) SetTag(s string) error {
+	var err error
+	if s == "" {
+		// Generate tag if not provided
+		f.Tag = randomString(16)
+		glog.Info("Generated tag: " + f.Tag)
+	} else {
+		if validTag(s) {
+			f.Tag = s
+		} else {
+			err = errors.New("Invalid tag specified. It contains " +
+				"illegal characters or is too short.")
+		}
+	}
+	return err
+}
+
+func (f *File) VerifySHA256(s string) error {
+	var err error
+	path := filepath.Join(f.TagPath, f.Filename)
+	if f.SHA256 == "" {
+		f.SHA256, err = sha256sum(path)
+	}
+	if s == "" {
+		f.Verified = false
+	} else {
+		if f.SHA256 == s {
+			f.Verified = true
+		} else {
+			err = errors.New("Checksum " + s + " did not match " +
+				f.SHA256)
+		}
+	}
+	return err
+}
+
+func (f *File) EnsureTagDirectoryExists() error {
+	var err error
+	if !isDir(f.TagPath) {
+		glog.Info("The directory " + f.TagPath + " does not exist. " +
+			"Creating.")
+		err = os.Mkdir(f.TagPath, 0700)
+	}
+	return err
 }
 
 func init() {
@@ -113,19 +181,6 @@ func randomString(n int) string {
 	return string(b)
 }
 
-func sanitizeFilename(s string) string {
-	var sanitized = path.Base(path.Clean(s))
-
-	// Remove any trailing space to avoid ending on -
-	sanitized = strings.Trim(sanitized, " ")
-
-	// Remove all but valid chars
-	var valid = regexp.MustCompile("[^A-Za-z0-9-_=,. ]")
-	sanitized = valid.ReplaceAllString(sanitized, "_")
-
-	return sanitized
-}
-
 func validTag(tag string) (bool) {
 	var validTag = regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
 	if validTag.MatchString(tag) {
@@ -133,17 +188,6 @@ func validTag(tag string) (bool) {
 	} else {
 		return false
 	}
-}
-
-func ensureDirectoryExists(tagdir string) error {
-	var err error
-	if (isDir(tagdir)) {
-		glog.Info("The directory " + tagdir + " exists")
-	} else {
-		glog.Info("The directory " + tagdir + " does not exist. Creating.")
-		err = os.Mkdir(tagdir, 0700)
-	}
-	return err
 }
 
 func writeToFile(path string, body io.Reader) (int64, error) {
@@ -185,84 +229,53 @@ func detectMIME(path string) (string, error) {
 }
 
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
+	var err error
+
 	f := File { }
-	f.Filename = r.Header.Get("filename")
-
-	if (f.Filename != "") {
-		f.Filename = sanitizeFilename(f.Filename)
-	}
-
-	if (f.Filename == "") {
-		http.Error(w, "Filename invalid or not set.", 400)
-		return
-	}
-
-	f.Tag = r.Header.Get("tag")
-	if f.Tag == "" {
-		f.Tag = randomString(16)
-		glog.Info("Generated tag: " + f.Tag)
-	}
-
-	if (!validTag(f.Tag)) {
-		http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
-		return
-	}
-
-	f.SHA256 = r.Header.Get("content-sha256")
-	if (f.SHA256 == "") {
-		glog.Info("SHA256 checksum was not provided")
-	} else {
-		glog.Info("Provided SHA256 checksum: ", f.SHA256)
-	}
-
-	var tagdir = filepath.Join(cfg.Filedir, f.Tag)
-	err := ensureDirectoryExists(tagdir)
+	f.SetFilename(r.Header.Get("filename"))
+	err = f.SetTag(r.Header.Get("tag"))
 	if err != nil {
-		glog.Info("Unable to directory " + tagdir + ": ", err)
+		http.Error(w, err.Error(), http.StatusBadRequest);
+		return
+	}
+
+	f.TagPath = filepath.Join(cfg.Filedir, f.Tag)
+
+	//var sha256 = r.Header.Get("content-sha256")
+	//if (sha256 != "") {
+	//	glog.Info("Provided SHA256 checksum: ", sha256)
+	//}
+
+	err = f.EnsureTagDirectoryExists()
+	if err != nil {
+		glog.Error("Unable to create tag directory", f.TagPath)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
 		return
 	}
 
-	var fpath = filepath.Join(tagdir, f.Filename)
-	f.Bytes, err = writeToFile(fpath, r.Body)
+	f.Bytes, err = writeToFile(filepath.Join(f.TagPath, f.Filename), r.Body)
 	if err != nil {
-		glog.Info("Unable to write file " + fpath + ":", err)
+		glog.Info("Unable to write file " + filepath.Join(f.TagPath, f.Filename) + ":", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
 		return
 	}
 
-	sha256, err := sha256sum(fpath)
+	err = f.VerifySHA256(r.Header.Get("content-sha256"))
 	if err != nil {
-		glog.Info("Error occurred while calculating SHA256 checksum: ", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
+		http.Error(w, "Checksum did not match", http.StatusConflict);
 		return
-	}
-
-	glog.Info("Calculated SHA256 checksum: " + sha256)
-	if f.SHA256 == "" {
-		f.SHA256 = sha256
-	} else {
-		if sha256 == f.SHA256 {
-			glog.Info("SHA256 checksum verified")
-			f.Verified = true
-		} else {
-			glog.Info("sha256 checksum verification failed")
-			http.Error(w, "SHA256 verification failed",
-			http.StatusConflict);
-			return
-		}
 	}
 
 	f.RemoteAddr = r.RemoteAddr
 	f.UserAgent = r.Header.Get("User-Agent")
 	f.CreatedAt = time.Now().UTC()
 	f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
-	f.BytesReadable = humanize.Bytes(uint64(f.Bytes))
-	f.CreatedAtReadable = humanize.Time(f.CreatedAt)
-	f.ExpiresAtReadable = humanize.Time(f.ExpiresAt)
-	f.MIME, err = detectMIME(fpath)
+	//f.BytesReadable = humanize.Bytes(uint64(f.Bytes))
+	//f.CreatedAtReadable = humanize.Time(f.CreatedAt)
+	//f.ExpiresAtReadable = humanize.Time(f.ExpiresAt)
+	f.MIME, err = detectMIME(filepath.Join(f.TagPath, f.Filename))
 	if err != nil {
-		glog.Info("Unable to detect MIME for file " + fpath + ":", err)
+		glog.Info("Unable to detect MIME for file " + filepath.Join(f.TagPath, f.Filename) + ":", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
 		return
 	}
@@ -288,24 +301,24 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	output.JSONresponse(w, status, headers, f)
 }
 
-func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
-    params := mux.Vars(r)
-    tag := params["tag"]
-    filename := params["filename"]
-
-    if (!validTag(tag)) {
-        http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
-        return
-    }
-
-    filename = sanitizeFilename(filename)
-    if (filename == "") {
-        http.Error(w, "Filename invalid or not set.", 400)
-        return
-    }
-
-    path := filepath.Join(cfg.Filedir, tag, filename)
-
-    w.Header().Set("Cache-Control", "max-age: 60")
-    http.ServeFile(w, r, path)
-}
+//func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
+//    params := mux.Vars(r)
+//    tag := params["tag"]
+//    filename := params["filename"]
+//
+//    if (!validTag(tag)) {
+//        http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
+//        return
+//    }
+//
+//    filename = sanitizeFilename(filename)
+//    if (filename == "") {
+//        http.Error(w, "Filename invalid or not set.", 400)
+//        return
+//    }
+//
+//    path := filepath.Join(cfg.Filedir, tag, filename)
+//
+//    w.Header().Set("Cache-Control", "max-age: 60")
+//    http.ServeFile(w, r, path)
+//}
