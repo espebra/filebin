@@ -35,9 +35,10 @@ type File struct {
 	Bytes			int64		`json:"bytes"`
 	//BytesReadable		string		`json:"bytes_prefixed"`
 	MIME			string		`json:"mime"`
+	Checksum		string		`json:"checksum"`
+	Algorithm		string		`json:"algorithm"`
 	Verified		bool		`json:"verified"`
-	SHA256			string		`json:"sha256"`
-	RemoteAddr		string		`json:"remote-addr"`
+	RemoteAddr		string		`json:"-"`
 	UserAgent		string		`json:"-"`
 	CreatedAt		time.Time	`json:"created"`
 	//CreatedAtReadable	string		`json:"created_relative"`
@@ -119,17 +120,18 @@ func (f *File) SetTag(s string) error {
 func (f *File) VerifySHA256(s string) error {
 	var err error
 	path := filepath.Join(f.TagDir, f.Filename)
-	if f.SHA256 == "" {
-		f.SHA256, err = sha256sum(path)
+	if f.Checksum == "" {
+		f.Checksum, err = sha256sum(path)
+		f.Algorithm = "SHA256"
 	}
 	if s == "" {
 		f.Verified = false
 	} else {
-		if f.SHA256 == s {
+		if f.Checksum == s {
 			f.Verified = true
 		} else {
 			err = errors.New("Checksum " + s + " did not match " +
-				f.SHA256)
+				f.Checksum)
 		}
 	}
 	return err
@@ -282,7 +284,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	f.RemoteAddr = r.RemoteAddr
 	f.UserAgent = r.Header.Get("User-Agent")
 	f.CreatedAt = time.Now().UTC()
-	//f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
+	f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
 
 	if cfg.TriggerUploadedFile != "" {
 		triggerUploadedFileHandler(cfg.TriggerUploadedFile, f.Tag, f.Filename)
