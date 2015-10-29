@@ -15,7 +15,7 @@ import (
 	"regexp"
 	"net/http"
 	"path/filepath"
-	//"github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 	//"github.com/dustin/go-humanize"
 	"github.com/golang/glog"
 	"github.com/espebra/filebin/app/config"
@@ -277,12 +277,12 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	if err != nil {
 		glog.Error("Unable to detect MIME from " + filepath.Join(f.TagDir, f.Filename) + ":", err)
 	}
+	f.GenerateLinks(cfg.Baseurl)
 
 	f.RemoteAddr = r.RemoteAddr
 	f.UserAgent = r.Header.Get("User-Agent")
 	f.CreatedAt = time.Now().UTC()
-	f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
-	f.GenerateLinks(cfg.Baseurl)
+	//f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
 
 	if cfg.TriggerUploadedFile != "" {
 		triggerUploadedFileHandler(cfg.TriggerUploadedFile, f.Tag, f.Filename)
@@ -295,24 +295,19 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	output.JSONresponse(w, status, headers, f)
 }
 
-//func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
-//    params := mux.Vars(r)
-//    tag := params["tag"]
-//    filename := params["filename"]
-//
-//    if (!validTag(tag)) {
-//        http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
-//        return
-//    }
-//
-//    filename = sanitizeFilename(filename)
-//    if (filename == "") {
-//        http.Error(w, "Filename invalid or not set.", 400)
-//        return
-//    }
-//
-//    path := filepath.Join(cfg.Filedir, tag, filename)
-//
-//    w.Header().Set("Cache-Control", "max-age: 60")
-//    http.ServeFile(w, r, path)
-//}
+func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
+	var err error
+	params := mux.Vars(r)
+	f := File {}
+	f.SetFilename(params["filename"])
+	err = f.SetTag(params["tag"])
+	if err != nil {
+	    http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
+	    return
+	}
+	
+	path := filepath.Join(cfg.Filedir, f.Tag, f.Filename)
+	
+	w.Header().Set("Cache-Control", "max-age: 60")
+	http.ServeFile(w, r, path)
+}

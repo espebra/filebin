@@ -186,8 +186,8 @@ func main() {
 
 	router := mux.NewRouter()
 	http.Handle("/", httpInterceptor(router))
-	router.HandleFunc("/", makeHandler(api.Upload)).Methods("POST")
-	//router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", makeHandler(api.FetchFile)).Methods("GET", "HEAD")
+	router.HandleFunc("/", reqHandler(api.Upload)).Methods("POST")
+	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.FetchFile)).Methods("GET", "HEAD")
 
 	//router.HandleFunc("/dashboard{_:/?}", ViewDashboard).Methods("GET", "HEAD")
 
@@ -216,7 +216,7 @@ func main() {
 	}
 }
 
-func makeHandler(fn func (http.ResponseWriter, *http.Request, config.Configuration)) http.HandlerFunc {
+func reqHandler(fn func (http.ResponseWriter, *http.Request, config.Configuration)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now().UTC()
 
