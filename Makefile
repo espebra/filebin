@@ -1,5 +1,5 @@
 check:
-	go test -cover -v github.com/espebra/filebin/app/api github.com/espebra/filebin/app/config
+	go test -cover -v github.com/espebra/filebin/app/api github.com/espebra/filebin/app/file github.com/espebra/filebin/app/config
 
 get-deps:
 	go get github.com/dustin/go-humanize
