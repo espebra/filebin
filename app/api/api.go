@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/golang/glog"
 	"github.com/espebra/filebin/app/config"
-	"github.com/espebra/filebin/app/file"
+	"github.com/espebra/filebin/app/model"
 	"github.com/espebra/filebin/app/output"
 )
 
@@ -44,7 +44,7 @@ func cmdHandler(cmd *exec.Cmd) error {
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	var err error
 
-	f := file.File { }
+	f := model.File { }
 	f.SetFilename(r.Header.Get("filename"))
 	err = f.SetTag(r.Header.Get("tag"))
 	if err != nil {
@@ -97,7 +97,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	var err error
 	params := mux.Vars(r)
-	f := file.File {}
+	f := model.File {}
 	f.SetFilename(params["filename"])
 	err = f.SetTag(params["tag"])
 	if err != nil {
