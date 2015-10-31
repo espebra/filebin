@@ -2,24 +2,20 @@ package file
 
 import (
 	"crypto/sha256"
-	"math/rand"
-	"errors"
-	"os"
-	//"os/exec"
-	"path"
 	"encoding/hex"
-	"time"
-	"strconv"
+	"errors"
 	"io"
-	"strings"
-	"regexp"
+	"math/rand"
 	"net/http"
+	"os"
+	"path"
 	"path/filepath"
-	//"github.com/gorilla/mux"
-	//"github.com/dustin/go-humanize"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
-	//"github.com/espebra/filebin/app/config"
-	//"github.com/espebra/filebin/app/output"
 )
 
 type Link struct {

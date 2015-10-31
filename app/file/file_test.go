@@ -8,41 +8,7 @@ import (
         "path/filepath"
 )
 
-//func TestTriggers(t *testing.T) {
-//	var err error
-//
-//	err = triggerNewTagHandler("/bin/echo", "tag")
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	err = triggerUploadedFileHandler("/bin/echo", "tag", "filename")
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	err = triggerExpiredTagHandler("/bin/echo", "tag")
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	err = triggerNewTagHandler("unknowncommand", "tag")
-//	if err == nil {
-//		t.Fatal("This should fail")
-//	}
-//
-//	err = triggerUploadedFileHandler("unknowncommand", "tag", "filename")
-//	if err == nil {
-//		t.Fatal("This should fail")
-//	}
-//
-//	err = triggerExpiredTagHandler("unknowncommand", "tag")
-//	if err == nil {
-//		t.Fatal("This should fail")
-//	}
-//}
-
-func TestSha256Sum(t *testing.T) {
+func TestVerifySHA256(t *testing.T) {
 	// Use TempDir to figure out the path to a valid directory
 	dir, err := ioutil.TempDir(os.TempDir(), "prefix")
 	if err != nil {
@@ -127,35 +93,35 @@ func TestSanitizeFilename(t *testing.T) {
 	}
 }
 
-//func TestValidTag(t *testing.T) {
-//	var err error
-//
-//	f := File {}
-//	err = f.SetTag("s")
-//	if err == nil {
-//		t.Fatal("Invalid tag specified.")
-//	}
-//
-//	err = f.SetTag(" s ")
-//	if err == nil {
-//		t.Fatal("Invalid tag specified.")
-//	}
-//
-//	err = f.SetTag("/foo/bar")
-//	if err == nil {
-//		t.Fatal("Invalid tag specified.")
-//	}
-//
-//	err = f.SetTag("../foo")
-//	if err == nil {
-//		t.Fatal("Invalid tag specified.")
-//	}
-//
-//	err = f.SetTag("abcdefghijklmnop")
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//}
+func TestValidTag(t *testing.T) {
+	var err error
+
+	f := File {}
+	err = f.SetTag("s")
+	if err == nil {
+		t.Fatal("Invalid tag specified.")
+	}
+
+	err = f.SetTag(" s ")
+	if err == nil {
+		t.Fatal("Invalid tag specified.")
+	}
+
+	err = f.SetTag("/foo/bar")
+	if err == nil {
+		t.Fatal("Invalid tag specified.")
+	}
+
+	err = f.SetTag("../foo")
+	if err == nil {
+		t.Fatal("Invalid tag specified.")
+	}
+
+	err = f.SetTag("abcdefghijklmnop")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
 
 func TestEnsureDirectoryExists(t *testing.T) {
 	// Use TempDir to figure out the path to a valid directory
