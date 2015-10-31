@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"path"
+	//"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -44,10 +44,11 @@ type File struct {
 }
 
 func (f *File) SetFilename(s string) {
-	var sanitized = path.Base(path.Clean(s))
+	var sanitized string
+	//var sanitized = path.Base(path.Clean(s))
 
 	// Remove any trailing space to avoid ending on -
-	sanitized = strings.Trim(sanitized, " ")
+	sanitized = strings.Trim(s, " ")
 
 	// Remove all but valid chars
 	var valid = regexp.MustCompile("[^A-Za-z0-9-_=,. ]")

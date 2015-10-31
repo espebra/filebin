@@ -75,21 +75,26 @@ func TestRandomString(t *testing.T) {
 	}
 }
 
-func TestSanitizeFilename(t *testing.T) {
+func TestSetFilename(t *testing.T) {
 	f := File {}
 	f.SetFilename("foo")
 	if f.Filename != "foo" {
-		t.Fatal("Sanitizing failed:", f.Filename)
+		t.Fatal("a Sanitizing failed:", f.Filename)
 	}
 
 	f.SetFilename(" foo!\"#$%&()= ")
 	if f.Filename != "foo________=" {
-		t.Fatal("Sanitizing failed:", f.Filename)
+		t.Fatal("b Sanitizing failed:", f.Filename)
 	}
 
 	f.SetFilename("/foo/bar/baz")
-	if f.Filename != "baz" {
-		t.Fatal("Sanitizing failed:", f.Filename)
+	if f.Filename != "_foo_bar_baz" {
+		t.Fatal("c Sanitizing failed:", f.Filename)
+	}
+
+	f.SetFilename("")
+	if f.Filename == "" {
+		t.Fatal("Did not create a random filename: [" + f.Filename + "]")
 	}
 }
 
