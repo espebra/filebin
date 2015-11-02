@@ -43,7 +43,7 @@ func cmdHandler(cmd *exec.Cmd) error {
 
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	var err error
-	f := model.File { }
+	f := model.ExtendedFile { }
 
 	// Write the request body to a temporary file
 	err = f.WriteTempfile(r.Body, cfg.Tempdir)
@@ -58,11 +58,6 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	if err != nil {
 		http.Error(w, "Checksum did not match", http.StatusConflict);
 		return
-	}
-
-	err = f.DetectMIME()
-	if err != nil {
-		glog.Error("Unable to detect MIME: ", err)
 	}
 
 	// Extract the tag from the request or generate a random one
@@ -81,14 +76,30 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 		return
 	}
 
-	// Extract the filename from the request or use the checksum
+	// Extract the filename from the request
 	f.SetFilename(r.Header.Get("filename"))
+
+	// Fallback to the checksum if the filename is not set
+	if f.Filename == "" {
+		f.SetFilename(f.Checksum)
+	}
 
 	// Promote file from tempdir to the published tagdir
 	f.Publish()
 
 	// Clean up by removing the tempfile
 	f.ClearTemp()
+
+	err = f.DetectMIME()
+	if err != nil {
+		glog.Error("Unable to detect MIME: ", err)
+	}
+
+	err = f.Info(cfg.Expiration)
+	if err != nil {
+		http.Error(w,"Internal Server Error", 500)
+		return
+	}
 
 	f.GenerateLinks(cfg.Baseurl)
 	f.RemoteAddr = r.RemoteAddr
@@ -122,4 +133,40 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration)
 	
 	w.Header().Set("Cache-Control", "max-age: 60")
 	http.ServeFile(w, r, path)
+}
+
+func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
+	var err error
+	params := mux.Vars(r)
+	t := model.Tag {}
+	err = t.SetTag(params["tag"], cfg.Filedir)
+	if err != nil {
+		http.Error(w, "Illegal tag", 400)
+		return
+	}
+
+	if t.Exists() == false {
+		http.Error(w, "Tag not found", 404)
+		return
+	}
+
+	err = t.List(cfg.Baseurl)
+	if err != nil {
+		http.Error(w,"Some error.", 404)
+		return
+	}
+
+	//t.GenerateLinks(cfg.Baseurl)
+
+	err = t.Info(cfg.Expiration)
+	if err != nil {
+		http.Error(w,"Internal Server Error", 500)
+		return
+	}
+
+	headers := make(map[string]string)
+	headers["Content-Type"] = "application/json"
+
+	var status = 200
+	output.JSONresponse(w, status, headers, t)
 }

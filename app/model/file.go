@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	//"path"
+	////"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+        "github.com/dustin/go-humanize"
 )
 
 type Link struct {
@@ -26,20 +27,25 @@ type Link struct {
 
 type File struct {
 	Filename		string		`json:"filename"`
-	Tempfile		string		`json:"-"`
 	Tag		    	string		`json:"tag"`
 	TagDir			string		`json:"-"`
 
 	Bytes			int64		`json:"bytes"`
 	MIME			string		`json:"mime"`
+	CreatedReadable		string		`json:"created"`
+	CreatedAt		time.Time	`json:"created_rfc3339"`
+	//ExpiresAt		time.Time	`json:"expires"`
+	Links			[]Link		`json:"links"`
+}
+
+type ExtendedFile struct {
+	File
 	Checksum		string		`json:"checksum"`
 	Algorithm		string		`json:"algorithm"`
 	Verified		bool		`json:"verified"`
-	RemoteAddr		string		`json:"-"`
-	UserAgent		string		`json:"-"`
-	CreatedAt		time.Time	`json:"created"`
-	//ExpiresAt		time.Time	`json:"expires"`
-	Links			[]Link		`json:"links"`
+	RemoteAddr		string		`json:"remoteaddr"`
+	UserAgent		string		`json:"useragent"`
+	Tempfile		string		`json:"-"`
 }
 
 func (f *File) SetFilename(s string) {
@@ -53,48 +59,7 @@ func (f *File) SetFilename(s string) {
 	var valid = regexp.MustCompile("[^A-Za-z0-9-_=,. ]")
 	sanitized = valid.ReplaceAllString(sanitized, "_")
 
-	if sanitized == "" {
-		// Use the checksum as the filename
-		f.Filename = f.Checksum
-		glog.Info("Set checksum as the filename: " + f.Checksum)
-	} else {
-		f.Filename = sanitized
-	}
-}
-
-func (f *File) GenerateLinks(baseurl string) {
-	fileLink := Link {}
-	fileLink.Rel = "file"
-	fileLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename
-	f.Links = append(f.Links, fileLink)
-
-	tagLink := Link {}
-	tagLink.Rel = "tag"
-	tagLink.Href = baseurl + "/" + f.Tag
-	f.Links = append(f.Links, tagLink)
-}
-
-func (f *File) DetectMIME() error {
-	var err error
-	path := f.Tempfile
-
-	fp, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer fp.Close()
-	buffer := make([]byte, 512)
-	_, err = fp.Seek(0, 0)
-	if err != nil {
-		return err
-	}
-	_, err = fp.Read(buffer)
-	if err != nil {
-		return err
-	}
-	f.MIME = http.DetectContentType(buffer)
-	glog.Info("Detected MIME type: " + f.MIME)
-	return nil
+	f.Filename = sanitized
 }
 
 func (f *File) SetTag(s string) error {
@@ -115,41 +80,74 @@ func (f *File) SetTag(s string) error {
 	return err
 }
 
-func (f *File) VerifySHA256(s string) error {
+func (f *File) DetectMIME() error {
 	var err error
-	path := f.Tempfile
-	if f.Checksum == "" {
-		var result []byte
-    		fp, err := os.Open(path)
-    		if err != nil {
-    		    return err
-    		}
-    		defer fp.Close()
+	path := filepath.Join(f.TagDir, f.Filename)
+	fp, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer fp.Close()
+	buffer := make([]byte, 512)
+	_, err = fp.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+	_, err = fp.Read(buffer)
+	if err != nil {
+		return err
+	}
+	f.MIME = http.DetectContentType(buffer)
+	glog.Info("Detected MIME type: " + f.MIME)
+	return nil
+}
 
-    		hash := sha256.New()
-    		_, err = io.Copy(hash, fp)
-		if err != nil {
-    		    return err
-    		}
-		f.Checksum = hex.EncodeToString(hash.Sum(result))
-		f.Algorithm = "SHA256"
+func (f *File) GenerateLinks(baseurl string) {
+	fileLink := Link {}
+	fileLink.Rel = "file"
+	fileLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename
+	f.Links = append(f.Links, fileLink)
+
+	tagLink := Link {}
+	tagLink.Rel = "tag"
+	tagLink.Href = baseurl + "/" + f.Tag
+	f.Links = append(f.Links, tagLink)
+}
+
+func (f *File) EnsureTagDirectoryExists() error {
+	var err error
+	if !isDir(f.TagDir) {
+		glog.Info("The directory " + f.TagDir + " does not exist. " +
+			"Creating.")
+		err = os.Mkdir(f.TagDir, 0700)
 	}
-	if s == "" {
-		f.Verified = false
-	} else {
-		if f.Checksum == s {
-			f.Verified = true
-		} else {
-			glog.Info("The provided checksum is not correct: " + s)
-			err = errors.New("Checksum " + s + " did not match " +
-				f.Checksum)
-		}
-	}
-	glog.Info("Checksum is ", f.Checksum)
 	return err
 }
 
-func (f *File) WriteTempfile(d io.Reader, tempdir string) error {
+func (f *File) Info(expiration int) error {
+	if isDir(f.TagDir) == false {
+		return errors.New("Tag does not exist.")
+	}
+	
+	path := filepath.Join(f.TagDir, f.Filename)
+	i, err := os.Lstat(path)
+	if err != nil {
+		return err
+	}
+	f.CreatedAt = i.ModTime().UTC()
+	f.CreatedReadable = humanize.Time(f.CreatedAt)
+	f.Bytes = i.Size()
+	
+	i, err = os.Lstat(f.TagDir)
+	if err != nil {
+		return err
+	}
+	//f.ExpiresAt = i.ModTime().UTC().Add(time.Duration(expiration) * time.Second)
+	//f.ExpiresReadable = humanize.Time(f.ExpiresAt)
+	return nil
+}
+
+func (f *ExtendedFile) WriteTempfile(d io.Reader, tempdir string) error {
 	fp, err := ioutil.TempFile(tempdir, "upload")
 	if err != nil {
 		return err
@@ -171,22 +169,55 @@ func (f *File) WriteTempfile(d io.Reader, tempdir string) error {
 	return nil
 }
 
-func (f *File) EnsureTagDirectoryExists() error {
+func (f *ExtendedFile) calculateSHA256(path string) error {
 	var err error
-	if !isDir(f.TagDir) {
-		glog.Info("The directory " + f.TagDir + " does not exist. " +
-			"Creating.")
-		err = os.Mkdir(f.TagDir, 0700)
-	}
-	return err
+	var result []byte
+    	fp, err := os.Open(path)
+    	if err != nil {
+    	    return err
+    	}
+    	defer fp.Close()
+
+    	hash := sha256.New()
+    	_, err = io.Copy(hash, fp)
+	if err != nil {
+    	    return err
+    	}
+	f.Checksum = hex.EncodeToString(hash.Sum(result))
+	f.Algorithm = "SHA256"
+	return nil
 }
 
-func (f *File) Publish() error {
+func (f *ExtendedFile) VerifySHA256(s string) error {
+	var err error
+	if f.Checksum == "" {
+		err = f.calculateSHA256(f.Tempfile)
+		if err != nil {
+			return err
+		}
+	}
+
+	if s == "" {
+		f.Verified = false
+		return nil
+	}
+
+	if f.Checksum == s {
+		f.Verified = true
+		return nil
+	}
+
+	glog.Info("Checksum is ", f.Checksum)
+	glog.Info("The provided checksum is not correct: " + s)
+	return errors.New("Checksum " + s + " did not match " + f.Checksum)
+}
+
+func (f *ExtendedFile) Publish() error {
 	err := CopyFile(f.Tempfile, filepath.Join(f.TagDir, f.Filename))
 	return err
 }
 
-func (f *File) ClearTemp() error {
+func (f *ExtendedFile) ClearTemp() error {
 	err := os.Remove(f.Tempfile)
 	if err != nil {
 		glog.Error("Unable to remove tempfile ", f.Tempfile, ": ", err)

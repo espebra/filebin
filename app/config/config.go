@@ -1,23 +1,20 @@
 package config
 
 type Configuration struct {
-	Host                string
-	Port                int
-	Readtimeout         int
-	Writetimeout        int
-	Maxheaderbytes      int
-	Filedir             string
-	Baseurl             string
-	Tempdir             string
-	Logdir              string
-	//Thumbdir            string
-	//GeoIP2              string
-	Verbose             bool
-	//Database            string
-	//Pagination          int
-	TriggerNewTag       string
-	TriggerUploadedFile string
-	TriggerExpiredTag   string
+	Host			string
+	Port			int
+	Readtimeout		int
+	Writetimeout		int
+	Maxheaderbytes		int
+	Filedir			string
+	Baseurl			string
+	Tempdir			string
+	Logdir			string
+	Verbose			bool
+	Expiration		int
+	TriggerNewTag		string
+	TriggerUploadedFile	string
+	TriggerExpiredTag	string
 }
 
 var Global Configuration
@@ -29,6 +26,8 @@ func init() {
 		Readtimeout: 3600,
 		Writetimeout: 3600,
 		Maxheaderbytes: 1 << 20,
+		// 7776000 = 3 months
+		Expiration: 7776000,
 		Baseurl: "http://localhost:31337",
 		Filedir: "/srv/filebin/files",
 		Tempdir: "/srv/filebin/temp",

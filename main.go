@@ -87,6 +87,9 @@ func init() {
 	//flag.StringVar(&cfg.GeoIP2, "geoip2",
 	//	cfg.GeoIP2, "Path to the GeoIP2 database file.")
 
+	flag.IntVar(&cfg.Expiration, "expiration",
+		cfg.Expiration, "Tag expiration time in seconds after the last modification")
+
 	flag.BoolVar(&cfg.Verbose, "verbose",
 		cfg.Verbose, "Verbose stdout.")
 
@@ -166,6 +169,8 @@ func main() {
 			strconv.Itoa(cfg.Writetimeout) + " seconds")
 		fmt.Println("Max header bytes: " +
 			strconv.Itoa(cfg.Maxheaderbytes))
+		fmt.Println("Expire time: " + strconv.Itoa(cfg.Expiration) +
+			" seconds")
 		fmt.Println("Baseurl: " + cfg.Baseurl)
 		fmt.Println("Files directory: " + cfg.Filedir)
 		//fmt.Println("Thumbnail directory: " + cfg.Thumbdir)
@@ -191,6 +196,7 @@ func main() {
 	http.Handle("/", httpInterceptor(router))
 	router.HandleFunc("/", reqHandler(api.Upload)).Methods("POST")
 	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.FetchFile)).Methods("GET", "HEAD")
+	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}", reqHandler(api.FetchTag)).Methods("GET", "HEAD")
 
 	//router.HandleFunc("/dashboard{_:/?}", ViewDashboard).Methods("GET", "HEAD")
 
