@@ -4,8 +4,8 @@ import (
 	"testing"
 	"math/rand"
 	"io/ioutil"
-	"os"
-        "path/filepath"
+    "os"
+    "path/filepath"
 )
 
 func TestVerifySHA256(t *testing.T) {
@@ -33,7 +33,8 @@ func TestVerifySHA256(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = f.WriteFile(from_file)
+
+	err = f.WriteTempfile(from_file, dir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,11 +91,6 @@ func TestSetFilename(t *testing.T) {
 	f.SetFilename("/foo/bar/baz")
 	if f.Filename != "_foo_bar_baz" {
 		t.Fatal("c Sanitizing failed:", f.Filename)
-	}
-
-	f.SetFilename("")
-	if f.Filename == "" {
-		t.Fatal("Did not create a random filename: [" + f.Filename + "]")
 	}
 }
 
@@ -187,7 +183,7 @@ func TestWriteToFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = f.WriteFile(from_file)
+	err = f.WriteTempfile(from_file, dir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -200,18 +196,8 @@ func TestDetectMIME(t *testing.T) {
 	var err error
 
 	f := File {}
-	err = f.SetTag("testdata")
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	f.TagDir = filepath.Join(dir, f.Tag)
-
-	f.SetFilename("image.png")
+	f.Tempfile = "testdata/image.png"
 	err = f.DetectMIME()
 	if err != nil {
 		t.Fatal(err)
@@ -220,7 +206,7 @@ func TestDetectMIME(t *testing.T) {
 		t.Fatal("Unable to detect mime type:", f.MIME)
 	}
 
-	f.SetFilename("image.jpg")
+	f.Tempfile = "testdata/image.jpg"
 	err = f.DetectMIME()
 	if err != nil {
 		t.Fatal(err)
@@ -229,7 +215,7 @@ func TestDetectMIME(t *testing.T) {
 		t.Fatal("Unable to detect mime type:", f.MIME)
 	}
 
-	f.SetFilename("image.gif")
+	f.Tempfile = "testdata/image.gif"
 	err = f.DetectMIME()
 	if err != nil {
 		t.Fatal(err)
@@ -238,7 +224,7 @@ func TestDetectMIME(t *testing.T) {
 		t.Fatal("Unable to detect mime type:", f.MIME)
 	}
 
-	f.SetFilename("unknownfile")
+	f.Tempfile = "testdata/unknownfile"
 	err = f.DetectMIME()
 	if err == nil {
 		t.Fatal("File does not exist.")

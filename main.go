@@ -33,7 +33,9 @@ func teardown() {
     glog.Flush()
 }
 
-func main() {
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	signal.Notify(c, syscall.SIGTERM)
@@ -51,8 +53,8 @@ func main() {
 	flag.StringVar(&cfg.Filedir, "filedir",
 		cfg.Filedir, "Files directory")
 
-//	flag.StringVar(&cfg.Tempdir, "tempdir",
-//		cfg.Tempdir, "Temp directory")
+	flag.StringVar(&cfg.Tempdir, "tempdir",
+		cfg.Tempdir, "Temp directory")
 
 	flag.StringVar(&cfg.Logdir, "logdir",
 		cfg.Logdir, "Path to log directory")
@@ -138,9 +140,8 @@ func main() {
 	//}
 
 	//if (!IsDir(cfg.Filedir)) {
-	//    Info.Fatal("The directory " + cfg.Filedir +
+	//    glog.Fatal("The directory " + cfg.Filedir +
 	//        " does not exist.")
-	//    os.Exit(2)
 	//}
 
 	//if _, err := os.Stat(cfg.GeoIP2); err == nil {
@@ -153,7 +154,9 @@ func main() {
 	//} else {
 	//    Info.Print("GeoIP2 database does not exist: ", cfg.GeoIP2)
 	//}
+}
 
+func main() {
 	if cfg.Verbose {
 		fmt.Println("Host: " + cfg.Host)
 		fmt.Println("Port: " + strconv.Itoa(cfg.Port))
@@ -166,7 +169,7 @@ func main() {
 		fmt.Println("Baseurl: " + cfg.Baseurl)
 		fmt.Println("Files directory: " + cfg.Filedir)
 		//fmt.Println("Thumbnail directory: " + cfg.Thumbdir)
-		//fmt.Println("Temp directory: " + cfg.Tempdir)
+		fmt.Println("Temp directory: " + cfg.Tempdir)
 		fmt.Println("Log dir: " + cfg.Logdir)
 		//fmt.Println("GeoIP2 database: " + cfg.GeoIP2)
 		//fmt.Println("Pagination: " + strconv.Itoa(cfg.Pagination))
@@ -234,6 +237,7 @@ func reqHandler(fn func (http.ResponseWriter, *http.Request, config.Configuratio
 
 		//log.Info("Status " + w.Status)
 		glog.Info("Processing time: " + elapsedTime.String())
+		glog.Flush()
 	}
 }
 

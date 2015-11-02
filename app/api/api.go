@@ -43,45 +43,58 @@ func cmdHandler(cmd *exec.Cmd) error {
 
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	var err error
-
 	f := model.File { }
-	f.SetFilename(r.Header.Get("filename"))
-	err = f.SetTag(r.Header.Get("tag"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest);
-		return
-	}
 
-	f.TagDir = filepath.Join(cfg.Filedir, f.Tag)
-	err = f.EnsureTagDirectoryExists()
+	// Write the request body to a temporary file
+	err = f.WriteTempfile(r.Body, cfg.Tempdir)
 	if err != nil {
-		glog.Error("Unable to create tag directory", f.TagDir)
+		glog.Error("Unable to write tempfile: ", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
 		return
 	}
 
-	err = f.WriteFile(r.Body)
-	if err != nil {
-		glog.Info("Unable to write file " + filepath.Join(f.TagDir, f.Filename) + ":", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
-		return
-	}
-
+	// Calculate and verify the checksum
 	err = f.VerifySHA256(r.Header.Get("content-sha256"))
 	if err != nil {
 		http.Error(w, "Checksum did not match", http.StatusConflict);
 		return
 	}
+
 	err = f.DetectMIME()
 	if err != nil {
-		glog.Error("Unable to detect MIME from " + filepath.Join(f.TagDir, f.Filename) + ":", err)
+		glog.Error("Unable to detect MIME: ", err)
 	}
-	f.GenerateLinks(cfg.Baseurl)
 
+	// Extract the tag from the request or generate a random one
+	err = f.SetTag(r.Header.Get("tag"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest);
+		return
+	}
+	f.TagDir = filepath.Join(cfg.Filedir, f.Tag)
+
+	// Create the tag directory if it does not exist
+	err = f.EnsureTagDirectoryExists()
+	if err != nil {
+		glog.Error("Unable to create tag directory: ", f.TagDir)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
+		return
+	}
+
+	// Extract the filename from the request or use the checksum
+	f.SetFilename(r.Header.Get("filename"))
+
+	// Promote file from tempdir to the published tagdir
+	f.Publish()
+
+	// Clean up by removing the tempfile
+	f.ClearTemp()
+
+	f.GenerateLinks(cfg.Baseurl)
 	f.RemoteAddr = r.RemoteAddr
 	f.UserAgent = r.Header.Get("User-Agent")
 	f.CreatedAt = time.Now().UTC()
-	f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
+	//f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
 
 	if cfg.TriggerUploadedFile != "" {
 		triggerUploadedFileHandler(cfg.TriggerUploadedFile, f.Tag, f.Filename)

@@ -8,7 +8,7 @@ type Configuration struct {
 	Maxheaderbytes      int
 	Filedir             string
 	Baseurl             string
-	//Tempdir             string
+	Tempdir             string
 	Logdir              string
 	//Thumbdir            string
 	//GeoIP2              string
@@ -31,7 +31,7 @@ func init() {
 		Maxheaderbytes: 1 << 20,
 		Baseurl: "http://localhost:31337",
 		Filedir: "/srv/filebin/files",
-		//Tempdir: "/srv/filebin/temp",
+		Tempdir: "/srv/filebin/temp",
 		Logdir: "/var/log/filebin",
 		//Thumbdir: "/srv/filebin/thumbnails",
 		//Database: "/srv/filebin/filebin.db",

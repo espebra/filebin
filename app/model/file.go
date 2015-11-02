@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -25,11 +26,11 @@ type Link struct {
 
 type File struct {
 	Filename		string		`json:"filename"`
-	Tag			string		`json:"tag"`
+	Tempfile		string		`json:"-"`
+	Tag		    	string		`json:"tag"`
 	TagDir			string		`json:"-"`
 
 	Bytes			int64		`json:"bytes"`
-	//BytesReadable		string		`json:"bytes_prefixed"`
 	MIME			string		`json:"mime"`
 	Checksum		string		`json:"checksum"`
 	Algorithm		string		`json:"algorithm"`
@@ -37,9 +38,7 @@ type File struct {
 	RemoteAddr		string		`json:"-"`
 	UserAgent		string		`json:"-"`
 	CreatedAt		time.Time	`json:"created"`
-	//CreatedAtReadable	string		`json:"created_relative"`
-	ExpiresAt		time.Time	`json:"expires"`
-	//ExpiresAtReadable	string		`json:"expires_relative"`
+	//ExpiresAt		time.Time	`json:"expires"`
 	Links			[]Link		`json:"links"`
 }
 
@@ -55,9 +54,9 @@ func (f *File) SetFilename(s string) {
 	sanitized = valid.ReplaceAllString(sanitized, "_")
 
 	if sanitized == "" {
-		// Generate filename if not provided
-		f.Filename = randomString(16)
-		glog.Info("Generated filename: " + f.Filename)
+		// Use the checksum as the filename
+		f.Filename = f.Checksum
+		glog.Info("Set checksum as the filename: " + f.Checksum)
 	} else {
 		f.Filename = sanitized
 	}
@@ -77,7 +76,7 @@ func (f *File) GenerateLinks(baseurl string) {
 
 func (f *File) DetectMIME() error {
 	var err error
-	path := filepath.Join(f.TagDir, f.Filename)
+	path := f.Tempfile
 
 	fp, err := os.Open(path)
 	if err != nil {
@@ -94,6 +93,7 @@ func (f *File) DetectMIME() error {
 		return err
 	}
 	f.MIME = http.DetectContentType(buffer)
+	glog.Info("Detected MIME type: " + f.MIME)
 	return nil
 }
 
@@ -117,7 +117,7 @@ func (f *File) SetTag(s string) error {
 
 func (f *File) VerifySHA256(s string) error {
 	var err error
-	path := filepath.Join(f.TagDir, f.Filename)
+	path := f.Tempfile
 	if f.Checksum == "" {
 		var result []byte
     		fp, err := os.Open(path)
@@ -140,21 +140,21 @@ func (f *File) VerifySHA256(s string) error {
 		if f.Checksum == s {
 			f.Verified = true
 		} else {
+			glog.Info("The provided checksum is not correct: " + s)
 			err = errors.New("Checksum " + s + " did not match " +
 				f.Checksum)
 		}
 	}
+	glog.Info("Checksum is ", f.Checksum)
 	return err
 }
 
-func (f *File) WriteFile(d io.Reader) error {
-	path := filepath.Join(f.TagDir, f.Filename)
-	glog.Info("Writing data to " + path)
-	fp, err := os.Create(path)
-	defer fp.Close()
+func (f *File) WriteTempfile(d io.Reader, tempdir string) error {
+	fp, err := ioutil.TempFile(tempdir, "upload")
 	if err != nil {
 		return err
 	}
+	glog.Info("Writing data to " + fp.Name())
 
 	f.Bytes, err = io.Copy(fp, d)
 	if err != nil {
@@ -162,6 +162,12 @@ func (f *File) WriteFile(d io.Reader) error {
 	}
 	glog.Info("Upload complete after " + strconv.FormatInt(f.Bytes, 10) +
 		" bytes")
+
+	fp.Sync()
+
+	// Store the tempfile path for later
+	f.Tempfile = fp.Name()
+	defer fp.Close()
 	return nil
 }
 
@@ -173,6 +179,21 @@ func (f *File) EnsureTagDirectoryExists() error {
 		err = os.Mkdir(f.TagDir, 0700)
 	}
 	return err
+}
+
+func (f *File) Publish() error {
+	err := CopyFile(f.Tempfile, filepath.Join(f.TagDir, f.Filename))
+	return err
+}
+
+func (f *File) ClearTemp() error {
+	err := os.Remove(f.Tempfile)
+	if err != nil {
+		glog.Error("Unable to remove tempfile ", f.Tempfile, ": ", err)
+		return err
+	}
+	glog.Info("Removed tempfile: ", f.Tempfile)
+	return nil
 }
 
 func isDir(path string) bool {
@@ -196,3 +217,65 @@ func randomString(n int) string {
         return string(b)
 }
 
+
+// http://stackoverflow.com/a/21067803
+// CopyFile copies a file from src to dst. If src and dst files exist, and are
+// the same, then return success. Otherise, attempt to create a hard link
+// between the two files. If that fail, copy the file contents from src to dst.
+func CopyFile(src, dst string) (err error) {
+	sfi, err := os.Stat(src)
+	if err != nil {
+		return
+	}
+	if !sfi.Mode().IsRegular() {
+		// cannot copy non-regular files (e.g., directories,
+		// symlinks, devices, etc.)
+		return errors.New("CopyFile: non-regular source file " + sfi.Name() + ": " + sfi.Mode().String())
+	}
+	dfi, err := os.Stat(dst)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return
+		}
+	} else {
+		if !(dfi.Mode().IsRegular()) {
+			return errors.New("CopyFile: non-regular destination file " + dfi.Name() + ": " + dfi.Mode().String())
+		}
+		if os.SameFile(sfi, dfi) {
+			return
+		}
+	}
+	if err = os.Link(src, dst); err == nil {
+		return
+	}
+	err = copyFileContents(src, dst)
+	return err
+}
+
+// copyFileContents copies the contents of the file named src to the file named
+// by dst. The file will be created if it does not already exist. If the
+// destination file exists, all it's contents will be replaced by the contents
+// of the source file.
+func copyFileContents(src, dst string) (err error) {
+	in, err := os.Open(src)
+	if err != nil {
+		return
+	}
+	defer in.Close()
+	out, err := os.Create(dst)
+	if err != nil {
+		return
+	}
+	defer func() {
+		cerr := out.Close()
+		if err == nil {
+			err = cerr
+		}
+	}()
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return
+	}
+	err = out.Sync()
+	return err
+}
