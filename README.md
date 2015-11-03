@@ -52,6 +52,7 @@ Some arguments commonly used to start ``filebin`` are:
 ```
 ~/go/bin/filebin --verbose \
   --host 0.0.0.0 --port 8080
+  --baseurl http://api.example.com:8080
   --filedir ~/filebin/files \
   --logdir ~/filebin/logs \
   --tempdir ~/filebin/temp \
@@ -60,6 +61,9 @@ Some arguments commonly used to start ``filebin`` are:
 
 By default, ``filebin`` will listen on ``127.0.0.1:31337``.
 
+## Baseurl
+
+The ``baseurl`` parameter is used when building [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS) links.
 
 ## Expiration
 
@@ -69,19 +73,27 @@ Tags expire after some time of inactivity. By default, tags will expire 3 months
 
 ## Upload file
 
-In all examples, I will upload the file ``/path/to/file``.
+In all examples, I will upload the file ``/path/to/some file``.
 
 Using the following command, the ``tag`` will be automatically generated and the ``filename`` will be set to the SHA256 checksum of the content. The checksum of the content will not be verified.
 
 ```
-$ curl --data-binary @/path/to/file http://localhost:31337/
+$ curl --data-binary "@/path/to/some file" http://localhost:31337/
 ```
 
 Using the following command, ``tag`` will be set to ``customtag`` and ``filename`` will be set to ``myfile``.
 
 ```
-$ curl --data-binary @/path/to/file http://localhost:31337/ \
+$ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
   -H "tag: customtag" -H "filename: myfile"
+```
+
+Using the following command, ``filebin`` will verify the checksum of the uploaded file and discard the upload if the checksum does not match the specified checksum:
+
+```
+$ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
+  -H "tag: customtag" -H "filename: myfile" \
+  -H "content-sha256: 82b5f1d5d38641752d6cbb4b80f3ccae502973f8b77f1c712bd68d5324e67e33"
 ```
 
 ## Show tag
