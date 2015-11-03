@@ -25,7 +25,7 @@ $ mkdir src bin pkg
 $ export GOPATH="~/go"
 ```
 
-Download and install filebin. The binary will be created as ``~/go/bin/filebin``.
+Download and install ``filebin``. The binary will be created as ``~/go/bin/filebin``.
 
 ```
 $ go get github.com/espebra/filebin
@@ -41,7 +41,7 @@ $ mkdir ~/filebin/files ~/filebin/logs ~/filebin/temp
 
 # Usage
 
-The built in help text will show the various command line arguments and their meaning.
+The built in help text will show the various command line arguments available:
 
 ```
 ~/go/bin/filebin --help
@@ -50,10 +50,15 @@ The built in help text will show the various command line arguments and their me
 Some arguments commonly used to start ``filebin`` are:
 
 ```
-~/go/bin/filebin --filedir ~/filebin/files --logdir ~/filebin/logs --tempdir ~/filebin/temp --verbose --host 0.0.0.0 --port 8080 --expiration 604800
+~/go/bin/filebin --verbose \
+  --host 0.0.0.0 --port 8080
+  --filedir ~/filebin/files \
+  --logdir ~/filebin/logs \
+  --tempdir ~/filebin/temp \
+  --expiration 604800
 ```
 
-By default, filebin will listen on ``127.0.0.1:31337``.
+By default, ``filebin`` will listen on ``127.0.0.1:31337``.
 
 
 ## Expiration
@@ -75,7 +80,8 @@ $ curl --data-binary @/path/to/file http://localhost:31337/
 Using the following command, ``tag`` will be set to ``customtag`` and ``filename`` will be set to ``myfile``.
 
 ```
-$ curl --data-binary @/path/to/file http://localhost:31337/ -H "tag: customtag" -H "filename: myfile"
+$ curl --data-binary @/path/to/file http://localhost:31337/ \
+  -H "tag: customtag" -H "filename: myfile"
 ```
 
 ## Show tag
