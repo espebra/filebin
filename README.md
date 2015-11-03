@@ -69,6 +69,14 @@ The ``baseurl`` parameter is used when building [HATEOAS](https://en.wikipedia.o
 
 Tags expire after some time of inactivity. By default, tags will expire 3 months after the most recent file was uploaded. It is not possible to download files or upload more files to tags that are expired.
 
+## Triggers
+
+Triggers enable external scripts to be executed at certain events.
+
+### Uploaded file
+
+The parameter ``--trigger-uploaded-file /usr/local/bin/uploaded-file`` will make ``filebin`` execute ``/usr/local/bin/uploaded-file``, with the ``tag`` and ``filename`` as arguments for every file uploaded. The execution is non-blocking.
+
 # API
 
 ## Upload file
