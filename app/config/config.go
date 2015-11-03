@@ -11,7 +11,7 @@ type Configuration struct {
 	Tempdir			string
 	Logdir			string
 	Verbose			bool
-	Expiration		int
+	Expiration		int64
 	TriggerNewTag		string
 	TriggerUploadedFile	string
 	TriggerExpiredTag	string

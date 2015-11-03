@@ -7,30 +7,47 @@ import (
 	"regexp"
 	"time"
 	"os"
-	//"github.com/golang/glog"
+
+	"github.com/golang/glog"
 	"github.com/dustin/go-humanize"
 )
 
 type Tag struct {
-	Tag		    	string		`json:"tag"`
+	TagID		    	string		`json:"tag"`
 	TagDir			string		`json:"-"`
-	LastUpdateReadable	string		`json:"lastupdate"`
+	ExpirationAt		time.Time	`json:"-"`
 	ExpirationReadable	string		`json:"expiration"`
-	LastUpdateAt		time.Time	`json:"lastupdate_rfc3339"`
-	ExpirationAt		time.Time	`json:"expiration_rfc3339"`
+	Expired			bool		`json:"-"`
+}
+
+type ExtendedTag struct {
+	Tag
+	LastUpdateAt		time.Time	`json:"-"`
+	LastUpdateReadable	string		`json:"lastupdate"`
 	Files			[]File		`json:"files"`
 	//Links			[]Link		`json:"links"`
 }
 
-func (t *Tag) SetTag(s string, filedir string) error {
-	validTag := regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
-	if validTag.MatchString(s) == false {
+
+func (t *Tag) GenerateTagID() error {
+	var tag = randomString(16)
+        glog.Info("Generated tag: " + tag)
+	err := t.SetTagID(tag)
+	return err
+}
+
+func (t *Tag) SetTagID(s string) error {
+	validTagID := regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
+	if validTagID.MatchString(s) == false {
 		return errors.New("Invalid tag specified. It contains " +
 			"illegal characters or is too short")
 	}
-	t.Tag = s
-	t.TagDir = filepath.Join(filedir, s)
+	t.TagID = s
 	return nil
+}
+
+func (t *Tag) SetTagDir(filedir string) {
+	t.TagDir = filepath.Join(filedir, t.TagID)
 }
 
 func (t *Tag) Exists() bool {
@@ -41,7 +58,7 @@ func (t *Tag) Exists() bool {
 	}
 }
 
-func (t *Tag) Info(expiration int) error {
+func (t *ExtendedTag) Info() error {
 	if isDir(t.TagDir) == false {
 		return errors.New("Tag does not exist.")
 	}
@@ -52,20 +69,42 @@ func (t *Tag) Info(expiration int) error {
 	}
 	t.LastUpdateAt = i.ModTime().UTC()
 	t.LastUpdateReadable = humanize.Time(t.LastUpdateAt)
+	return nil
+}
+
+func (t *Tag) IsExpired(expiration int64) (bool, error) {
+        now := time.Now().UTC()
+
+        // Calculate if the tag is expired or not
+        if now.Before(t.ExpirationAt) {
+                // Tag still valid
+		return false, nil
+        } else {
+                // Tag expired
+                t.Expired = true
+		return true, nil
+        }
+}
+
+func (t *Tag) CalculateExpiration(expiration int64) error {
+	i, err := os.Lstat(t.TagDir)
+	if err != nil {
+		return err
+	}
 	t.ExpirationAt = i.ModTime().UTC().Add(time.Duration(expiration) * time.Second)
 	t.ExpirationReadable = humanize.Time(t.ExpirationAt)
 	return nil
 }
 
-func (t *Tag) List(baseurl string) error {
+func (t *ExtendedTag) List(baseurl string) error {
 	var err error
 	files, err := ioutil.ReadDir(t.TagDir)
 	for _, file := range files {
 		var f = File {}
 		f.SetFilename(file.Name())
-		f.SetTag(t.Tag)
+		f.SetTagID(t.TagID)
 		f.TagDir = t.TagDir
-		err = f.Info(0)
+		err = f.Info()
 		if err != nil {
 			return err
 		}
@@ -73,6 +112,9 @@ func (t *Tag) List(baseurl string) error {
 		if err != nil {
 			return err
 		}
+
+		f.ExpirationAt = t.ExpirationAt
+		f.ExpirationReadable = t.ExpirationReadable
 
 		f.GenerateLinks(baseurl)
 		t.Files = append(t.Files, f)

@@ -9,68 +9,93 @@ import (
 )
 
 func TestSetFilename(t *testing.T) {
+	var err error
 	f := File {}
-	f.SetFilename("foo")
+	err = f.SetFilename("foo")
+	if err != nil {
+		t.Fatal(err)
+	}
 	if f.Filename != "foo" {
 		t.Fatal("a Sanitizing failed:", f.Filename)
 	}
 
-	f.SetFilename(" foo!\"#$%&()= ")
-	if f.Filename != "foo________=" {
+	err = f.SetFilename(" foo!\"#$%&()= ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f.Filename != "_foo________=_" {
 		t.Fatal("b Sanitizing failed:", f.Filename)
 	}
 
-	f.SetFilename("/foo/bar/baz")
+	err = f.SetFilename("/foo/bar/baz")
+	if err != nil {
+		t.Fatal(err)
+	}
 	if f.Filename != "_foo_bar_baz" {
 		t.Fatal("c Sanitizing failed:", f.Filename)
 	}
 
-	f.SetFilename("")
-	if f.Filename != "" {
-		t.Fatal("c Sanitizing failed:", f.Filename)
-	}
-
 	e := ExtendedFile {}
-	e.SetFilename("foo")
+	err = e.SetFilename("foo")
+	if err != nil {
+		t.Fatal(err)
+	}
 	if e.Filename != "foo" {
 		t.Fatal("a Sanitizing failed:", e.Filename)
 	}
+
+	// Reset
+	e = ExtendedFile {}
+	e.Checksum = "123456789012345678901234567890"
+	err = e.SetFilename("")
+	if err != nil {
+		e.SetFilename(e.Checksum)
+	} else {
+		t.Fatal("Should not accept empty filename")
+	}
+	if e.Filename != e.Checksum {
+		t.Fatal("c Sanitizing failed " + e.Filename + " should be the checksum:", e.Checksum)
+	}
+
 }
 
-func TestSetTag(t *testing.T) {
+func TestSetTagID(t *testing.T) {
 	var err error
 
 	f := File {}
-	err = f.SetTag("s")
+	err = f.SetTagID("s")
 	if err == nil {
 		t.Fatal("Invalid tag specified.")
 	}
 
-	err = f.SetTag(" s ")
+	err = f.SetTagID(" s ")
 	if err == nil {
 		t.Fatal("Invalid tag specified.")
 	}
 
-	err = f.SetTag("/foo/bar")
+	err = f.SetTagID("/foo/bar")
 	if err == nil {
 		t.Fatal("Invalid tag specified.")
 	}
 
-	err = f.SetTag("../foo")
+	err = f.SetTagID("../foo")
 	if err == nil {
 		t.Fatal("Invalid tag specified.")
 	}
 
-	err = f.SetTag("abcdefghijklmnop")
+	err = f.SetTagID("abcdefghijklmnop")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = f.SetTag("")
+	err = f.SetTagID("")
 	if err != nil {
-		t.Fatal(err)
+		err = f.GenerateTagID()
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
-	if f.Tag == "" {
+	if f.TagID == "" {
 		t.Fatal("The tag should not be empty")
 	}
 }
@@ -134,8 +159,8 @@ func TestEnsureDirectoryExists(t *testing.T) {
 	}
 	
 	f := File {}
-	f.SetTag("foofoofoo")
-	f.TagDir = filepath.Join(dir, f.Tag)
+	f.SetTagID("foofoofoo")
+	f.TagDir = filepath.Join(dir, f.TagID)
 
 	err = f.EnsureTagDirectoryExists()
 	if err != nil {
@@ -202,9 +227,9 @@ func TestWriteTempfile(t *testing.T) {
 	from_file.Seek(0, 0)
 
 	f := ExtendedFile {}
-	f.SetTag("foo")
+	f.SetTagID("foo")
 	f.SetFilename("bar")
-	f.TagDir = filepath.Join(dir, f.Tag)
+	f.TagDir = filepath.Join(dir, f.TagID)
 	err = f.EnsureTagDirectoryExists()
 	if err != nil {
 		t.Fatal(err)
@@ -227,9 +252,9 @@ func TestPublish(t *testing.T) {
 	defer os.Remove(dir)
 
 	f := ExtendedFile {}
-	f.SetTag("foo")
+	f.SetTagID("foo")
 	f.SetFilename("bar")
-	f.TagDir = filepath.Join(dir, f.Tag)
+	f.TagDir = filepath.Join(dir, f.TagID)
 
 	f.Tempfile = "testdata/image.png"
 
@@ -244,7 +269,7 @@ func TestPublish(t *testing.T) {
 func TestGenerateLinks(t *testing.T) {
 	f := ExtendedFile {}
 	f.SetFilename("foo")
-	f.SetTag("validtag")
+	f.SetTagID("validtag")
 	f.GenerateLinks("http://localhost:8080")
 
 	if len(f.Links) != 2 {
@@ -270,9 +295,9 @@ func TestGenerateLinks(t *testing.T) {
 //	from_file.Seek(0, 0)
 //
 //	f := ExtendedFile {}
-//	f.SetTag("foo")
+//	f.SetTagID("foo")
 //	f.SetFilename("bar")
-//	f.TagDir = filepath.Join(dir, f.Tag)
+//	f.TagDir = filepath.Join(dir, f.TagID)
 //	err = f.EnsureTagDirectoryExists()
 //	if err != nil {
 //		t.Fatal(err)

@@ -87,7 +87,7 @@ func init() {
 	//flag.StringVar(&cfg.GeoIP2, "geoip2",
 	//	cfg.GeoIP2, "Path to the GeoIP2 database file.")
 
-	flag.IntVar(&cfg.Expiration, "expiration",
+	flag.Int64Var(&cfg.Expiration, "expiration",
 		cfg.Expiration, "Tag expiration time in seconds after the last modification")
 
 	flag.BoolVar(&cfg.Verbose, "verbose",
@@ -169,7 +169,7 @@ func main() {
 			strconv.Itoa(cfg.Writetimeout) + " seconds")
 		fmt.Println("Max header bytes: " +
 			strconv.Itoa(cfg.Maxheaderbytes))
-		fmt.Println("Expire time: " + strconv.Itoa(cfg.Expiration) +
+		fmt.Println("Expire time: " + strconv.FormatInt(cfg.Expiration, 10) +
 			" seconds")
 		fmt.Println("Baseurl: " + cfg.Baseurl)
 		fmt.Println("Files directory: " + cfg.Filedir)

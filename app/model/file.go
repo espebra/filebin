@@ -9,11 +9,11 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	////"path"
+	//"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
+	//"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -26,15 +26,15 @@ type Link struct {
 }
 
 type File struct {
+	Tag
 	Filename		string		`json:"filename"`
-	Tag		    	string		`json:"tag"`
-	TagDir			string		`json:"-"`
+	//Tag		    	string		`json:"tag"`
+	//TagDir			string		`json:"-"`
 
 	Bytes			int64		`json:"bytes"`
 	MIME			string		`json:"mime"`
 	CreatedReadable		string		`json:"created"`
-	CreatedAt		time.Time	`json:"created_rfc3339"`
-	//ExpiresAt		time.Time	`json:"expires"`
+	CreatedAt		time.Time	`json:"-"`
 	Links			[]Link		`json:"links"`
 }
 
@@ -48,36 +48,21 @@ type ExtendedFile struct {
 	Tempfile		string		`json:"-"`
 }
 
-func (f *File) SetFilename(s string) {
-	var sanitized string
-	//var sanitized = path.Base(path.Clean(s))
-
-	// Remove any trailing space to avoid ending on -
-	sanitized = strings.Trim(s, " ")
-
+func (f *File) SetFilename(s string) error {
 	// Remove all but valid chars
-	var valid = regexp.MustCompile("[^A-Za-z0-9-_=,. ]")
-	sanitized = valid.ReplaceAllString(sanitized, "_")
-
-	f.Filename = sanitized
-}
-
-func (f *File) SetTag(s string) error {
-	var err error
-	if s == "" {
-		// Generate tag if not provided
-		f.Tag = randomString(16)
-		glog.Info("Generated tag: " + f.Tag)
-	} else {
-		var validTag = regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
-		if validTag.MatchString(s) {
-			f.Tag = s
-		} else {
-			err = errors.New("Invalid tag specified. It contains " +
-				"illegal characters or is too short.")
-		}
+	var valid = regexp.MustCompile("[^A-Za-z0-9-_=,.]")
+	var secure = valid.ReplaceAllString(s, "_")
+	if secure == "" {
+		return errors.New("Invalid filename specified. It contains " +
+			"illegal characters or is too short.")
 	}
-	return err
+
+	f.Filename = secure
+	if s != secure {
+		glog.Info("Sanitized the filename [" + s + "] into [" + secure + "]")
+	}
+	glog.Info("Filename: " + secure)
+	return nil
 }
 
 func (f *File) DetectMIME() error {
@@ -105,12 +90,12 @@ func (f *File) DetectMIME() error {
 func (f *File) GenerateLinks(baseurl string) {
 	fileLink := Link {}
 	fileLink.Rel = "file"
-	fileLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename
+	fileLink.Href = baseurl + "/" + f.TagID + "/" + f.Filename
 	f.Links = append(f.Links, fileLink)
 
 	tagLink := Link {}
 	tagLink.Rel = "tag"
-	tagLink.Href = baseurl + "/" + f.Tag
+	tagLink.Href = baseurl + "/" + f.TagID
 	f.Links = append(f.Links, tagLink)
 }
 
@@ -124,7 +109,7 @@ func (f *File) EnsureTagDirectoryExists() error {
 	return err
 }
 
-func (f *File) Info(expiration int) error {
+func (f *File) Info() error {
 	if isDir(f.TagDir) == false {
 		return errors.New("Tag does not exist.")
 	}
@@ -138,10 +123,10 @@ func (f *File) Info(expiration int) error {
 	f.CreatedReadable = humanize.Time(f.CreatedAt)
 	f.Bytes = i.Size()
 	
-	i, err = os.Lstat(f.TagDir)
-	if err != nil {
-		return err
-	}
+	//i, err = os.Lstat(f.TagDir)
+	//if err != nil {
+	//	return err
+	//}
 	//f.ExpiresAt = i.ModTime().UTC().Add(time.Duration(expiration) * time.Second)
 	//f.ExpiresReadable = humanize.Time(f.ExpiresAt)
 	return nil

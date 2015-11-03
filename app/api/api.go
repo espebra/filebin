@@ -45,6 +45,19 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	var err error
 	f := model.ExtendedFile { }
 
+	// Extract the tag from the request
+	if (r.Header.Get("tag") == "") {
+		err = f.GenerateTagID()
+	} else {
+		err = f.SetTagID(r.Header.Get("tag"))
+	}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest);
+		glog.Info(err)
+		return
+	}
+	f.SetTagDir(cfg.Filedir)
+
 	// Write the request body to a temporary file
 	err = f.WriteTempfile(r.Body, cfg.Tempdir)
 	if err != nil {
@@ -60,14 +73,6 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 		return
 	}
 
-	// Extract the tag from the request or generate a random one
-	err = f.SetTag(r.Header.Get("tag"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest);
-		return
-	}
-	f.TagDir = filepath.Join(cfg.Filedir, f.Tag)
-
 	// Create the tag directory if it does not exist
 	err = f.EnsureTagDirectoryExists()
 	if err != nil {
@@ -76,12 +81,30 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 		return
 	}
 
-	// Extract the filename from the request
-	f.SetFilename(r.Header.Get("filename"))
+	f.CalculateExpiration(cfg.Expiration)
+	expired, err := f.IsExpired(cfg.Expiration)
+	if err != nil {
+		http.Error(w,"Internal server error", 500)
+		return
+	}
+	if expired {
+		http.Error(w,"This tag has expired.", 410)
+		return
+	}
 
-	// Fallback to the checksum if the filename is not set
-	if f.Filename == "" {
+	// Extract the filename from the request
+	if (r.Header.Get("filename") == "") {
+		glog.Info("Using the checksum " + f.Checksum + " as the " +
+			"filename")
 		f.SetFilename(f.Checksum)
+	} else {
+		err = f.SetFilename(r.Header.Get("filename"))
+		if err != nil {
+			glog.Info(err)
+			http.Error(w, "Invalid filename specified. It contains illegal characters or is too short.",
+				http.StatusBadRequest);
+			return
+		}
 	}
 
 	// Promote file from tempdir to the published tagdir
@@ -95,7 +118,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 		glog.Error("Unable to detect MIME: ", err)
 	}
 
-	err = f.Info(cfg.Expiration)
+	err = f.Info()
 	if err != nil {
 		http.Error(w,"Internal Server Error", 500)
 		return
@@ -108,7 +131,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	//f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
 
 	if cfg.TriggerUploadedFile != "" {
-		triggerUploadedFileHandler(cfg.TriggerUploadedFile, f.Tag, f.Filename)
+		triggerUploadedFileHandler(cfg.TriggerUploadedFile, f.TagID, f.Filename)
 	}
 
 	headers := make(map[string]string)
@@ -123,13 +146,29 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration)
 	params := mux.Vars(r)
 	f := model.File {}
 	f.SetFilename(params["filename"])
-	err = f.SetTag(params["tag"])
 	if err != nil {
-	    http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
-	    return
+		http.Error(w,"Invalid filename specified. It contains illegal characters or is too short.", 400)
+		return
+	}
+	err = f.SetTagID(params["tag"])
+	if err != nil {
+		http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
+		return
+	}
+	f.SetTagDir(cfg.Filedir)
+
+	f.CalculateExpiration(cfg.Expiration)
+	expired, err := f.IsExpired(cfg.Expiration)
+	if err != nil {
+		http.Error(w,"Internal server error", 500)
+		return
+	}
+	if expired {
+		http.Error(w,"This tag has expired.", 410)
+		return
 	}
 	
-	path := filepath.Join(cfg.Filedir, f.Tag, f.Filename)
+	path := filepath.Join(f.TagDir, f.Filename)
 	
 	w.Header().Set("Cache-Control", "max-age: 60")
 	http.ServeFile(w, r, path)
@@ -138,15 +177,33 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration)
 func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	var err error
 	params := mux.Vars(r)
-	t := model.Tag {}
-	err = t.SetTag(params["tag"], cfg.Filedir)
+	t := model.ExtendedTag {}
+	err = t.SetTagID(params["tag"])
 	if err != nil {
 		http.Error(w, "Illegal tag", 400)
 		return
 	}
 
+	t.SetTagDir(cfg.Filedir)
 	if t.Exists() == false {
 		http.Error(w, "Tag not found", 404)
+		return
+	}
+
+	t.CalculateExpiration(cfg.Expiration)
+	expired, err := t.IsExpired(cfg.Expiration)
+	if err != nil {
+		http.Error(w,"Internal server error", 500)
+		return
+	}
+	if expired {
+		http.Error(w,"This tag has expired.", 410)
+		return
+	}
+
+	err = t.Info()
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 
@@ -157,12 +214,6 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration) 
 	}
 
 	//t.GenerateLinks(cfg.Baseurl)
-
-	err = t.Info(cfg.Expiration)
-	if err != nil {
-		http.Error(w,"Internal Server Error", 500)
-		return
-	}
 
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
