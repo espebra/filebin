@@ -36,7 +36,7 @@ $ go install
 Create the directories to use for storing files, logs and temporary files:
 
 ```
-$ mkdir ~/filebin/files ~/filebin/logs ~/filebin/temp
+$ mkdir ~/filebin ~/filebin/files ~/filebin/logs ~/filebin/temp
 ```
 
 # Usage
@@ -51,8 +51,8 @@ Some arguments commonly used to start ``filebin`` are:
 
 ```
 ~/go/bin/filebin --verbose \
-  --host 0.0.0.0 --port 8080
-  --baseurl http://api.example.com:8080
+  --host 0.0.0.0 --port 31337
+  --baseurl http://api.example.com:31337
   --filedir ~/filebin/files \
   --logdir ~/filebin/logs \
   --tempdir ~/filebin/temp \
@@ -64,6 +64,8 @@ By default, ``filebin`` will listen on ``127.0.0.1:31337``.
 ## Baseurl
 
 The ``baseurl`` parameter is used when building [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS) links.
+
+An example when having a TLS/SSL proxy in front on port 443 would be ``--baseurl https://filebin.example.com/``.
 
 ## Expiration
 
