@@ -119,3 +119,12 @@ Downloading a file is as easy as specifying the ``tag`` and the ``filename`` in 
 ```
 $ curl http://localhost:31337/customtag/myfile
 ```
+
+# Roadmap
+
+* Automatically clean up expired tags.
+* Support for reporting/moderating/blocking tags.
+* Support for deleting single files from tags.
+* Web interface.
+* Administrator dashboard.
+
