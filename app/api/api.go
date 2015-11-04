@@ -180,7 +180,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration) 
 	t := model.ExtendedTag {}
 	err = t.SetTagID(params["tag"])
 	if err != nil {
-		http.Error(w, "Illegal tag", 400)
+		http.Error(w, "Invalid tag", 400)
 		return
 	}
 
@@ -220,4 +220,9 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration) 
 
 	var status = 200
 	output.JSONresponse(w, status, headers, t)
+}
+
+func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
+	http.Error(w, "", 200)
+	return
 }
