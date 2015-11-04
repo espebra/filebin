@@ -1,0 +1,15 @@
+[Unit]
+Description=Filebin
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/filebin --filedir /srv/filebin/files --tempdir /srv/filebin/temp --logdir /var/log/filebin --baseurl https://filebin.varnish-software.com --port 8080
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=filebin
+PrivateTmp=true
+User=filebin
+Group=filebin
+
+[Install]
+WantedBy=multi-user.target
