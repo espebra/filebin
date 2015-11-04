@@ -51,17 +51,24 @@ type ExtendedFile struct {
 func (f *File) SetFilename(s string) error {
 	// Remove all but valid chars
 	var valid = regexp.MustCompile("[^A-Za-z0-9-_=,.]")
-	var secure = valid.ReplaceAllString(s, "_")
-	if secure == "" {
+	var safe = valid.ReplaceAllString(s, "_")
+	if safe == "" {
 		return errors.New("Invalid filename specified. It contains " +
 			"illegal characters or is too short.")
 	}
 
-	f.Filename = secure
-	if s != secure {
-		glog.Info("Sanitized the filename [" + s + "] into [" + secure + "]")
+	f.Filename = safe
+	if s != safe {
+		glog.Info("Sanitized the filename [" + s + "] into [" + safe + "]")
 	}
-	glog.Info("Filename: " + secure)
+
+	// Reject illegal filenames
+	switch f.Filename {
+		case ".", "..":
+			return errors.New("Invalid filename specified.")
+	}
+
+	glog.Info("Filename: " + safe)
 	return nil
 }
 
