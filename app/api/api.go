@@ -170,8 +170,67 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration)
 	
 	path := filepath.Join(f.TagDir, f.Filename)
 	
-	w.Header().Set("Cache-Control", "max-age: 60")
+	w.Header().Set("Cache-Control", "max-age=15")
 	http.ServeFile(w, r, path)
+}
+
+func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
+	var err error
+	params := mux.Vars(r)
+	f := model.File {}
+	f.SetFilename(params["filename"])
+	if err != nil {
+		http.Error(w,"Invalid filename specified. It contains illegal characters or is too short.", 400)
+		return
+	}
+	err = f.SetTagID(params["tag"])
+	if err != nil {
+		http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
+		return
+	}
+	f.SetTagDir(cfg.Filedir)
+
+	if f.Exists() == false {
+		http.Error(w,"File Not Found", 404)
+		return
+	}
+
+	f.CalculateExpiration(cfg.Expiration)
+	expired, err := f.IsExpired(cfg.Expiration)
+	if err != nil {
+		http.Error(w,"Internal server error", 500)
+		return
+	}
+	if expired {
+		http.Error(w,"This tag has expired.", 410)
+		return
+	}
+
+	f.GenerateLinks(cfg.Baseurl)
+	err = f.DetectMIME()
+	if err != nil {
+		glog.Error("Unable to detect MIME: ", err)
+	}
+
+	err = f.Info()
+	if err != nil {
+		http.Error(w,"Internal Server Error", 500)
+		return
+	}
+
+	err = f.Remove()
+ 	if err != nil {
+		glog.Error("Unable to delete file: ", err)
+		http.Error(w,"Internal Server Error", 500)
+		return
+	}
+
+	headers := make(map[string]string)
+	headers["Content-Type"] = "application/json"
+
+	var status = 200
+	output.JSONresponse(w, status, headers, f)
+	return
 }
 
 func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
@@ -217,6 +276,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration) 
 
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
+	headers["Cache-Control"] = "max-age=15"
 
 	var status = 200
 	output.JSONresponse(w, status, headers, t)

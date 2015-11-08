@@ -116,6 +116,22 @@ func (f *File) EnsureTagDirectoryExists() error {
 	return err
 }
 
+func (f *File) Exists() bool {
+	if f.TagDir == "" {
+		return false
+	}
+
+	if f.Filename == "" {
+		return false
+	}
+
+	path := filepath.Join(f.TagDir, f.Filename)
+	if !isFile(path) {
+		return false
+	}
+	return true
+}
+
 func (f *File) Info() error {
 	if isDir(f.TagDir) == false {
 		return errors.New("Tag does not exist.")
@@ -137,6 +153,21 @@ func (f *File) Info() error {
 	//f.ExpiresAt = i.ModTime().UTC().Add(time.Duration(expiration) * time.Second)
 	//f.ExpiresReadable = humanize.Time(f.ExpiresAt)
 	return nil
+}
+
+func (f *File) Remove() error {
+	if f.TagDir == "" {
+		return errors.New("Tag dir is not set")
+	}
+
+	if !isDir(f.TagDir) {
+		return errors.New("Tag dir does not exist")
+	}
+
+	path := filepath.Join(f.TagDir, f.Filename)
+	
+	err := os.Remove(path)
+	return err
 }
 
 func (f *ExtendedFile) WriteTempfile(d io.Reader, tempdir string) error {
@@ -228,6 +259,18 @@ func isDir(path string) bool {
 		return true
 	} else {
 		return false
+	}
+}
+
+func isFile(path string) bool {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	if fi.IsDir() {
+		return false
+	} else {
+		return true
 	}
 }
 

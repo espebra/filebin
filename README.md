@@ -150,6 +150,22 @@ Downloading a file is as easy as specifying the ``tag`` and the ``filename`` in 
 $ curl http://localhost:31337/customtag/myfile
 ```
 
+## Delete file
+
+|			| Value			|
+| --------------------- | ----------------------|
+| **Method**		| DELETE		|
+| **URL**		| /:tag/:filename	|
+| **URL parameters**	| *None*		|
+| **Success response**	| ``200``		|
+| **Error response**	| ``404``		|
+
+###### Examples
+
+```
+$ curl -X DELETE http://localhost:31337/customtag/myfile
+```
+
 # Feature wishlist
 
 * Automatically clean up expired tags.

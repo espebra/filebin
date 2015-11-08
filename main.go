@@ -196,8 +196,9 @@ func main() {
 	http.Handle("/", httpInterceptor(router))
 	router.HandleFunc("/", reqHandler(api.ViewIndex)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.Upload)).Methods("POST")
-	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.FetchFile)).Methods("GET", "HEAD")
 	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}", reqHandler(api.FetchTag)).Methods("GET", "HEAD")
+	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.FetchFile)).Methods("GET", "HEAD")
+	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.DeleteFile)).Methods("DELETE")
 
 	//router.HandleFunc("/dashboard{_:/?}", ViewDashboard).Methods("GET", "HEAD")
 
