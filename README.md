@@ -130,6 +130,7 @@ $ curl http://localhost:31337/customtag
 
 ## Download file
 
+| --------------------- | ----------------------|
 | **Method**		| GET			|
 | **URL**		| /:tag/:filename	|
 | **URL parameters**	| *None*		|
