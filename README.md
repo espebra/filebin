@@ -89,7 +89,7 @@ The parameter ``--trigger-uploaded-file /usr/local/bin/uploaded-file`` will make
 | **Success response**	| ``201``		|
 | **Error response**	| ``400``		|
 
-### Examples
+###### Examples
 
 In all examples, the file ``/path/to/some file`` will be uploaded.
 
@@ -124,7 +124,7 @@ $ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
 | **Success response**	| ``200``		|
 | **Error response**	| ``404``		|
 
-### Examples
+###### Examples
 
 The following command will print a JSON structure showing which files that available in the tag ``customtag``.
 
@@ -142,7 +142,7 @@ $ curl http://localhost:31337/customtag
 | **Success response**	| ``200``		|
 | **Error response**	| ``404``		|
 
-### Examples
+###### Examples
 
 Downloading a file is as easy as specifying the ``tag`` and the ``filename`` in the request URI:
 
@@ -150,11 +150,14 @@ Downloading a file is as easy as specifying the ``tag`` and the ``filename`` in 
 $ curl http://localhost:31337/customtag/myfile
 ```
 
-# Roadmap
+# Feature wishlist
 
 * Automatically clean up expired tags.
-* Support for reporting/moderating/blocking tags.
 * Support for deleting single files from tags.
+* Support for deleting entires tags.
+* Streaming of entire (on the fly) compressed tags.
+* Thumbnail generation.
+* Image meta data (EXIF) extraction.
 * Web interface.
 * Administrator dashboard.
 
