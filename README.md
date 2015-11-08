@@ -79,11 +79,17 @@ Triggers enable external scripts to be executed at certain events.
 
 The parameter ``--trigger-uploaded-file /usr/local/bin/uploaded-file`` will make ``filebin`` execute ``/usr/local/bin/uploaded-file``, with the ``tag`` and ``filename`` as arguments for every file uploaded. The execution is non-blocking.
 
-# API
-
 ## Upload file
 
-In all examples, I will upload the file ``/path/to/some file``.
+| **Method**		| POST			|
+| **URL**		| /			|
+| **URL parameters**	| *None*		|
+| **Success response**	| ``201``		|
+| **Error response**	| ``400``		|
+
+### Examples
+
+In all examples, the file ``/path/to/some file`` will be uploaded.
 
 Using the following command, the ``tag`` will be automatically generated and the ``filename`` will be set to the SHA256 checksum of the content. The checksum of the content will not be verified.
 
@@ -108,6 +114,14 @@ $ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
 
 ## Show tag
 
+| **Method**		| GET			|
+| **URL**		| /:tag			|
+| **URL parameters**	| *None*		|
+| **Success response**	| ``200``		|
+| **Error response**	| ``404``		|
+
+### Examples
+
 The following command will print a JSON structure showing which files that available in the tag ``customtag``.
 
 ```
@@ -115,6 +129,14 @@ $ curl http://localhost:31337/customtag
 ```
 
 ## Download file
+
+| **Method**		| GET			|
+| **URL**		| /:tag/:filename	|
+| **URL parameters**	| *None*		|
+| **Success response**	| ``200``		|
+| **Error response**	| ``404``		|
+
+### Examples
 
 Downloading a file is as easy as specifying the ``tag`` and the ``filename`` in the request URI:
 
