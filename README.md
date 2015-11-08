@@ -81,6 +81,8 @@ The parameter ``--trigger-uploaded-file /usr/local/bin/uploaded-file`` will make
 
 ## Upload file
 
+|			| Value			|
+| --------------------- | ----------------------|
 | **Method**		| POST			|
 | **URL**		| /			|
 | **URL parameters**	| *None*		|
@@ -114,6 +116,8 @@ $ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
 
 ## Show tag
 
+|			| Value			|
+| --------------------- | ----------------------|
 | **Method**		| GET			|
 | **URL**		| /:tag			|
 | **URL parameters**	| *None*		|
@@ -130,7 +134,7 @@ $ curl http://localhost:31337/customtag
 
 ## Download file
 
-|			|			|
+|			| Value			|
 | --------------------- | ----------------------|
 | **Method**		| GET			|
 | **URL**		| /:tag/:filename	|
