@@ -176,4 +176,4 @@ $ curl -X DELETE http://localhost:31337/customtag/myfile
 * Image meta data (EXIF) extraction.
 * Web interface.
 * Administrator dashboard.
-
+* Error response if the request body is 0 bytes on upload.
