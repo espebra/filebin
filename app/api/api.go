@@ -66,6 +66,16 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 		return
 	}
 
+	// Do not accept files that are 0 bytes
+	if f.Bytes == 0 {
+		// Clean up by removing the tempfile
+		f.ClearTemp()
+
+		http.Error(w, "No content. The file size must be more than " +
+			"0 bytes.", http.StatusBadRequest);
+		return
+	}
+
 	// Calculate and verify the checksum
 	err = f.VerifySHA256(r.Header.Get("content-sha256"))
 	if err != nil {
