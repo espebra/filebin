@@ -8,8 +8,8 @@ get-deps:
 	go get github.com/dustin/go-humanize
 	go get github.com/golang/glog
 	go get github.com/gorilla/mux
-	go get github.com/elazarl/go-bindata-assetfs
-	go get github.com/arschles/go-bindata-html-template
+	go get github.com/jteeuwen/go-bindata/...
+	go get github.com/elazarl/go-bindata-assetfs/...
 
 build:
 	go-bindata-assetfs static/...
