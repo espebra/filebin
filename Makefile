@@ -1,7 +1,11 @@
 HASH=`git rev-parse HEAD`
 TIME=`date -u '+%Y-%m-%d %H:%M:%S'`
 
-check:
+prepare:
+	go-bindata-assetfs static/...
+	go-bindata -o app/output/templates.go -pkg output templates/...
+
+check: prepare
 	go test -cover -v github.com/espebra/filebin/app/api github.com/espebra/filebin/app/model github.com/espebra/filebin/app/config
 
 get-deps:
@@ -12,13 +16,8 @@ get-deps:
 	go get github.com/elazarl/go-bindata-assetfs/...
 	go get github.com/arschles/go-bindata-html-template
 
-build:
-	go-bindata-assetfs static/...
-	go-bindata -o app/output/templates.go -pkg output templates/...
-	
+build: prepare
 	go build -ldflags "-X main.buildstamp \"${TIME}\" -X main.githash \"${HASH}\""
 
-install:
-	go-bindata-assetfs static/...
-	go-bindata -o app/output/templates.go -pkg output templates/...
+install: prepare
 	go install -ldflags "-X main.buildstamp \"${TIME}\" -X main.githash \"${HASH}\""
