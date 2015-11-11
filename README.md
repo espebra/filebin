@@ -19,18 +19,28 @@ $ sudo yum/apt-get/brew install golang
 Create the Go workspace and set the ``GOPATH`` environment variable:
 
 ```
-$ mkdir ~/go
-$ cd ~/go
+$ mkdir ${HOME}/go
+$ cd ${HOME}/go
 $ mkdir src bin pkg
-$ export GOPATH="~/go"
+$ export GOPATH="${HOME}/go"
+$ export PATH="$PATH:${HOME}/go/bin"
 ```
 
-Download and install ``filebin``. The binary will be created as ``~/go/bin/filebin``.
+Download and install ``filebin``:
 
 ```
-$ go get github.com/espebra/filebin
-$ cd src/github.com/espebra/filebin
+$ go get -d github.com/espebra/filebin
+$ cd ${HOME}/go/src/github.com/espebra/filebin
+$ make get-deps
 $ make install
+```
+
+The binary should be created as ``${HOME}/go/bin/filebin``. Execute it with the ``--version`` to verify that it is recent.
+
+```
+$ ${HOME}/go/bin/filebin --version
+Git Commit Hash: 40bd401ec350c86a46cdb3dc87f6b70c3c0b796b
+UTC Build Time: 2015-11-11 23:01:35
 ```
 
 Create the directories to use for storing files, logs and temporary files:
