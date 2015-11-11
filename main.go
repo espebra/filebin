@@ -204,7 +204,9 @@ func main() {
 		cfg.Filedir)
 
 	router := mux.NewRouter()
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assetFS())))
 	http.Handle("/", httpInterceptor(router))
+
 	router.HandleFunc("/", reqHandler(api.ViewIndex)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.Upload)).Methods("POST")
 	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}", reqHandler(api.FetchTag)).Methods("GET", "HEAD")
@@ -226,9 +228,9 @@ func main() {
 	//router.HandleFunc("/user/{id:[0-9]+}", user.GetViewPage).Methods("GET")
 
 	//// CSS and Javascript
-	fileServer := http.StripPrefix("/static/",
-	    http.FileServer(http.Dir("static")))
-	http.Handle("/static/", fileServer)
+	//fileServer := http.StripPrefix("/static/",
+	//    http.FileServer(http.Dir("static")))
+	//http.Handle("/static/", fileServer)
 
 	err := http.ListenAndServe(cfg.Host + ":" +
 		strconv.Itoa(cfg.Port), nil)

@@ -2,4 +2,6 @@
 files/*
 temp/*
 .vagrant/
+bindata_assetfs.go
+app/output/templates.go
 

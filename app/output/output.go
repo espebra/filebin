@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"encoding/json"
 	"strconv"
-	"html/template"
-	"path/filepath"
+	//"html/template"
+	//"path/filepath"
 
         "github.com/golang/glog"
+	"github.com/arschles/go-bindata-html-template"
 )
 
 func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d interface{}) {
@@ -32,8 +33,8 @@ func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d inte
 }
 
 func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]string, d interface{}) {
-	path := filepath.Join("templates/", tpl + ".html")
-	t, err := template.ParseFiles(path)
+	//t, err := template.ParseFiles(path)
+	t, err := template.New(tpl, Asset).Parse("templates/" + tpl + ".html")
 	if err != nil {
 		glog.Error(err)
 	}
