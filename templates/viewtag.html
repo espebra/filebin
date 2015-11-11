@@ -27,7 +27,9 @@
             <div class="table-responsive">
                 <table class="table">
 	            <thead class="thead">
+                        <!--
                         <th></th>
+                        -->
                         <th>Name</th>
                         <th>Size</th>
                         <th>Type</th>
@@ -36,7 +38,9 @@
 	            <tbody>
                     {{ range $index, $value := .Files }}
                         <tr>
+                            <!--
                             <td><span class="glyphicon glyphicon-file" aria-hidden="true"></span></td>
+                            -->
                             <td><a href="/{{ .TagID }}/{{ .Filename }}">{{ .Filename }}</a></td>
                             <td>{{ .BytesReadable }}</td>
                             <td>{{ .MIME }}</td>
@@ -48,6 +52,4 @@
             </div>
         </div>
     </body>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
 </html>
