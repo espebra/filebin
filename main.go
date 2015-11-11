@@ -19,6 +19,8 @@ import (
 )
 
 var cfg = config.Global
+var githash = "No githash provided"
+var buildstamp = "No buildstamp provided"
 
 func generateReqId(n int) string {
         var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
@@ -106,7 +108,16 @@ func init() {
 //		cfg.TriggerExpiredTag,
 //		"Trigger to execute when a tag expires.")
 
+	flag.BoolVar(&cfg.Version, "version",
+		cfg.Version, "Show the version.")
+
 	flag.Parse()
+
+	if cfg.Version {
+		fmt.Println("Git Commit Hash: " + githash)
+		fmt.Println("UTC Build Time: " + buildstamp)
+		os.Exit(0)
+	}
 	
 	//if (!IsDir(cfg.Logdir)) {
 	//    fmt.Println("The specified log directory is not a directory: ",

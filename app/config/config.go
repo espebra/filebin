@@ -15,6 +15,7 @@ type Configuration struct {
 	TriggerNewTag		string
 	TriggerUploadedFile	string
 	TriggerExpiredTag	string
+	Version			bool
 }
 
 var Global Configuration
