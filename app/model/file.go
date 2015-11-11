@@ -32,6 +32,7 @@ type File struct {
 	//TagDir			string		`json:"-"`
 
 	Bytes			int64		`json:"bytes"`
+	BytesReadable		string		`json:"-"`
 	MIME			string		`json:"mime"`
 	CreatedReadable		string		`json:"created"`
 	CreatedAt		time.Time	`json:"-"`
@@ -145,6 +146,7 @@ func (f *File) Info() error {
 	f.CreatedAt = i.ModTime().UTC()
 	f.CreatedReadable = humanize.Time(f.CreatedAt)
 	f.Bytes = i.Size()
+	f.BytesReadable = humanize.Bytes(uint64(f.Bytes))
 	
 	//i, err = os.Lstat(f.TagDir)
 	//if err != nil {

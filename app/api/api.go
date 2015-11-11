@@ -285,11 +285,16 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration) 
 	//t.GenerateLinks(cfg.Baseurl)
 
 	headers := make(map[string]string)
-	headers["Content-Type"] = "application/json"
 	headers["Cache-Control"] = "max-age=15"
 
 	var status = 200
-	output.JSONresponse(w, status, headers, t)
+
+	if (r.Header.Get("Content-Type") == "application/json") {
+		headers["Content-Type"] = "application/json"
+		output.JSONresponse(w, status, headers, t)
+	} else {
+		output.HTMLresponse(w, "viewtag", status, headers, t)
+	}
 }
 
 func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {

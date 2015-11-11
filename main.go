@@ -226,9 +226,9 @@ func main() {
 	//router.HandleFunc("/user/{id:[0-9]+}", user.GetViewPage).Methods("GET")
 
 	//// CSS and Javascript
-	//fileServer := http.StripPrefix("/static/",
-	//    http.FileServer(http.Dir("static")))
-	//http.Handle("/static/", fileServer)
+	fileServer := http.StripPrefix("/static/",
+	    http.FileServer(http.Dir("static")))
+	http.Handle("/static/", fileServer)
 
 	err := http.ListenAndServe(cfg.Host + ":" +
 		strconv.Itoa(cfg.Port), nil)

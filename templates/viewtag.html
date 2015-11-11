@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <title>Filebin</title>
+
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="/static/custom.css">
+        <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css">
+
+    </head>
+    <body>
+        <div class="container">
+            <div align="right">
+                <small class="text-muted">
+                     Last updated {{ .LastUpdateReadable }}<br/>
+                     Expires {{ .ExpirationReadable }}
+                </small>
+            </div>
+            <h1 class="display-4">
+                Filebin
+            </h1>
+
+            <div class="table-responsive">
+                <table class="table">
+	            <thead class="thead">
+                        <th></th>
+                        <th>Name</th>
+                        <th>Size</th>
+                        <th>Type</th>
+                        <th>Created</th>
+	            </thead>
+	            <tbody>
+                    {{ range $index, $value := .Files }}
+                        <tr>
+                            <td><span class="glyphicon glyphicon-file" aria-hidden="true"></span></td>
+                            <td><a href="/{{ .TagID }}/{{ .Filename }}">{{ .Filename }}</a></td>
+                            <td>{{ .BytesReadable }}</td>
+                            <td>{{ .MIME }}</td>
+                            <td>{{ .CreatedReadable }}</td>
+                        </tr>
+                    {{ end }}
+	            <tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+</html>
