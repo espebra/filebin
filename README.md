@@ -30,7 +30,7 @@ Download and install ``filebin``. The binary will be created as ``~/go/bin/fileb
 ```
 $ go get github.com/espebra/filebin
 $ cd src/github.com/espebra/filebin
-$ go install
+$ make install
 ```
 
 Create the directories to use for storing files, logs and temporary files:
