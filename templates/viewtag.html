@@ -46,12 +46,12 @@
             </nav>
 
             <div class="row">
-                <div class="col-sm-8">
+                <div class="col-sm-6">
                     <h1 class="display-4">
                         Filebin
                     </h1>
                 </div>
-                <div class="col-sm-4">
+                <div class="col-sm-6">
                     <div align="right">
                         <small class="text-muted">
                              Last updated {{ .LastUpdateReadable }}<br/>
@@ -91,8 +91,8 @@
                         -->
                         <th>Name</th>
                         <th>Size</th>
-                        <th>Type</th>
-                        <th>Created</th>
+                        <th class="hidden-md-down">Type</th>
+                        <th class="hidden-md-down">Created</th>
 	            </thead>
 	            <tbody id="fileList">
                     {{ range $index, $value := .Files }}
@@ -102,8 +102,8 @@
                             -->
                             <td><a href="/{{ .TagID }}/{{ .Filename }}">{{ .Filename }}</a></td>
                             <td>{{ .BytesReadable }}</td>
-                            <td>{{ .MIME }}</td>
-                            <td>{{ .CreatedReadable }}</td>
+                            <td class="hidden-md-down">{{ .MIME }}</td>
+                            <td class="hidden-md-down">{{ .CreatedReadable }}</td>
                         </tr>
                     {{ end }}
 	            <tbody>
