@@ -13,6 +13,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/golang/glog"
+	"github.com/GeertJohan/go.rice"
 
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/api"
@@ -204,7 +205,10 @@ func main() {
 		cfg.Filedir)
 
 	router := mux.NewRouter()
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assetFS())))
+
+	box := rice.MustFindBox("static")
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
+
 	http.Handle("/", httpInterceptor(router))
 
 	router.HandleFunc("/", reqHandler(api.ViewIndex)).Methods("GET", "HEAD")
