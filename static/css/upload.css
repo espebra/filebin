@@ -8,6 +8,11 @@ html, body {
     position: relative;
 }
 
+#fileCountContainer {
+    display: none;
+    position: relative;
+}
+
 #files {
     margin-top: 30px;
     min-height: 30px;

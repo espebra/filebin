@@ -33,8 +33,8 @@
                 // Automatically start upload when using the drop zone
                 fileDrop.ondrop = FileAPI.uploadQueue;
                 //fileField.onkeypress = FileAPI.uploadQueue;
-                var reset = document.getElementById("reset");
-                reset.onclick = FileAPI.clearList;
+                //var reset = document.getElementById("reset");
+                //reset.onclick = FileAPI.clearList;
                 var upload = document.getElementById("upload");
                 upload.onclick = FileAPI.uploadQueue;
             }
@@ -43,6 +43,11 @@
 
     <body id="fileDrop">
         <div class="container">
+
+            <nav class="navbar navbar-dark bg-inverse" id="fileCountContainer">
+                <h5><div align="center" id="fileCount"></div></h5>
+            </nav>
+
             <div class="row">
                 <div class="col-sm-8">
                     <h1 class="display-4">
@@ -59,7 +64,7 @@
                 </div>
             </div>
 
-            <div class="small pull-right "><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Upload more files?</a></div>
+            <div class="small pull-right "><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Upload more files</a></div>
 
             <div class="row">
                 <div class="col-sm-4 col-sm-offset-8">
@@ -76,16 +81,9 @@
                     
                         <div class="form-group">
                            <a id="upload" class="btn btn-primary" href="#" title="Upload all files in list">Upload files</a>
-                           <a id="reset" class="btn btn-secondary" href="#" title="Remove all files from list">Clear list</a>
+                           <!--<a id="reset" class="btn btn-secondary" href="#" title="Remove all files from list">Clear list</a>-->
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div id="fileCount"></div>
-                <div id="files">
-                    <ul id="fileList"></ul>
                 </div>
             </div>
 
@@ -100,7 +98,7 @@
                         <th>Type</th>
                         <th>Created</th>
 	            </thead>
-	            <tbody>
+	            <tbody id="fileList">
                     {{ range $index, $value := .Files }}
                         <tr>
                             <!--

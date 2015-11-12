@@ -1,3 +1,7 @@
 .dark-background {
     background-color: #BBBBBB;
 }
+
+.progress {
+    margin-bottom: 0 !important;
+}
