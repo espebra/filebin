@@ -177,6 +177,7 @@ func (f *ExtendedFile) WriteTempfile(d io.Reader, tempdir string) error {
 	if err != nil {
 		return err
 	}
+	f.Tempfile = fp.Name()
 	glog.Info("Writing data to " + fp.Name())
 
 	f.Bytes, err = io.Copy(fp, d)
@@ -189,7 +190,6 @@ func (f *ExtendedFile) WriteTempfile(d io.Reader, tempdir string) error {
 	fp.Sync()
 
 	// Store the tempfile path for later
-	f.Tempfile = fp.Name()
 	defer fp.Close()
 	return nil
 }

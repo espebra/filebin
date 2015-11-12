@@ -62,6 +62,10 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	err = f.WriteTempfile(r.Body, cfg.Tempdir)
 	if err != nil {
 		glog.Error("Unable to write tempfile: ", err)
+
+		// Clean up by removing the tempfile
+		f.ClearTemp()
+
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
 		return
 	}
