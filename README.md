@@ -23,14 +23,14 @@ $ mkdir ${HOME}/go
 $ cd ${HOME}/go
 $ mkdir src bin pkg
 $ export GOPATH="${HOME}/go"
-$ export PATH="$PATH:${HOME}/go/bin"
+$ export PATH="${PATH}:${HOME}/go/bin"
 ```
 
 Download and install ``filebin``:
 
 ```
-$ go get -d github.com/espebra/filebin
-$ cd ${HOME}/go/src/github.com/espebra/filebin
+$ go -d get github.com/espebra/filebin
+$ cd ${GOPATH}/src/github.com/espebra/filebin
 $ make get-deps
 $ make install
 ```
