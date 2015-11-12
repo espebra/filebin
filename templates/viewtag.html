@@ -10,6 +10,7 @@
         <!-- Bootstrap -->
         <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css"/>
         <link rel="stylesheet" href="/static/css/upload.css"/>
+        <link rel="stylesheet" href="/static/css/custom.css"/>
 
         <script src="/static/js/showhide.js"></script>
         <script src="/static/js/upload.js"></script>
@@ -17,8 +18,8 @@
             window.onload = function () {
                 if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a mo    dern browser with File API support to upload files.");
                 var fileCount = document.getElementById("fileCount");
-                var fileList = document.body
-                var fileDrop = document.getElementById("fileDrop");
+                var fileList = document.getElementById("fileList");
+                var fileDrop = document.body;
                 var fileField = document.getElementById("fileField");
                 var tag = "{{ .Tag.TagID }}";
                 FileAPI = new FileAPI(
@@ -58,9 +59,33 @@
                 </div>
             </div>
 
+            <div class="small pull-right "><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Upload more files?</a></div>
+
             <div class="row">
-                <div class="col-sm-8">
-                    <div id="fileCount"></div>
+                <div class="col-sm-4 col-sm-offset-8">
+                    <div class="pull-right" id="fileSelect">
+                        <p class="lead">
+                            Select files to upload using the form below, or 
+                            drag and drop the files into this browser window.
+                        </p>
+                        <form role="form" action="" method="post" enctype="multipart/form-data">
+                           <div class="form-group">
+                               <input type="file" id="fileField" name="fileField" multiple value="Browse..."/>
+                            </div>
+                        </form>
+                    
+                        <div class="form-group">
+                           <a id="upload" class="btn btn-primary" href="#" title="Upload all files in list">Upload files</a>
+                           <a id="reset" class="btn btn-secondary" href="#" title="Remove all files from list">Clear list</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div id="fileCount"></div>
+                <div id="files">
+                    <ul id="fileList"></ul>
                 </div>
             </div>
 
@@ -89,24 +114,6 @@
                     {{ end }}
 	            <tbody>
                 </table>
-            </div>
-
-            <div class="small pull-right"><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Upload more files</a></div>
-            <div id="fileSelect">
-                <form role="form" action="" method="post" enctype="multipart/form-data">
-                   <div class="form-group">
-                       <input type="file" id="fileField" name="fileField" multiple value="Browse..."/>
-                    </div>
-                </form>
-            
-                <div class="form-group">
-                   <a id="upload" class="btn btn-primary" href="#" title="Upload all files in list">Upload files</a>
-                   <a id="reset" class="btn btn-secondary" href="#" title="Remove all files from list">Clear list</a>
-                </div>
-            </div>
-            
-            <div id="files">
-                <ul id="fileList"></ul>
             </div>
         </div>
     </body>
