@@ -32,11 +32,8 @@
                 FileAPI.init();
                 // Automatically start upload when using the drop zone
                 fileDrop.ondrop = FileAPI.uploadQueue;
-                //fileField.onkeypress = FileAPI.uploadQueue;
-                //var reset = document.getElementById("reset");
-                //reset.onclick = FileAPI.clearList;
-                var upload = document.getElementById("upload");
-                upload.onclick = FileAPI.uploadQueue;
+                // Automatically start upload when selecting files
+                fileField.addEventListener("change", FileAPI.uploadQueue)
             }
         </script>
     </head>
@@ -64,25 +61,24 @@
                 </div>
             </div>
 
-            <div class="small pull-right "><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Upload more files</a></div>
+            <div class="small pull-right "><a href="" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Upload more files</a></div>
 
             <div class="row">
                 <div class="col-sm-4 col-sm-offset-8">
                     <div class="pull-right" id="fileSelect">
-                        <p class="lead">
-                            Select files to upload using the form below, or 
-                            drag and drop the files into this browser window.
-                        </p>
-                        <form role="form" action="" method="post" enctype="multipart/form-data">
-                           <div class="form-group">
-                               <input type="file" id="fileField" name="fileField" multiple value="Browse..."/>
-                            </div>
-                        </form>
-                    
-                        <div class="form-group">
-                           <a id="upload" class="btn btn-primary" href="#" title="Upload all files in list">Upload files</a>
-                           <!--<a id="reset" class="btn btn-secondary" href="#" title="Remove all files from list">Clear list</a>-->
-                        </div>
+                        <ul class="list-group"><li class="list-group-item">
+                            <h4>Upload files</h4>
+                            <p class="lead">
+                                Select files to upload using the form below, or
+                                drag and drop the files into the browser window.
+                            </p>
+                            <form role="form" action="" method="post" enctype="multipart/form-data">
+                               <div class="form-group">
+                                   <input type="file" id="fileField" name="fileField" multiple value="Browse..."/>
+                                </div>
+                            </form>
+                        </li></ul>
+                        <br/>
                     </div>
                 </div>
             </div>
