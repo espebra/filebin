@@ -24,16 +24,16 @@
       }
   
       function updateFileCount() {
-          var text = "Status: " + counter_completed + " of " + counter_queue + " file";
+          var text = counter_completed + " of " + counter_queue + " file";
           if (counter_queue != 1){
               text = text + "s";
           }
           text = text + " uploaded";
           if (counter_completed == counter_queue) {
               fileCount.textContent = text + ", all done!";
-        } else {
-              fileCount.textContent = text + ".";
-        }
+          } else {
+                fileCount.textContent = text + ".";
+          }
       }
       this.showDroppedFiles = function (ev) {
           ev.stopPropagation();
