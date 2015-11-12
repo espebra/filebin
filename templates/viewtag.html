@@ -8,11 +8,40 @@
         <title>Filebin</title>
 
         <!-- Bootstrap -->
-        <link rel="stylesheet" href="/static/custom.css">
-        <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css">
+        <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css"/>
+        <link rel="stylesheet" href="/static/css/upload.css"/>
 
+        <script src="/static/js/showhide.js"></script>
+        <script src="/static/js/upload.js"></script>
+        <script>
+            window.onload = function () {
+                if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a mo    dern browser with File API support to upload files.");
+                var fileCount = document.getElementById("fileCount");
+                //var fileList = document.getElementById("fileList");
+                var fileList = document.body
+                var fileDrop = document.getElementById("fileDrop");
+                var fileField = document.getElementById("fileField");
+                var tag = "{{ .Tag.TagID }}";
+                FileAPI = new FileAPI(
+                    fileCount,
+                    fileList,
+                    fileDrop,
+                    fileField,
+                    tag
+                );
+                FileAPI.init();
+                // Automatically start upload when using the drop zone
+                fileDrop.ondrop = FileAPI.uploadQueue;
+                //fileField.onkeypress = FileAPI.uploadQueue;
+                var reset = document.getElementById("reset");
+                reset.onclick = FileAPI.clearList;
+                var upload = document.getElementById("upload");
+                upload.onclick = FileAPI.uploadQueue;
+            }
+        </script>
     </head>
-    <body>
+
+    <body id="fileDrop">
         <div class="container">
             <div align="right">
                 <small class="text-muted">
@@ -49,6 +78,26 @@
                     {{ end }}
 	            <tbody>
                 </table>
+            </div>
+
+            <div class="small pull-right"><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Upload more files</a></div>
+            <div id="fileSelect">
+                <form role="form" action="" method="post" enctype="multipart/form-data">
+                   <div class="form-group">
+                       <input type="file" id="fileField" name="fileField" multiple value="Browse..."/>
+                    </div>
+                </form>
+            
+                <div class="form-group">
+                   <a id="upload" class="btn btn-primary" href="#" title="Upload all files in list">Upload files</a>
+                   <a id="reset" class="btn btn-secondary" href="#" title="Remove all files from list">Clear list</a>
+                </div>
+            </div>
+            
+            <h6><div id="fileCount"></div></h6>
+            
+            <div id="files">
+                <ul id="fileList"></ul>
             </div>
         </div>
     </body>
