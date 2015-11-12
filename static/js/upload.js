@@ -68,7 +68,7 @@ function FileAPI (c, t, d, f, tag) {
     this.uploadQueue = function (ev) {
         ev.preventDefault();
         while (fileQueue.length > 0) {
-            var item = fileQueue.shift();
+            var item = fileQueue.pop();
             uploadFile(item.file, item.tr);
         }
     }
