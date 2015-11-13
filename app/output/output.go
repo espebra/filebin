@@ -46,6 +46,12 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]st
 		glog.Error(err)
 	}
 
+        for header, value := range h {
+                w.Header().Set(header, value)
+        }
+
+        w.WriteHeader(status)
+
 	err = t.Execute(w, d)
 	if err != nil {
 		glog.Error(err)
