@@ -23,22 +23,22 @@ $ mkdir ${HOME}/go
 $ cd ${HOME}/go
 $ mkdir src bin pkg
 $ export GOPATH="${HOME}/go"
-$ export PATH="${PATH}:${HOME}/go/bin"
+$ export PATH="${PATH}:${GOPATH}/bin"
 ```
 
 Download and install ``filebin``:
 
 ```
-$ go -d get github.com/espebra/filebin
+$ go get -d github.com/espebra/filebin
 $ cd ${GOPATH}/src/github.com/espebra/filebin
 $ make get-deps
 $ make install
 ```
 
-The binary should be created as ``${HOME}/go/bin/filebin``. Execute it with the ``--version`` to verify that it is recent.
+The binary should be created as ``${GOPATH}/bin/filebin``. Execute it with the ``--version`` to verify that it is recent.
 
 ```
-$ ${HOME}/go/bin/filebin --version
+$ ${GOPATH}/bin/filebin --version
 Git Commit Hash: 40bd401ec350c86a46cdb3dc87f6b70c3c0b796b
 UTC Build Time: 2015-11-11 23:01:35
 ```
@@ -54,13 +54,13 @@ $ mkdir ~/filebin ~/filebin/files ~/filebin/logs ~/filebin/temp
 The built in help text will show the various command line arguments available:
 
 ```
-~/go/bin/filebin --help
+$ ${GOPATH}/bin/filebin --help
 ```
 
 Some arguments commonly used to start ``filebin`` are:
 
 ```
-~/go/bin/filebin --verbose \
+$ ${GOPATH}/bin/filebin --verbose \
   --host 0.0.0.0 --port 31337
   --baseurl http://api.example.com:31337
   --filedir ~/filebin/files \
