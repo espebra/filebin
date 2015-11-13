@@ -13,6 +13,8 @@ import (
 	"github.com/GeertJohan/go.rice"
 )
 
+var templateBox = rice.MustFindBox("../../templates")
+
 func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d interface{}) {
         dj, err := json.MarshalIndent(d, "", "    ")
         if err != nil {
@@ -33,11 +35,6 @@ func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d inte
 }
 
 func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]string, d interface{}) {
-	templateBox, err := rice.FindBox("../../templates")
-	if err != nil {
-		glog.Fatal(err)
-	}
-
 	templateString, err := templateBox.String(tpl + ".html")
 	if err != nil {
 		glog.Fatal(err)

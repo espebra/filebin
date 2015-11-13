@@ -23,6 +23,8 @@ var cfg = config.Global
 var githash = "No githash provided"
 var buildstamp = "No buildstamp provided"
 
+var staticBox = rice.MustFindBox("static")
+
 func generateReqId(n int) string {
         var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
         b := make([]rune, n)
@@ -206,8 +208,7 @@ func main() {
 
 	router := mux.NewRouter()
 
-	box := rice.MustFindBox("static")
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(staticBox.HTTPBox())))
 
 	http.Handle("/", httpInterceptor(router))
 
