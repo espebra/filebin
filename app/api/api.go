@@ -299,6 +299,15 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 }
 
 func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	http.Error(w, "", 200)
-	return
+	t := model.Tag {}
+	err := t.GenerateTagID()
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	headers := make(map[string]string)
+	headers["Location"] = "/" + t.TagID
+	var status = 302
+	output.JSONresponse(w, status, headers, t)
 }
