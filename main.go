@@ -55,16 +55,16 @@ func init() {
 	defer glog.Flush()
 
 	flag.StringVar(&cfg.Baseurl, "baseurl",
-		cfg.Baseurl, "Baseurl directory")
+		cfg.Baseurl, "Baseurl used when generating links.")
 
 	flag.StringVar(&cfg.Filedir, "filedir",
-		cfg.Filedir, "Files directory")
+		cfg.Filedir, "Directory to store uploaded files.")
 
 	flag.StringVar(&cfg.Tempdir, "tempdir",
-		cfg.Tempdir, "Temp directory")
+		cfg.Tempdir, "Directory to temporarily store files during upload.")
 
 	flag.StringVar(&cfg.Logdir, "logdir",
-		cfg.Logdir, "Path to log directory")
+		cfg.Logdir, "Directory to write log files to.")
 
 	//flag.StringVar(&cfg.Thumbdir, "thumbdir",
 	//	cfg.Thumbdir, "Path to thumbnail directory")
@@ -73,19 +73,19 @@ func init() {
 	//	cfg.Database, "Path to database file")
 
 	flag.StringVar(&cfg.Host, "host",
-		cfg.Host, "Listen host")
+		cfg.Host, "Listen host.")
 
 	flag.IntVar(&cfg.Port, "port",
-		cfg.Port, "Listen port")
+		cfg.Port, "Listen port.")
 
 	flag.IntVar(&cfg.Readtimeout, "readtimeout",
-		cfg.Readtimeout, "Read timeout in seconds")
+		cfg.Readtimeout, "Request read timeout in seconds.")
 
 	flag.IntVar(&cfg.Writetimeout, "writetimeout",
-		cfg.Writetimeout, "Write timeout in seconds")
+		cfg.Writetimeout, "Response write timeout in seconds.")
 
 	flag.IntVar(&cfg.Maxheaderbytes, "maxheaderbytes",
-		cfg.Maxheaderbytes, "Max header bytes.")
+		cfg.Maxheaderbytes, "Max header size in bytes.")
 
 	//flag.IntVar(&cfg.Pagination, "pagination",
 	//	cfg.Pagination,
@@ -95,10 +95,10 @@ func init() {
 	//	cfg.GeoIP2, "Path to the GeoIP2 database file.")
 
 	flag.Int64Var(&cfg.Expiration, "expiration",
-		cfg.Expiration, "Tag expiration time in seconds after the last modification")
+		cfg.Expiration, "Tag expiration time in seconds after the last modification.")
 
 	flag.BoolVar(&cfg.Verbose, "verbose",
-		cfg.Verbose, "Verbose stdout.")
+		cfg.Verbose, "Verbose output.")
 
 //	flag.StringVar(&cfg.TriggerNewTag, "trigger-new-tag",
 //		cfg.TriggerNewTag,
@@ -107,14 +107,14 @@ func init() {
 	flag.StringVar(&cfg.TriggerUploadedFile,
 		"trigger-uploaded-file",
 		cfg.TriggerUploadedFile,
-		"Trigger to execute when a file is uploaded.")
+		"Command to execute when a file is uploaded.")
 
 //	flag.StringVar(&cfg.TriggerExpiredTag, "trigger-expired-tag",
 //		cfg.TriggerExpiredTag,
 //		"Trigger to execute when a tag expires.")
 
 	flag.BoolVar(&cfg.Version, "version",
-		cfg.Version, "Show the version.")
+		cfg.Version, "Show the version information.")
 
 	flag.Parse()
 
@@ -181,25 +181,31 @@ func main() {
 	templateBox = rice.MustFindBox("templates")
 
 	if cfg.Verbose {
-		fmt.Println("Host: " + cfg.Host)
-		fmt.Println("Port: " + strconv.Itoa(cfg.Port))
+		fmt.Println("Listen host: " + cfg.Host)
+		fmt.Println("Listen port: " + strconv.Itoa(cfg.Port))
 		fmt.Println("Read timeout: " +
 			strconv.Itoa(cfg.Readtimeout) + " seconds")
 		fmt.Println("Write timeout: " +
 			strconv.Itoa(cfg.Writetimeout) + " seconds")
-		fmt.Println("Max header bytes: " +
-			strconv.Itoa(cfg.Maxheaderbytes))
-		fmt.Println("Expire time: " + strconv.FormatInt(cfg.Expiration, 10) +
+		fmt.Println("Max header size: " +
+			strconv.Itoa(cfg.Maxheaderbytes) + " bytes")
+		fmt.Println("Expiration time: " + strconv.FormatInt(cfg.Expiration, 10) +
 			" seconds")
-		fmt.Println("Baseurl: " + cfg.Baseurl)
 		fmt.Println("Files directory: " + cfg.Filedir)
 		//fmt.Println("Thumbnail directory: " + cfg.Thumbdir)
 		fmt.Println("Temp directory: " + cfg.Tempdir)
-		fmt.Println("Log dir: " + cfg.Logdir)
+		fmt.Println("Log directory: " + cfg.Logdir)
 		//fmt.Println("GeoIP2 database: " + cfg.GeoIP2)
 		//fmt.Println("Pagination: " + strconv.Itoa(cfg.Pagination))
+		fmt.Println("Baseurl: " + cfg.Baseurl)
 		//fmt.Println("Trigger New tag: " + cfg.TriggerNewTag)
-		fmt.Println("Trigger Uploaded file: " + cfg.TriggerUploadedFile)
+
+                var trigger = cfg.TriggerUploadedFile
+                if trigger == "" {
+                    trigger = "Not set"
+                }
+		fmt.Println("Trigger - Uploaded file: " + trigger)
+
 		//fmt.Println("Trigger Expired tag: " + cfg.TriggerExpiredTag)
 	}
 

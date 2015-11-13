@@ -31,7 +31,7 @@ func init() {
 		Expiration: 7776000,
 		Baseurl: "http://localhost:31337",
 		Filedir: "/srv/filebin/files",
-		Tempdir: "/srv/filebin/temp",
+		Tempdir: "/tmp",
 		Logdir: "/var/log/filebin",
 		//Thumbdir: "/srv/filebin/thumbnails",
 		//Database: "/srv/filebin/filebin.db",
