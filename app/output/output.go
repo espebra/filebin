@@ -10,10 +10,10 @@ import (
 	//"path/filepath"
 
         "github.com/golang/glog"
-	"github.com/GeertJohan/go.rice"
-)
+	//"github.com/GeertJohan/go.rice"
 
-var templateBox = rice.MustFindBox("../../templates")
+        "github.com/espebra/filebin/app/model"
+)
 
 func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d interface{}) {
         dj, err := json.MarshalIndent(d, "", "    ")
@@ -34,7 +34,8 @@ func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d inte
         glog.Info("Response status: " + strconv.Itoa(status))
 }
 
-func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]string, d interface{}) {
+func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]string, d interface{}, ctx model.Context) {
+	templateBox := ctx.TemplateBox
 	templateString, err := templateBox.String(tpl + ".html")
 	if err != nil {
 		glog.Fatal(err)

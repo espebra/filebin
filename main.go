@@ -16,6 +16,7 @@ import (
 	"github.com/GeertJohan/go.rice"
 
 	"github.com/espebra/filebin/app/config"
+	"github.com/espebra/filebin/app/model"
 	"github.com/espebra/filebin/app/api"
 )
 
@@ -24,6 +25,7 @@ var githash = "No githash provided"
 var buildstamp = "No buildstamp provided"
 
 var staticBox = rice.MustFindBox("static")
+var templateBox = rice.MustFindBox("templates")
 
 func generateReqId(n int) string {
         var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
@@ -245,7 +247,7 @@ func main() {
 	}
 }
 
-func reqHandler(fn func (http.ResponseWriter, *http.Request, config.Configuration)) http.HandlerFunc {
+func reqHandler(fn func (http.ResponseWriter, *http.Request, config.Configuration, model.Context)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now().UTC()
 
@@ -256,7 +258,12 @@ func reqHandler(fn func (http.ResponseWriter, *http.Request, config.Configuratio
 		//ReqId := generateReqId(16)
 		//glog.Info("ReqId:", ReqId)
 
-		fn(w, r, cfg)
+		// Populate the context for this request here
+		var ctx = model.Context {}
+		ctx.TemplateBox = templateBox
+		ctx.StaticBox = staticBox
+
+		fn(w, r, cfg, ctx)
 
 		finishTime := time.Now().UTC()
 		elapsedTime := finishTime.Sub(startTime)

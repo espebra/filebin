@@ -41,7 +41,7 @@ func cmdHandler(cmd *exec.Cmd) error {
 	return err
 }
 
-func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
+func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var err error
 	f := model.ExtendedFile { }
 
@@ -155,7 +155,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
 	output.JSONresponse(w, status, headers, f)
 }
 
-func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
+func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var err error
 	params := mux.Vars(r)
 	f := model.File {}
@@ -188,7 +188,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration)
 	http.ServeFile(w, r, path)
 }
 
-func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
+func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var err error
 	params := mux.Vars(r)
 	f := model.File {}
@@ -247,7 +247,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	return
 }
 
-func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
+func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var err error
 	params := mux.Vars(r)
 	t := model.ExtendedTag {}
@@ -297,11 +297,11 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration) 
 		headers["Content-Type"] = "application/json"
 		output.JSONresponse(w, status, headers, t)
 	} else {
-		output.HTMLresponse(w, "viewtag", status, headers, t)
+		output.HTMLresponse(w, "viewtag", status, headers, t, ctx)
 	}
 }
 
-func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration) {
+func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	http.Error(w, "", 200)
 	return
 }
