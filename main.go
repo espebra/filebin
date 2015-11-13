@@ -24,8 +24,8 @@ var cfg = config.Global
 var githash = "No githash provided"
 var buildstamp = "No buildstamp provided"
 
-var staticBox = rice.MustFindBox("static")
-var templateBox = rice.MustFindBox("templates")
+var staticBox *rice.Box
+var templateBox *rice.Box
 
 func generateReqId(n int) string {
         var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
@@ -176,6 +176,10 @@ func init() {
 }
 
 func main() {
+	// Initialize boxes
+	staticBox = rice.MustFindBox("static")
+	templateBox = rice.MustFindBox("templates")
+
 	if cfg.Verbose {
 		fmt.Println("Host: " + cfg.Host)
 		fmt.Println("Port: " + strconv.Itoa(cfg.Port))
