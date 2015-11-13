@@ -54,18 +54,33 @@
                 <div class="col-sm-6">
                     <div align="right">
                         <small class="text-muted">
-                             Last updated {{ .LastUpdateReadable }}<br/>
-                             Expires {{ .ExpirationReadable }}
+                             {{ if .LastUpdateReadable }}
+                                 Last updated {{ .LastUpdateReadable }}<br/>
+                             {{ end }}
+                             {{ if .ExpirationReadable }}
+                                 Expires {{ .ExpirationReadable }}
+                             {{ end }}
                         </small>
                     </div>
                 </div>
             </div>
 
-            <div class="small pull-right "><a href="" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Upload more files</a></div>
+            {{ if .Files }}
+                <!-- Files -->
+                <div class="small"><a href="" id="fileSelect-show" onclick="showHide('fileSelect'); return false;"><button type="button" class="btn btn-secondary btn-sm">Upload more files</button>
+</a></div>
+            {{ else }}
+                <p class="lead">This website enables you to store files online for a limited period of time.</p>
+                <p class="lead">Common usage scenarios are photo, video and document sharing between your own computers, friends, colleagues or others. No registration required.</p>
+            {{ end }}
 
             <div class="row">
-                <div class="col-sm-4 col-sm-offset-8">
-                    <div class="pull-right" id="fileSelect">
+                <div class="col-sm-4">
+                    {{ if .Files }}
+                    <div id="fileSelect" class="hide">
+                    {{ else }}
+                    <div id="fileSelect">
+                    {{ end }}
                         <ul class="list-group"><li class="list-group-item">
                             <h4>Upload files</h4>
                             <p class="lead">
@@ -83,17 +98,20 @@
                 </div>
             </div>
 
+            <br/>
             <div class="table-responsive">
                 <table class="table">
-	            <thead class="thead">
-                        <!--
-                        <th></th>
-                        -->
-                        <th>Name</th>
-                        <th>Size</th>
-                        <th class="hidden-md-down">Type</th>
-                        <th>Created</th>
-	            </thead>
+                    {{ if .Files }}
+	                <thead class="thead">
+                            <!--
+                            <th></th>
+                            -->
+                            <th>Name</th>
+                            <th>Size</th>
+                            <th class="hidden-md-down">Type</th>
+                            <th>Created</th>
+	                </thead>
+                    {{ end }}
 	            <tbody id="fileList">
                     {{ range $index, $value := .Files }}
                         <tr>

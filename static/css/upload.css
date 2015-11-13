@@ -3,7 +3,7 @@ html, body {
     height: 100%;
 }
 
-#fileSelect {
+.hide {
     display: none;
     position: relative;
 }

@@ -258,32 +258,29 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	}
 
 	t.SetTagDir(cfg.Filedir)
-	if t.Exists() == false {
-		http.Error(w, "Tag not found", 404)
-		return
-	}
+	if t.Exists() {
+		t.CalculateExpiration(cfg.Expiration)
+		expired, err := t.IsExpired(cfg.Expiration)
+		if err != nil {
+			http.Error(w,"Internal server error", 500)
+			return
+		}
+		if expired {
+			http.Error(w,"This tag has expired.", 410)
+			return
+		}
 
-	t.CalculateExpiration(cfg.Expiration)
-	expired, err := t.IsExpired(cfg.Expiration)
-	if err != nil {
-		http.Error(w,"Internal server error", 500)
-		return
-	}
-	if expired {
-		http.Error(w,"This tag has expired.", 410)
-		return
-	}
+		err = t.Info()
+		if err != nil {
+			http.Error(w, "Internal Server Error", 500)
+			return
+		}
 
-	err = t.Info()
-	if err != nil {
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-
-	err = t.List(cfg.Baseurl)
-	if err != nil {
-		http.Error(w,"Some error.", 404)
-		return
+		err = t.List(cfg.Baseurl)
+		if err != nil {
+			http.Error(w,"Some error.", 404)
+			return
+		}
 	}
 
 	//t.GenerateLinks(cfg.Baseurl)
