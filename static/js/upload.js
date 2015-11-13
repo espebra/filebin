@@ -36,7 +36,7 @@ function FileAPI (c, t, d, f, tag) {
         if (counter_completed == counter_queue) {
             fileCount.textContent = text + ", all done!";
         } else {
-              fileCount.textContent = text + ".";
+              fileCount.textContent = text + "...";
         }
 	document.getElementById('fileCountContainer').style.display = 'block';
         
@@ -85,6 +85,7 @@ function FileAPI (c, t, d, f, tag) {
         //var file = ev.target.file;
         if (file) {
             var tr = document.createElement("tr");
+            tr.className = "table-active";
 
             var name = document.createElement("td");
             var nameText = document.createTextNode(file.name);
@@ -144,6 +145,7 @@ function FileAPI (c, t, d, f, tag) {
                     bar.value = (e.loaded / e.total) * 100;
                     bar.max = 100;
                     bar.className = "progress progress-info";
+                    tr.className = "table-info";
                 }
             }, false);
 
@@ -153,9 +155,11 @@ function FileAPI (c, t, d, f, tag) {
                 counter_uploading -= 1;
                 if (xhr.status == 201 && xhr.readyState == 4) {
                     bar.className = "progress progress-success";
+                    tr.className = "table-success";
                     counter_completed += 1;
                 } else {
                     bar.className = "progress progress-danger";
+                    tr.className = "table-danger";
                     console.log("Unexpected response code: " + this.status);
                     console.log("Response body: " + this.response);
                     counter_failed += 1;
@@ -166,6 +170,7 @@ function FileAPI (c, t, d, f, tag) {
             // Handle upload errors here
             xhr.onerror = function (e) {
                 bar.className = "progress progress-warning";
+                tr.className = "table-warning";
                 console.log(e);
             };
 
