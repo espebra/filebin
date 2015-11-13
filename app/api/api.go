@@ -307,6 +307,7 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	}
 
 	headers := make(map[string]string)
+	headers["Cache-Control"] = "max-age=0"
 	headers["Location"] = "/" + t.TagID
 	var status = 302
 	output.JSONresponse(w, status, headers, t)
