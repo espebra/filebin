@@ -44,7 +44,7 @@ function FileAPI (c, t, d, f, tag) {
     this.showDroppedFiles = function (ev) {
         ev.stopPropagation();
         ev.preventDefault();
-        dropZone.style["backgroundColor"] = "#ffffff";
+        dropZone.style["backgroundColor"] = "#FFFFFF";
         var files = ev.dataTransfer.files;
         addFileListItems(files);
     }
@@ -52,13 +52,13 @@ function FileAPI (c, t, d, f, tag) {
     this.dragOver = function (ev) {
         ev.stopPropagation();
         ev.preventDefault();
-        this.style["backgroundColor"] = "#e5f6ff";
+        this.style["backgroundColor"] = "#EEEEEE";
     }
 
     this.dragExit = function (ev) {
         ev.stopPropagation();
         ev.preventDefault();
-        dropZone.style["backgroundColor"] = "#ffffff";
+        dropZone.style["backgroundColor"] = "#FFFFFF";
     }
     this.stopProp = function (ev) {
         ev.stopPropagation();
