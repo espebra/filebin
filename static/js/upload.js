@@ -90,7 +90,7 @@ function FileAPI (c, t, d, f, tag) {
             var name = document.createElement("td");
             var nameText = document.createTextNode(file.name);
             name.appendChild(nameText);
-            tr.appendChild(name)
+            tr.appendChild(name);
 
             var filesize = getReadableFileSizeString(file.size);
             var size = document.createElement("td");

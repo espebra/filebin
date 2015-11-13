@@ -39,8 +39,7 @@
     </head>
 
     <body id="fileDrop">
-        <div class="container">
-
+        <div class="container-fluid">
             <nav class="navbar navbar-dark bg-inverse" id="fileCountContainer">
                 <h5><div align="center" id="fileCount"></div></h5>
             </nav>
@@ -53,56 +52,63 @@
                 </div>
                 <div class="col-sm-6">
                     <div align="right">
-                        <small class="text-muted">
+                        <small class="text-muted pull-right">
                              {{ if .LastUpdateReadable }}
-                                 Last updated {{ .LastUpdateReadable }}<br/>
+                                 Last updated {{ .LastUpdateReadable }}.<br/>
                              {{ end }}
                              {{ if .ExpirationReadable }}
-                                 Expires {{ .ExpirationReadable }}
+                                 Expires {{ .ExpirationReadable }}.
                              {{ end }}
                         </small>
                     </div>
                 </div>
             </div>
 
-            {{ if .Files }}
-                <!-- Files -->
-                <div class="small"><a href="" id="fileSelect-show" onclick="showHide('fileSelect'); return false;"><button type="button" class="btn btn-secondary btn-sm">Upload more files</button>
-</a></div>
-            {{ else }}
-                <p class="lead">This website enables you to store files online for a limited period of time.</p>
-            {{ end }}
-
             <div class="row">
-                <div class="col-sm-4">
-                    {{ if .Files }}
-                    <div id="fileSelect" class="hide">
-                    {{ else }}
-                    <div id="fileSelect">
-                    {{ end }}
-                        <ul class="list-group"><li class="list-group-item active">
-                            <h4>Upload files</h4>
-                            <p class="lead">
-                                Select files to upload using the form below, or
-                                drag and drop the files into the browser window.
-                            </p>
-                            <form role="form" action="" method="post" enctype="multipart/form-data">
-                               <div class="form-group">
-                                   <input type="file" id="fileField" name="fileField" multiple value="Browse..."/>
-                                </div>
-                            </form>
-                        </li></ul>
-                        <br/>
-                    </div>
+                <div class="col-sm-6">
+                    <p class="lead">
+                        Convenient file sharing on the web, without
+                        registration. Simply upload files and share
+                        the link. The files will expire after a while.
+                    </p>
                 </div>
             </div>
 
-            <br/>
+            <div class="row">
+                <div class="col-sm-6">
+                    <p class="lead">
+                        Select files to upload below,
+                        or drag and drop the files into this browser window.
+                    </p>
+                    <p align="center">
+                        <div class="fileUpload btn btn-primary">
+                            <span>Select files</span>
+                            <input type="file" class="upload" id="fileField"/ multiple>
+                        </div>
+                    </p>
+                </div>
+            </div>
+
+            {{ if .Files }}
+                <div class="row">
+                    <div class="col-sm-6">
+                        <p class="lead">
+                            This tag already contains {{ .Files | len }}
+                            {{ if eq (.Files | len) 1 }}
+                                file.
+                            {{ else }}
+                                files.
+                            {{ end }}
+                        </p>
+                    </div>
+                </div>
+            {{ end }}
+
             <div class="table-responsive">
                 <table class="table">
                     {{ if .Files }}
 	                <thead class="thead">
-                            <th>Name</th>
+                            <th>Filename</th>
                             <th>Size</th>
                             <th class="hidden-md-down">Type</th>
                             <th>Created</th>
