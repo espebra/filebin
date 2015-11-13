@@ -92,7 +92,7 @@
                         <th>Name</th>
                         <th>Size</th>
                         <th class="hidden-md-down">Type</th>
-                        <th class="hidden-md-down">Created</th>
+                        <th>Created</th>
 	            </thead>
 	            <tbody id="fileList">
                     {{ range $index, $value := .Files }}
@@ -103,7 +103,7 @@
                             <td><a href="/{{ .TagID }}/{{ .Filename }}">{{ .Filename }}</a></td>
                             <td>{{ .BytesReadable }}</td>
                             <td class="hidden-md-down">{{ .MIME }}</td>
-                            <td class="hidden-md-down">{{ .CreatedReadable }}</td>
+                            <td>{{ .CreatedReadable }}</td>
                         </tr>
                     {{ end }}
 	            <tbody>
