@@ -71,7 +71,6 @@
 </a></div>
             {{ else }}
                 <p class="lead">This website enables you to store files online for a limited period of time.</p>
-                <p class="lead">Common usage scenarios are photo, video and document sharing between your own computers, friends, colleagues or others. No registration required.</p>
             {{ end }}
 
             <div class="row">
@@ -81,7 +80,7 @@
                     {{ else }}
                     <div id="fileSelect">
                     {{ end }}
-                        <ul class="list-group"><li class="list-group-item">
+                        <ul class="list-group"><li class="list-group-item active">
                             <h4>Upload files</h4>
                             <p class="lead">
                                 Select files to upload using the form below, or
@@ -103,9 +102,6 @@
                 <table class="table">
                     {{ if .Files }}
 	                <thead class="thead">
-                            <!--
-                            <th></th>
-                            -->
                             <th>Name</th>
                             <th>Size</th>
                             <th class="hidden-md-down">Type</th>
@@ -113,17 +109,14 @@
 	                </thead>
                     {{ end }}
 	            <tbody id="fileList">
-                    {{ range $index, $value := .Files }}
-                        <tr>
-                            <!--
-                            <td><span class="glyphicon glyphicon-file" aria-hidden="true"></span></td>
-                            -->
-                            <td><a href="/{{ .TagID }}/{{ .Filename }}">{{ .Filename }}</a></td>
-                            <td>{{ .BytesReadable }}</td>
-                            <td class="hidden-md-down">{{ .MIME }}</td>
-                            <td>{{ .CreatedReadable }}</td>
-                        </tr>
-                    {{ end }}
+                        {{ range $index, $value := .Files }}
+                            <tr>
+                                <td><a href="/{{ .TagID }}/{{ .Filename }}">{{ .Filename }}</a></td>
+                                <td>{{ .BytesReadable }}</td>
+                                <td class="hidden-md-down">{{ .MIME }}</td>
+                                <td>{{ .CreatedReadable }}</td>
+                            </tr>
+                        {{ end }}
 	            <tbody>
                 </table>
             </div>
