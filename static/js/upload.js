@@ -69,7 +69,7 @@ function FileAPI (c, t, d, f, tag) {
         ev.preventDefault();
         while (fileQueue.length > 0) {
             var item = fileQueue.pop();
-            uploadFile(item.file, item.tr);
+            uploadFile(item.file, item.container);
         }
     }
 
@@ -84,45 +84,61 @@ function FileAPI (c, t, d, f, tag) {
     var showFileInList = function (file) {
         //var file = ev.target.file;
         if (file) {
-            var tr = document.createElement("tr");
-            tr.className = "table-active";
+            var container = document.createElement("li");
+            //container.className = "list-group-item";
 
-            var name = document.createElement("td");
+            var meta = document.createElement("div");
+            meta.className = "row";
+
+            var name = document.createElement("div");
+            var strong = document.createElement("strong");
             var nameText = document.createTextNode(file.name);
-            name.appendChild(nameText);
-            tr.appendChild(name);
+            strong.appendChild(nameText);
+            name.appendChild(strong);
+	    name.className = "col-md-8";
+            meta.appendChild(name);
 
             var filesize = getReadableFileSizeString(file.size);
-            var size = document.createElement("td");
+            var size = document.createElement("div");
             var sizeText = document.createTextNode(filesize);
             size.appendChild(sizeText);
-            tr.appendChild(size)
+	    size.className = "col-md-2";
+            meta.appendChild(size)
 
             var mimetype = file.type;
             if (mimetype.length == 0){
                 mimetype = "unknown";
             }
-            var mime = document.createElement("td");
+            var mime = document.createElement("div");
             var mimeText = document.createTextNode(mimetype);
             mime.appendChild(mimeText);
-            mime.className = "hidden-md-down"
-            tr.appendChild(mime)
+            mime.className = "col-md-2";
+            meta.appendChild(mime)
 
             // Progressbar
-            var progress = document.createElement("td");
-            var bar = document.createElement("progress");
-            bar.max = 100;
-            bar.value = 0;
-            bar.className = "progress";
-            progress.appendChild(bar);
-            tr.appendChild(progress)
+            var barcontainer = document.createElement("div");
+            barcontainer.className = "row";
 
-            fileList.insertBefore(tr, fileList.childNodes[0]);
+            var bar = document.createElement("div");
+	    bar.className = "col-md-12";
+
+            var progress = document.createElement("progress");
+            progress.max = 100;
+            progress.value = 0;
+            progress.className = "progress";
+            bar.appendChild(progress);
+
+            barcontainer.appendChild(bar);
+
+            container.appendChild(meta)
+            container.appendChild(barcontainer)
+
+            fileList.insertBefore(container, fileList.childNodes[0]);
             counter_uploading += 1;
             updateFileCount();
             fileQueue.push({
                 file : file,
-                tr : tr
+                container : container
             });
         }
     }
@@ -132,10 +148,12 @@ function FileAPI (c, t, d, f, tag) {
         return result;
     }
 
-    var uploadFile = function (file, tr) {
-        if (tr && file) {
-            var progress = tr.getElementsByTagName("td")[3];
-            var bar = progress.getElementsByTagName("progress")[0];
+    var uploadFile = function (file, container) {
+        if (container && file) {
+            var bar = container.getElementsByTagName("div")[5];
+            console.log(bar);
+            var progress = bar.getElementsByTagName("progress")[0];
+            console.log(progress);
 
             var xhr = new XMLHttpRequest();
             upload = xhr.upload;
@@ -143,24 +161,22 @@ function FileAPI (c, t, d, f, tag) {
             // Upload in progress
             upload.addEventListener("progress", function (e) {
                 if (e.lengthComputable) {
-                    bar.value = (e.loaded / e.total) * 100;
-                    bar.max = 100;
-                    bar.className = "progress progress-info";
-                    tr.className = "table-info";
+                    progress.value = (e.loaded / e.total) * 100;
+                    progress.max = 100;
+                    progress.className = "progress progress-info";
+                    //tr.className = "table-info";
                 }
             }, false);
 
             // Upload complete
             xhr.onload = function(e) {
-                bar.value = 100;
+                progress.value = 100;
                 counter_uploading -= 1;
                 if (xhr.status == 201 && xhr.readyState == 4) {
-                    bar.className = "progress progress-success";
-                    tr.className = "table-success";
+                    progress.className = "progress progress-success";
                     counter_completed += 1;
                 } else {
-                    bar.className = "progress progress-danger";
-                    tr.className = "table-danger";
+                    progress.className = "progress progress-danger";
                     console.log("Unexpected response code: " + this.status);
                     console.log("Response body: " + this.response);
                     counter_failed += 1;
@@ -170,8 +186,8 @@ function FileAPI (c, t, d, f, tag) {
 
             // Handle upload errors here
             xhr.onerror = function (e) {
-                bar.className = "progress progress-warning";
-                tr.className = "table-warning";
+                //bar.className = "progress progress-warning";
+                //tr.className = "table-warning";
                 console.log(e);
             };
 

@@ -50,7 +50,7 @@
                 </li>
                 {{ if .Files }}
                     <li class="nav-item active">
-                      <a class="nav-link" href="/">New tag</a>
+                      <a class="nav-link" href="/">Create new tag</a>
                     </li>
                 {{ end }}
 <!--
@@ -119,6 +119,8 @@
                 </p>
             {{ end }}
 
+            <ul class="list-unstyled" id="fileList">
+            </ul>
 
             <div class="table-responsive">
                 <table class="table">
@@ -126,17 +128,17 @@
 	                <thead class="thead">
                             <th>Filename</th>
                             <th>Size</th>
-                            <th class="hidden-md-down">Type</th>
-                            <th>Created</th>
+                            <th class="hidden-sm-down">Type</th>
+                            <th class="hidden-sm-down">Created</th>
 	                </thead>
                     {{ end }}
-	            <tbody id="fileList">
+	            <tbody>
                         {{ range $index, $value := .Files }}
                             <tr>
                                 <td><a href="/{{ .TagID }}/{{ .Filename }}">{{ .Filename }}</a></td>
                                 <td>{{ .BytesReadable }}</td>
-                                <td class="hidden-md-down">{{ .MIME }}</td>
-                                <td>{{ .CreatedReadable }}</td>
+                                <td class="hidden-sm-down">{{ .MIME }}</td>
+                                <td class="hidden-sm-down">{{ .CreatedReadable }}</td>
                             </tr>
                         {{ end }}
 	            <tbody>
