@@ -40,7 +40,6 @@
 
     <body id="fileDrop">
         <div class="container-fluid">
-
             <nav class="navbar navbar-dark bg-inverse">
               <ul class="nav navbar-nav">
                 <li class="nav-item active">
@@ -79,11 +78,10 @@
                         <p>
                         <small class="text-muted pull-right">
                             {{ if .Files }}
-                                This tag contains {{ .Files | len }}
                                 {{ if eq (.Files | len) 1 }}
-                                    file.
+                                    This tag contains {{ .Files | len }} file.
                                 {{ else }}
-                                    files.
+                                    This tag contains {{ .Files | len }} files.
                                 {{ end }}
                                 <br/>
                             {{ end }}
@@ -102,42 +100,23 @@
 
             {{ if .Files }}
             {{ else }}
-                <div class="row">
-                    <div class="col-sm-6">
-                        <p class="lead">
-                            Convenient file sharing on the web, without
-                            registration. Simply upload files and share
-                            the link. The files will expire after a while.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-sm-6">
-                        <p class="lead">
-                            <strong>1.</strong> Click <em>Upload files</em> in
-                            the top menu to upload, or drag and drop the files
-                            into this browser window.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-sm-6">
-                        <p class="lead">
-                            <strong>2.</strong> Wait until the uploads complete.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-sm-6">
-                        <p class="lead">
-                            <strong>3.</strong> Distribute the URL from the 
-                            address bar to share access to the files.
-                        </p>
-                    </div>
-                </div>
+                <p class="lead">
+                    Convenient file sharing on the web, without
+                    registration. Simply upload files and share
+                    the link. The files will expire after a while.
+                </p>
+                <p class="lead">
+                    <strong>1.</strong> Click <em>Upload files</em> in
+                    the top menu to upload, or drag and drop the files
+                    into this browser window.
+                </p>
+                <p class="lead">
+                    <strong>2.</strong> Wait until the uploads complete.
+                </p>
+                <p class="lead">
+                    <strong>3.</strong> Distribute the URL from the
+                    address bar to share access to the files.
+                </p>
             {{ end }}
 
 
