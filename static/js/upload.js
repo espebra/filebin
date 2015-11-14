@@ -105,6 +105,7 @@ function FileAPI (c, t, d, f, tag) {
             var mime = document.createElement("td");
             var mimeText = document.createTextNode(mimetype);
             mime.appendChild(mimeText);
+            mime.className = "hidden-md-down"
             tr.appendChild(mime)
 
             // Progressbar
