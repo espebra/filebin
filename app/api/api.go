@@ -312,3 +312,19 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	var status = 302
 	output.JSONresponse(w, status, headers, t)
 }
+
+func ViewAPI(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	t := model.Tag {}
+	headers := make(map[string]string)
+	headers["Cache-Control"] = "max-age=15"
+	var status = 200
+	output.HTMLresponse(w, "api", status, headers, t, ctx)
+}
+
+func ViewDoc(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	t := model.Tag {}
+	headers := make(map[string]string)
+	headers["Cache-Control"] = "max-age=15"
+	var status = 200
+	output.HTMLresponse(w, "doc", status, headers, t, ctx)
+}

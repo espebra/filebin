@@ -224,6 +224,8 @@ func main() {
 
 	http.Handle("/", httpInterceptor(router))
 
+	router.HandleFunc("/api", reqHandler(api.ViewAPI)).Methods("GET", "HEAD")
+	router.HandleFunc("/doc", reqHandler(api.ViewDoc)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.ViewIndex)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.Upload)).Methods("POST")
 	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}", reqHandler(api.FetchTag)).Methods("GET", "HEAD")

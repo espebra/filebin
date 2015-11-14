@@ -8,7 +8,7 @@ html, body {
     position: relative;
 }
 
-#fileCountContainer {
+#fileCount {
     display: none;
     position: relative;
 }

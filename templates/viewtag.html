@@ -40,8 +40,32 @@
 
     <body id="fileDrop">
         <div class="container-fluid">
-            <nav class="navbar navbar-dark bg-inverse" id="fileCountContainer">
-                <h5><div align="center" id="fileCount"></div></h5>
+
+            <nav class="navbar navbar-dark bg-inverse">
+              <ul class="nav navbar-nav">
+                <li class="nav-item active">
+                   <div class="fileUpload nav-link active">
+                       <span>Upload files</span>
+                       <input type="file" class="upload" id="fileField"/ multiple>
+                   </div>
+                </li>
+                {{ if .Files }}
+                    <li class="nav-item active">
+                      <a class="nav-link" href="/">New tag</a>
+                    </li>
+                {{ end }}
+<!--
+                <li class="nav-item">
+                  <a class="nav-link" href="/api">API</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/doc">Documentation</a>
+                </li>
+-->
+                <div class="nav-item nav-link pull-right">
+                    <div id="fileCount"></div>
+                </div>
+              </ul>
             </nav>
 
             <div class="row">
@@ -52,57 +76,70 @@
                 </div>
                 <div class="col-sm-6">
                     <div align="right">
+                        <p>
                         <small class="text-muted pull-right">
+                            {{ if .Files }}
+                                This tag contains {{ .Files | len }}
+                                {{ if eq (.Files | len) 1 }}
+                                    file.
+                                {{ else }}
+                                    files.
+                                {{ end }}
+                                <br/>
+                            {{ end }}
                              {{ if .LastUpdateReadable }}
-                                 Last updated {{ .LastUpdateReadable }}.<br/>
+                                 Last updated {{ .LastUpdateReadable }}.
+                                 <br/>
                              {{ end }}
                              {{ if .ExpirationReadable }}
                                  Expires {{ .ExpirationReadable }}.
                              {{ end }}
                         </small>
+                        </p>
                     </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-sm-6">
-                    <p class="lead">
-                        Convenient file sharing on the web, without
-                        registration. Simply upload files and share
-                        the link. The files will expire after a while.
-                    </p>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-sm-6">
-                    <p class="lead">
-                        Select files to upload below,
-                        or drag and drop the files into this browser window.
-                    </p>
-                    <p align="center">
-                        <div class="fileUpload btn btn-primary">
-                            <span>Select files</span>
-                            <input type="file" class="upload" id="fileField"/ multiple>
-                        </div>
-                    </p>
                 </div>
             </div>
 
             {{ if .Files }}
+            {{ else }}
                 <div class="row">
                     <div class="col-sm-6">
                         <p class="lead">
-                            This tag already contains {{ .Files | len }}
-                            {{ if eq (.Files | len) 1 }}
-                                file.
-                            {{ else }}
-                                files.
-                            {{ end }}
+                            Convenient file sharing on the web, without
+                            registration. Simply upload files and share
+                            the link. The files will expire after a while.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <p class="lead">
+                            <strong>1.</strong> Click <em>Upload files</em> in
+                            the top menu to upload, or drag and drop the files
+                            into this browser window.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <p class="lead">
+                            <strong>2.</strong> Wait until the uploads complete.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <p class="lead">
+                            <strong>3.</strong> Distribute the URL from the 
+                            address bar to share access to the files.
                         </p>
                     </div>
                 </div>
             {{ end }}
+
 
             <div class="table-responsive">
                 <table class="table">

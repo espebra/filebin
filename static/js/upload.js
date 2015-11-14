@@ -38,7 +38,7 @@ function FileAPI (c, t, d, f, tag) {
         } else {
               fileCount.textContent = text + "...";
         }
-	document.getElementById('fileCountContainer').style.display = 'block';
+	document.getElementById('fileCount').style.display = 'block';
         
     }
     this.showDroppedFiles = function (ev) {
