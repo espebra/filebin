@@ -84,7 +84,7 @@ function FileAPI (c, t, d, f, tag) {
     var showFileInList = function (file) {
         //var file = ev.target.file;
         if (file) {
-            var container = document.createElement("li");
+            var container = document.createElement("p");
             //container.className = "list-group-item";
 
             var meta = document.createElement("div");
@@ -95,25 +95,21 @@ function FileAPI (c, t, d, f, tag) {
             var nameText = document.createTextNode(file.name);
             strong.appendChild(nameText);
             name.appendChild(strong);
-	    name.className = "col-md-8";
+	    name.className = "col-md-9";
             meta.appendChild(name);
 
             var filesize = getReadableFileSizeString(file.size);
-            var size = document.createElement("div");
-            var sizeText = document.createTextNode(filesize);
-            size.appendChild(sizeText);
-	    size.className = "col-md-2";
-            meta.appendChild(size)
+            //var size = document.createElement("div");
+            //var sizeText = document.createTextNode(filesize);
+            //size.appendChild(sizeText);
+	    //size.className = "col-md-2";
+            //meta.appendChild(size)
 
-            var mimetype = file.type;
-            if (mimetype.length == 0){
-                mimetype = "unknown";
-            }
-            var mime = document.createElement("div");
-            var mimeText = document.createTextNode(mimetype);
-            mime.appendChild(mimeText);
-            mime.className = "col-md-2";
-            meta.appendChild(mime)
+            var speed = document.createElement("div");
+            //var mimeText = document.createTextNode(mimetype);
+            speed.textContent = "Pending (" + filesize + ")";
+            speed.className = "col-md-3 text-right";
+            meta.appendChild(speed)
 
             // Progressbar
             var barcontainer = document.createElement("div");
@@ -148,15 +144,29 @@ function FileAPI (c, t, d, f, tag) {
         return result;
     }
 
+    function humanizeBytesPerSecond(speed) {
+        var unit = "KB/s";
+        if (speed >= 1024) {
+            unit = "MB/s";
+            speed /=1024;
+        }
+        return (speed.toFixed(1) + unit);
+    };
+
+
     var uploadFile = function (file, container) {
         if (container && file) {
-            var bar = container.getElementsByTagName("div")[5];
-            console.log(bar);
+            var filesize = getReadableFileSizeString(file.size);
+            var speed = container.getElementsByTagName("div")[2];
+            var bar = container.getElementsByTagName("div")[4];
             var progress = bar.getElementsByTagName("progress")[0];
-            console.log(progress);
 
             var xhr = new XMLHttpRequest();
             upload = xhr.upload;
+
+            // For speed measurements
+            var lastLoaded;
+            var lastTime;
 
             // Upload in progress
             upload.addEventListener("progress", function (e) {
@@ -164,7 +174,17 @@ function FileAPI (c, t, d, f, tag) {
                     progress.value = (e.loaded / e.total) * 100;
                     progress.max = 100;
                     progress.className = "progress progress-info";
-                    //tr.className = "table-info";
+
+                    var curTime = (new Date()).getTime();
+                    if (lastTime !== 'undefined' && lastLoaded !== 'undefined') {
+                        var bps = (e.loaded - lastLoaded) / (curTime - lastTime);
+                        speedText = "Uploading at " + humanizeBytesPerSecond(bps) + " (" + filesize + ")";
+                    } else {
+                        speedText = "(" + filesize + ")";
+                    }
+                    speed.textContent = speedText;
+                    lastTime = curTime;
+                    lastLoaded = e.loaded;
                 }
             }, false);
 
@@ -174,9 +194,11 @@ function FileAPI (c, t, d, f, tag) {
                 counter_uploading -= 1;
                 if (xhr.status == 201 && xhr.readyState == 4) {
                     progress.className = "progress progress-success";
+                    speed.textContent = "Complete (" + filesize + ")";
                     counter_completed += 1;
                 } else {
                     progress.className = "progress progress-danger";
+                    speed.textContent = "Failed (" + filesize + ")";
                     console.log("Unexpected response code: " + this.status);
                     console.log("Response body: " + this.response);
                     counter_failed += 1;

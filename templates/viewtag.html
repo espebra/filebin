@@ -39,7 +39,7 @@
     </head>
 
     <body id="fileDrop">
-        <div class="container-fluid">
+        <div class="container">
             <nav class="navbar navbar-dark bg-inverse">
               <ul class="nav navbar-nav">
                 <li class="nav-item active">
@@ -67,6 +67,7 @@
               </ul>
             </nav>
 
+            <!-- Tag meta information -->
             <div class="row">
                 <div class="col-sm-6">
                     <h1 class="display-4">
@@ -98,6 +99,7 @@
                 </div>
             </div>
 
+            <!-- Only show the howto if there are no files in the tag -->
             {{ if .Files }}
             {{ else }}
                 <p class="lead">
@@ -119,9 +121,10 @@
                 </p>
             {{ end }}
 
-            <ul class="list-unstyled" id="fileList">
-            </ul>
+            <!-- Upload queue -->
+            <span id="fileList"></span>
 
+            <!-- Existing files in the tag -->
             <div class="table-responsive">
                 <table class="table">
                     {{ if .Files }}
