@@ -211,7 +211,7 @@ function FileAPI (c, t, d, f, tag) {
                     counter_completed += 1;
                 } else {
                     progress.className = "progress progress-danger";
-                    speed.textContent = "Failed (" + filesize + ")";
+                    speed.textContent = "Failed with status " + xhr.status + " (" + filesize + ")";
                     console.log("Unexpected response code: " + this.status);
                     console.log("Response body: " + this.response);
                     counter_failed += 1;
