@@ -26,27 +26,31 @@ function FileAPI (c, t, d, f, tag) {
 
     function updateFileCount() {
 	var box = document.getElementById('fileCount');
+
+        // XXX: Make this less messy
         var text = counter_completed + " of " + counter_queue + " file";
         if (counter_queue != 1){
             text = text + "s";
         }
         text = text + " uploaded";
         if (counter_failed > 0) {
-            fileCount.textContent = text + ". " + counter_failed + " failed";
+            text = text + ". " + counter_failed + " failed.";
             box.className = "alert alert-danger";
-        }
-        if (counter_completed == counter_queue) {
-            fileCount.textContent = text + ", all done!";
+        } else if (counter_completed == counter_queue) {
+            text = text + ", all done!";
             box.className = "alert alert-success";
 
             // Automatic refresh
             //location.reload(true);
-        } else {
-            fileCount.textContent = text + "...";
+        }
+
+        if ((counter_completed + counter_failed) != counter_queue) {
+            text = text + "...";
             box.className = "alert alert-info";
         }
+
+        fileCount.textContent = text;
 	box.style.display = 'block';
-        
     }
     this.showDroppedFiles = function (ev) {
         ev.stopPropagation();
@@ -212,8 +216,8 @@ function FileAPI (c, t, d, f, tag) {
                 } else {
                     progress.className = "progress progress-danger";
                     speed.textContent = "Failed with status " + xhr.status + " (" + filesize + ")";
-                    console.log("Unexpected response code: " + this.status);
-                    console.log("Response body: " + this.response);
+                    console.log("Unexpected response code: " + xhr.status);
+                    console.log("Response body: " + xhr.response);
                     counter_failed += 1;
                 }
                 updateFileCount();
@@ -221,6 +225,9 @@ function FileAPI (c, t, d, f, tag) {
 
             // Handle upload errors here
             xhr.onerror = function (e) {
+                console.log("onerror: status: " + xhr.status + ", readystate: " + xhr.readyState);
+                counter_failed += 1;
+                updateFileCount();
                 //bar.className = "progress progress-warning";
                 //tr.className = "table-warning";
                 console.log(e);
