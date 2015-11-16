@@ -183,16 +183,18 @@ function FileAPI (c, t, d, f, tag) {
                     progress.className = "progress progress-info";
 
                     var curTime = (new Date()).getTime();
-                    if (lastTime !== 'undefined' && lastLoaded !== 'undefined') {
+                    if (e.loaded == e.total && e.total > 0) {
+                        // Upload complete
+                        speedText = "Server side processing... (" + filesize + ")";
+                    } else if (lastTime !== 'undefined' && lastLoaded !== 'undefined') {
+                        // Upload in progress
                         var bps = (e.loaded - lastLoaded) / (curTime - lastTime);
                         speedText = "Uploading at " + humanizeBytesPerSecond(bps) + " (" + filesize + ")";
                     } else {
+                        // Upload just initiated
                         speedText = "(" + filesize + ")";
                     }
 
-                    if (e.loaded == e.total && e.total > 0) {
-                        speedText = "Server side processing... (" + filesize + ")";
-                    }
                     speed.textContent = speedText;
                     lastTime = curTime;
                     lastLoaded = e.loaded;
