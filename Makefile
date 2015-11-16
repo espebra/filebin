@@ -2,6 +2,8 @@ HASH=`git rev-parse HEAD`
 TIME=`date -u '+%Y-%m-%d %H:%M:%S'`
 
 prepare:
+	rm -f templates.rice-box.go
+	rm -f static.rice-box.go
 	rice embed-go
 
 check:
