@@ -106,7 +106,7 @@ function FileAPI (c, t, d, f, tag) {
             var nameText = document.createTextNode(file.name);
             strong.appendChild(nameText);
             name.appendChild(strong);
-	    name.className = "col-md-9";
+	    name.className = "col-md-8";
             meta.appendChild(name);
 
             var filesize = getReadableFileSizeString(file.size);
@@ -119,7 +119,7 @@ function FileAPI (c, t, d, f, tag) {
             var speed = document.createElement("div");
             //var mimeText = document.createTextNode(mimetype);
             speed.textContent = "Pending (" + filesize + ")";
-            speed.className = "col-md-3 text-right";
+            speed.className = "col-md-4 text-right";
             meta.appendChild(speed)
 
             // Progressbar

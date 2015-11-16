@@ -258,8 +258,8 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	}
 
 	t.SetTagDir(cfg.Filedir)
+	t.CalculateExpiration(cfg.Expiration)
 	if t.Exists() {
-		t.CalculateExpiration(cfg.Expiration)
 		expired, err := t.IsExpired(cfg.Expiration)
 		if err != nil {
 			http.Error(w,"Internal server error", 500)

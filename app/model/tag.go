@@ -88,10 +88,11 @@ func (t *Tag) IsExpired(expiration int64) (bool, error) {
 
 func (t *Tag) CalculateExpiration(expiration int64) error {
 	i, err := os.Lstat(t.TagDir)
-	if err != nil {
-		return err
+	if err == nil {
+		t.ExpirationAt = i.ModTime().UTC().Add(time.Duration(expiration) * time.Second)
+	} else {
+		t.ExpirationAt = time.Now().UTC().Add(time.Duration(expiration) * time.Second)
 	}
-	t.ExpirationAt = i.ModTime().UTC().Add(time.Duration(expiration) * time.Second)
 	t.ExpirationReadable = humanize.Time(t.ExpirationAt)
 	return nil
 }

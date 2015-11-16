@@ -40,6 +40,7 @@
 
     <body id="fileDrop">
         <div class="container">
+
             <!-- Tag meta information -->
             <div class="row">
                 <div class="col-sm-6">
@@ -58,14 +59,14 @@
                                     This tag contains {{ .Files | len }} files.
                                 {{ end }}
                                 <br/>
+                                {{ if .LastUpdateReadable }}
+                                    Last updated {{ .LastUpdateReadable }}.
+                                    <br/>
+                                {{ end }}
+                                {{ if .ExpirationReadable }}
+                                    Expires {{ .ExpirationReadable }}.
+                                {{ end }}
                             {{ end }}
-                             {{ if .LastUpdateReadable }}
-                                 Last updated {{ .LastUpdateReadable }}.
-                                 <br/>
-                             {{ end }}
-                             {{ if .ExpirationReadable }}
-                                 Expires {{ .ExpirationReadable }}.
-                             {{ end }}
                         </small>
                         </p>
                     </div>
@@ -78,7 +79,8 @@
                 <p class="lead">
                     Convenient file sharing on the web, without
                     registration. Simply upload files and share
-                    the link. The files will expire after a while.
+                    the link. The files will expire automatically
+                    {{ .ExpirationReadable }}.
                 </p>
                 <p class="lead">
                     <strong>1.</strong> Click <em>Upload files</em> below,
