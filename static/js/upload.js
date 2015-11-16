@@ -184,7 +184,7 @@ function FileAPI (c, t, d, f, tag) {
                 if (e.lengthComputable) {
                     progress.value = (e.loaded / e.total) * 100;
                     progress.max = 100;
-                    progress.className = "progress progress-info";
+                    progress.className = "progress progress-info progress-striped progress-animated";
 
                     var curTime = (new Date()).getTime();
                     if (e.loaded == e.total && e.total > 0) {
@@ -193,7 +193,11 @@ function FileAPI (c, t, d, f, tag) {
                     } else if (lastTime !== 'undefined' && lastLoaded !== 'undefined') {
                         // Upload in progress
                         var bps = (e.loaded - lastLoaded) / (curTime - lastTime);
-                        speedText = "Uploading at " + humanizeBytesPerSecond(bps) + " (" + filesize + ")";
+                        if (isNaN(bps)) {
+                            speedText = "Uploading... (" + filesize + ")";
+                        } else {
+                            speedText = "Uploading at " + humanizeBytesPerSecond(bps) + " (" + filesize + ")";
+                        }
                     } else {
                         // Upload just initiated
                         speedText = "(" + filesize + ")";
