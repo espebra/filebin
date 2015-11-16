@@ -25,6 +25,7 @@ function FileAPI (c, t, d, f, tag) {
     }
 
     function updateFileCount() {
+	var box = document.getElementById('fileCount');
         var text = counter_completed + " of " + counter_queue + " file";
         if (counter_queue != 1){
             text = text + "s";
@@ -32,13 +33,19 @@ function FileAPI (c, t, d, f, tag) {
         text = text + " uploaded";
         if (counter_failed > 0) {
             fileCount.textContent = text + ". " + counter_failed + " failed";
+            box.className = "alert alert-danger";
         }
         if (counter_completed == counter_queue) {
             fileCount.textContent = text + ", all done!";
+            box.className = "alert alert-success";
+
+            // Automatic refresh
+            //location.reload(true);
         } else {
-              fileCount.textContent = text + "...";
+            fileCount.textContent = text + "...";
+            box.className = "alert alert-info";
         }
-	document.getElementById('fileCount').style.display = 'block';
+	box.style.display = 'block';
         
     }
     this.showDroppedFiles = function (ev) {
@@ -181,6 +188,10 @@ function FileAPI (c, t, d, f, tag) {
                         speedText = "Uploading at " + humanizeBytesPerSecond(bps) + " (" + filesize + ")";
                     } else {
                         speedText = "(" + filesize + ")";
+                    }
+
+                    if (e.loaded == e.total && e.total > 0) {
+                        speedText = "Server side processing... (" + filesize + ")";
                     }
                     speed.textContent = speedText;
                     lastTime = curTime;

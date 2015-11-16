@@ -40,33 +40,6 @@
 
     <body id="fileDrop">
         <div class="container">
-            <nav class="navbar navbar-dark bg-inverse">
-              <ul class="nav navbar-nav">
-                <li class="nav-item active">
-                   <div class="fileUpload nav-link active">
-                       <span>Upload files</span>
-                       <input type="file" class="upload" id="fileField"/ multiple>
-                   </div>
-                </li>
-                {{ if .Files }}
-                    <li class="nav-item active">
-                      <a class="nav-link" href="/">Create new tag</a>
-                    </li>
-                {{ end }}
-<!--
-                <li class="nav-item">
-                  <a class="nav-link" href="/api">API</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/doc">Documentation</a>
-                </li>
--->
-                <div class="nav-item nav-link pull-right">
-                    <div id="fileCount"></div>
-                </div>
-              </ul>
-            </nav>
-
             <!-- Tag meta information -->
             <div class="row">
                 <div class="col-sm-6">
@@ -108,9 +81,8 @@
                     the link. The files will expire after a while.
                 </p>
                 <p class="lead">
-                    <strong>1.</strong> Click <em>Upload files</em> in
-                    the top menu to upload, or drag and drop the files
-                    into this browser window.
+                    <strong>1.</strong> Click <em>Upload files</em> below,
+                    or drag and drop the files into this browser window.
                 </p>
                 <p class="lead">
                     <strong>2.</strong> Wait until the uploads complete.
@@ -121,8 +93,21 @@
                 </p>
             {{ end }}
 
+            <!-- Menu -->
+            <p>
+                <div class="fileUpload btn btn-primary">
+                    <span>Upload files</span>
+                    <input type="file" class="upload" id="fileField"/ multiple>
+                </div>
+
+                <a class="btn btn-primary" href="/">Create new tag</a>
+            </p>
+
             <!-- Upload queue -->
             <span id="fileList"></span>
+
+            <!-- Upload status -->
+            <div id="fileCount"></div>
 
             <!-- Existing files in the tag -->
             <div class="table-responsive">
