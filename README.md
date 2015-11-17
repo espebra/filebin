@@ -1,6 +1,16 @@
 [![Build Status](https://travis-ci.org/espebra/filebin.svg)](https://travis-ci.org/espebra/filebin)
 
-# Requirements
+Filebin is a web application written i [Go](https://golang.org/) that facilitates convenient file sharing over the web. This is the development branch of the next release that in the future will power [http://filebin.net](http://filebin.net).
+
+## Table of contents
+
+* [Requirements](#requirements)
+* [Installation](#installation)
+* [Configuration](#configuration)
+* [API](#api)
+* [TODO](#todo)
+
+## Requirements
 
 To build ``filebin``, a Golang build environment and some Golang packages are needed.
 
@@ -8,7 +18,7 @@ When ``filebin`` has been built, it doesn't have any specific requirements to ru
 
 It is recommended but not required to run it behind a TLS/SSL proxy such as [Hitch](http://hitch-tls.org/) and web cache such as [Varnish Cache](https://www.varnish-cache.org/).
 
-# Installation
+## Installation
 
 Install ``golang``:
 
@@ -49,7 +59,7 @@ Create the directories to use for storing files, logs and temporary files:
 $ mkdir ~/filebin ~/filebin/files ~/filebin/logs ~/filebin/temp
 ```
 
-# Usage
+## Configuration
 
 The built in help text will show the various command line arguments available:
 
@@ -71,25 +81,27 @@ $ ${GOPATH}/bin/filebin --verbose \
 
 By default, ``filebin`` will listen on ``127.0.0.1:31337``.
 
-## Baseurl
+### Baseurl
 
 The ``baseurl`` parameter is used when building [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS) links.
 
 An example when having a TLS/SSL proxy in front on port 443 would be ``--baseurl https://filebin.example.com/``.
 
-## Expiration
+### Expiration
 
 Tags expire after some time of inactivity. By default, tags will expire 3 months after the most recent file was uploaded. It is not possible to download files or upload more files to tags that are expired.
 
-## Triggers
+### Triggers
 
 Triggers enable external scripts to be executed at certain events.
 
-### Uploaded file
+#### Uploaded file
 
 The parameter ``--trigger-uploaded-file /usr/local/bin/uploaded-file`` will make ``filebin`` execute ``/usr/local/bin/uploaded-file``, with the ``tag`` and ``filename`` as arguments for every file uploaded. The execution is non-blocking.
 
-## Upload file
+## API
+
+### Upload file
 
 |			| Value			|
 | --------------------- | ----------------------|
@@ -124,7 +136,7 @@ $ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
   -H "content-sha256: 82b5f1d5d38641752d6cbb4b80f3ccae502973f8b77f1c712bd68d5324e67e33"
 ```
 
-## Show tag
+### Show tag
 
 |			| Value			|
 | --------------------- | ----------------------|
@@ -142,7 +154,7 @@ The following command will print a JSON structure showing which files that avail
 $ curl http://localhost:31337/customtag
 ```
 
-## Download file
+### Download file
 
 |			| Value			|
 | --------------------- | ----------------------|
@@ -160,7 +172,7 @@ Downloading a file is as easy as specifying the ``tag`` and the ``filename`` in 
 $ curl http://localhost:31337/customtag/myfile
 ```
 
-## Delete file
+### Delete file
 
 |			| Value			|
 | --------------------- | ----------------------|
@@ -176,14 +188,14 @@ $ curl http://localhost:31337/customtag/myfile
 $ curl -X DELETE http://localhost:31337/customtag/myfile
 ```
 
-# Feature wishlist
+## TODO
+
+These are feature that would be nice to have:
 
 * Automatically clean up expired tags.
-* Support for deleting single files from tags.
 * Support for deleting entires tags.
 * Streaming of entire (on the fly) compressed tags.
 * Thumbnail generation.
 * Image meta data (EXIF) extraction.
 * Web interface.
 * Administrator dashboard.
-* Error response if the request body is 0 bytes on upload.
