@@ -22,7 +22,7 @@
                 var fileList = document.getElementById("fileList");
                 var fileDrop = document.body;
                 var fileField = document.getElementById("fileField");
-                var tag = "{{ .Tag.TagID }}";
+                var tag = "{{ .Data.Tag.TagID }}";
                 FileAPI = new FileAPI(
                     fileCount,
                     fileList,
@@ -56,7 +56,7 @@
                 Convenient file sharing on the web, without
                 registration. Simply upload files and share
                 the link. The files will expire automatically
-                {{ .ExpirationReadable }}.
+                {{ .Data.ExpirationReadable }}.
             </p>
             <p class="lead">
                 <strong>1.</strong>

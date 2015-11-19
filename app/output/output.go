@@ -2,15 +2,11 @@ package output
 
 import (
 	"io"
-	//"io/ioutil"
 	"net/http"
 	"encoding/json"
 	"strconv"
 	"html/template"
-	//"path/filepath"
-
         "github.com/golang/glog"
-	//"github.com/GeertJohan/go.rice"
 
         "github.com/espebra/filebin/app/model"
 )
@@ -70,7 +66,11 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]st
 
         w.WriteHeader(status)
 
-	err = t.Execute(w, d)
+	// To send multiple structs to the template
+	err = t.Execute(w, map[string]interface{}{
+		"Data": d,
+		"Context": ctx,
+	})
 	if err != nil {
 		glog.Error(err)
 	}

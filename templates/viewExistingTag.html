@@ -22,7 +22,7 @@
                 var fileList = document.getElementById("fileList");
                 var fileDrop = document.body;
                 var fileField = document.getElementById("fileField");
-                var tag = "{{ .Tag.TagID }}";
+                var tag = "{{ .Data.Tag.TagID }}";
                 FileAPI = new FileAPI(
                     fileCount,
                     fileList,
@@ -53,18 +53,18 @@
                     <div align="right">
                         <p>
                         <small class="text-muted pull-right">
-                            {{ if eq (.Files | len) 1 }}
-                                This tag contains {{ .Files | len }} file.
+                            {{ if eq (.Data.Files | len) 1 }}
+                                This tag contains {{ .Data.Files | len }} file.
                             {{ else }}
-                                This tag contains {{ .Files | len }} files.
+                                This tag contains {{ .Data.Files | len }} files.
                             {{ end }}
                             <br/>
-                            {{ if .LastUpdateReadable }}
-                                Last updated {{ .LastUpdateReadable }}.
+                            {{ if .Data.LastUpdateReadable }}
+                                Last updated {{ .Data.LastUpdateReadable }}.
                                 <br/>
                             {{ end }}
-                            {{ if .ExpirationReadable }}
-                                Expires {{ .ExpirationReadable }}.
+                            {{ if .Data.ExpirationReadable }}
+                                Expires {{ .Data.ExpirationReadable }}.
                             {{ end }}
                         </small>
                         </p>
@@ -91,7 +91,7 @@
             <!-- Existing files in the tag -->
             <div class="table-responsive">
                 <table class="table">
-                    {{ if .Files }}
+                    {{ if .Data.Files }}
 	                <thead class="thead thead-default">
                             <th>Filename</th>
                             <th>Size</th>
@@ -100,7 +100,7 @@
 	                </thead>
                     {{ end }}
 	            <tbody>
-                        {{ range $index, $value := .Files }}
+                        {{ range $index, $value := .Data.Files }}
                             <tr>
                                 <td><a href="/{{ .TagID }}/{{ .Filename }}">{{ .Filename }}</a></td>
                                 <td>{{ .BytesReadable }}</td>
