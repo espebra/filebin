@@ -230,11 +230,12 @@ function FileAPI (c, t, d, f, tag) {
             // Handle upload errors here
             xhr.onerror = function (e) {
                 console.log("onerror: status: " + xhr.status + ", readystate: " + xhr.readyState);
+                console.log(e);
+                progress.className = "progress progress-danger";
+                progress.value = 100;
+                speed.textContent = "Failed due to network error (" + filesize + ")";
                 counter_failed += 1;
                 updateFileCount();
-                //bar.className = "progress progress-warning";
-                //tr.className = "table-warning";
-                console.log(e);
             };
 
             xhr.open(
