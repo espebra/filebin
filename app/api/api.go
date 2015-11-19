@@ -184,7 +184,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	
 	path := filepath.Join(f.TagDir, f.Filename)
 	
-	w.Header().Set("Cache-Control", "max-age=15")
+	w.Header().Set("Cache-Control", "max-age=1")
 	http.ServeFile(w, r, path)
 }
 
@@ -286,7 +286,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	//t.GenerateLinks(cfg.Baseurl)
 
 	headers := make(map[string]string)
-	headers["Cache-Control"] = "max-age=15"
+	headers["Cache-Control"] = "max-age=1"
 
 	var status = 200
 
@@ -316,7 +316,7 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 func ViewAPI(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	t := model.Tag {}
 	headers := make(map[string]string)
-	headers["Cache-Control"] = "max-age=15"
+	headers["Cache-Control"] = "max-age=1"
 	var status = 200
 	output.HTMLresponse(w, "api", status, headers, t, ctx)
 }
@@ -324,7 +324,7 @@ func ViewAPI(w http.ResponseWriter, r *http.Request, cfg config.Configuration, c
 func ViewDoc(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	t := model.Tag {}
 	headers := make(map[string]string)
-	headers["Cache-Control"] = "max-age=15"
+	headers["Cache-Control"] = "max-age=1"
 	var status = 200
 	output.HTMLresponse(w, "doc", status, headers, t, ctx)
 }
