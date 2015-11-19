@@ -34,17 +34,35 @@ func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d inte
         glog.Info("Response status: " + strconv.Itoa(status))
 }
 
+// This function is a hack. Need to figure out a better way to do this.
 func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]string, d interface{}, ctx model.Context) {
-	templateBox := ctx.TemplateBox
-	templateString, err := templateBox.String(tpl + ".html")
+	box := ctx.TemplateBox
+	t := template.New(tpl)
+
+	var templateString string
+	var err error
+
+	templateString, err = box.String("viewtag.html")
 	if err != nil {
 		glog.Fatal(err)
 	}
 
-	t, err := template.New(tpl).Parse(templateString)
+	t, err = t.Parse(templateString)
 	if err != nil {
 		glog.Error(err)
 	}
+
+	templateString, err = box.String("viewNewTag.html")
+	if err != nil {
+		glog.Fatal(err)
+	}
+	t.Parse(templateString)
+
+	templateString, err = box.String("viewExistingTag.html")
+	if err != nil {
+		glog.Fatal(err)
+	}
+	t.Parse(templateString)
 
         for header, value := range h {
                 w.Header().Set(header, value)

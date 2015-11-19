@@ -1,0 +1,117 @@
+{{ define "existingTag" }}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <title>Filebin</title>
+
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css"/>
+        <link rel="stylesheet" href="/static/css/upload.css"/>
+        <link rel="stylesheet" href="/static/css/custom.css"/>
+
+        <script src="/static/js/showhide.js"></script>
+        <script src="/static/js/upload.js"></script>
+        <script>
+            window.onload = function () {
+                if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a mo    dern browser with File API support to upload files.");
+                var fileCount = document.getElementById("fileCount");
+                var fileList = document.getElementById("fileList");
+                var fileDrop = document.body;
+                var fileField = document.getElementById("fileField");
+                var tag = "{{ .Tag.TagID }}";
+                FileAPI = new FileAPI(
+                    fileCount,
+                    fileList,
+                    fileDrop,
+                    fileField,
+                    tag
+                );
+                FileAPI.init();
+                // Automatically start upload when using the drop zone
+                fileDrop.ondrop = FileAPI.uploadQueue;
+                // Automatically start upload when selecting files
+                fileField.addEventListener("change", FileAPI.uploadQueue)
+            }
+        </script>
+    </head>
+
+    <body id="fileDrop">
+        <div class="container">
+
+            <!-- Tag meta information -->
+            <div class="row">
+                <div class="col-sm-6">
+                    <h1 class="display-4">
+                        Filebin
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <div align="right">
+                        <p>
+                        <small class="text-muted pull-right">
+                            {{ if eq (.Files | len) 1 }}
+                                This tag contains {{ .Files | len }} file.
+                            {{ else }}
+                                This tag contains {{ .Files | len }} files.
+                            {{ end }}
+                            <br/>
+                            {{ if .LastUpdateReadable }}
+                                Last updated {{ .LastUpdateReadable }}.
+                                <br/>
+                            {{ end }}
+                            {{ if .ExpirationReadable }}
+                                Expires {{ .ExpirationReadable }}.
+                            {{ end }}
+                        </small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu -->
+            <p>
+                <div class="fileUpload btn btn-primary">
+                    <span>Upload more files</span>
+                    <input type="file" class="upload" id="fileField"/ multiple>
+                </div>
+
+                <a class="btn btn-primary" href="/">Create new tag</a>
+            </p>
+
+            <!-- Upload queue -->
+            <span id="fileList"></span>
+
+            <!-- Upload status -->
+            <div id="fileCount"></div>
+
+            <!-- Existing files in the tag -->
+            <div class="table-responsive">
+                <table class="table">
+                    {{ if .Files }}
+	                <thead class="thead thead-default">
+                            <th>Filename</th>
+                            <th>Size</th>
+                            <th class="hidden-sm-down">Type</th>
+                            <th class="hidden-sm-down">Created</th>
+	                </thead>
+                    {{ end }}
+	            <tbody>
+                        {{ range $index, $value := .Files }}
+                            <tr>
+                                <td><a href="/{{ .TagID }}/{{ .Filename }}">{{ .Filename }}</a></td>
+                                <td>{{ .BytesReadable }}</td>
+                                <td class="hidden-sm-down">{{ .MIME }}</td>
+                                <td class="hidden-sm-down">{{ .CreatedReadable }}</td>
+                            </tr>
+                        {{ end }}
+	            <tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>
+{{ end }}
