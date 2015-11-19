@@ -274,6 +274,7 @@ func reqHandler(fn func (http.ResponseWriter, *http.Request, config.Configuratio
 		var ctx = model.Context {}
 		ctx.TemplateBox = templateBox
 		ctx.StaticBox = staticBox
+		ctx.Baseurl = cfg.Baseurl
 
 		fn(w, r, cfg, ctx)
 

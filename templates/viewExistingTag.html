@@ -9,12 +9,12 @@
         <title>Filebin</title>
 
         <!-- Bootstrap -->
-        <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css"/>
-        <link rel="stylesheet" href="/static/css/upload.css"/>
-        <link rel="stylesheet" href="/static/css/custom.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/upload.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/custom.css"/>
 
-        <script src="/static/js/showhide.js"></script>
-        <script src="/static/js/upload.js"></script>
+        <script src="{{ .Ctx.Baseurl }}/static/js/showhide.js"></script>
+        <script src="{{ .Ctx.Baseurl }}/static/js/upload.js"></script>
         <script>
             window.onload = function () {
                 if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a mo    dern browser with File API support to upload files.");
@@ -23,12 +23,14 @@
                 var fileDrop = document.body;
                 var fileField = document.getElementById("fileField");
                 var tag = "{{ .Data.Tag.TagID }}";
+                var url = "{{ .Ctx.Baseurl }}";
                 FileAPI = new FileAPI(
                     fileCount,
                     fileList,
                     fileDrop,
                     fileField,
-                    tag
+                    tag,
+                    url
                 );
                 FileAPI.init();
                 // Automatically start upload when using the drop zone
@@ -79,7 +81,7 @@
                     <input type="file" class="upload" id="fileField"/ multiple>
                 </div>
 
-                <a class="btn btn-primary" href="/">Create new tag</a>
+                <a class="btn btn-primary" href="{{ .Ctx.Baseurl }}">Create new tag</a>
             </p>
 
             <!-- Upload queue -->
@@ -102,7 +104,10 @@
 	            <tbody>
                         {{ range $index, $value := .Data.Files }}
                             <tr>
-                                <td><a href="/{{ .TagID }}/{{ .Filename }}">{{ .Filename }}</a></td>
+                                <td>
+                                    {{ $link := index .Links 0 }}
+                                    <a href="{{ $link.Href }}">{{ .Filename }}</a>
+                                </td>
                                 <td>{{ .BytesReadable }}</td>
                                 <td class="hidden-sm-down">{{ .MIME }}</td>
                                 <td class="hidden-sm-down">{{ .CreatedReadable }}</td>

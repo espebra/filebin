@@ -69,7 +69,7 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]st
 	// To send multiple structs to the template
 	err = t.Execute(w, map[string]interface{}{
 		"Data": d,
-		"Context": ctx,
+		"Ctx": ctx,
 	})
 	if err != nil {
 		glog.Error(err)

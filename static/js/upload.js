@@ -1,4 +1,4 @@
-function FileAPI (c, t, d, f, tag) {
+function FileAPI (c, t, d, f, tag, url) {
 
     var fileCount = c,
         fileList = t,
@@ -240,7 +240,7 @@ function FileAPI (c, t, d, f, tag) {
 
             xhr.open(
                 "POST",
-                "/"
+                url
             );
             xhr.setRequestHeader("Cache-Control", "no-cache");
             xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
