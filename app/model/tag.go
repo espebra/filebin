@@ -50,7 +50,7 @@ func (t *Tag) SetTagDir(filedir string) {
 	t.TagDir = filepath.Join(filedir, t.TagID)
 }
 
-func (t *Tag) Exists() bool {
+func (t *Tag) TagDirExists() bool {
 	if isDir(t.TagDir) {
 		return true
 	} else {

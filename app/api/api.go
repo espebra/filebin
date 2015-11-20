@@ -87,6 +87,13 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		return
 	}
 
+	// Trigger new tag
+	if !f.TagDirExists() {
+		if cfg.TriggerNewTag != "" {
+			triggerNewTagHandler(cfg.TriggerNewTag, f.TagID)
+		}
+	}
+
 	// Create the tag directory if it does not exist
 	err = f.EnsureTagDirectoryExists()
 	if err != nil {
@@ -259,7 +266,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 
 	t.SetTagDir(cfg.Filedir)
 	t.CalculateExpiration(cfg.Expiration)
-	if t.Exists() {
+	if t.TagDirExists() {
 		expired, err := t.IsExpired(cfg.Expiration)
 		if err != nil {
 			http.Error(w,"Internal server error", 500)

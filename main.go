@@ -100,9 +100,9 @@ func init() {
 	flag.BoolVar(&cfg.Verbose, "verbose",
 		cfg.Verbose, "Verbose output.")
 
-//	flag.StringVar(&cfg.TriggerNewTag, "trigger-new-tag",
-//		cfg.TriggerNewTag,
-//		"Trigger to execute when a new tag is created.")
+	flag.StringVar(&cfg.TriggerNewTag, "trigger-new-tag",
+		cfg.TriggerNewTag,
+		"Command to execute when a new tag is created.")
 
 	flag.StringVar(&cfg.TriggerUploadedFile,
 		"trigger-uploaded-file",
@@ -198,9 +198,14 @@ func main() {
 		//fmt.Println("GeoIP2 database: " + cfg.GeoIP2)
 		//fmt.Println("Pagination: " + strconv.Itoa(cfg.Pagination))
 		fmt.Println("Baseurl: " + cfg.Baseurl)
-		//fmt.Println("Trigger New tag: " + cfg.TriggerNewTag)
 
-                var trigger = cfg.TriggerUploadedFile
+                var trigger = cfg.TriggerNewTag
+                if trigger == "" {
+                    trigger = "Not set"
+                }
+		fmt.Println("Trigger - New tag: " + trigger)
+
+                trigger = cfg.TriggerUploadedFile
                 if trigger == "" {
                     trigger = "Not set"
                 }
@@ -225,7 +230,10 @@ func main() {
 	http.Handle("/", httpInterceptor(router))
 
 	// Accept trailing slashes.
-	router.StrictSlash(true)
+        // Disabling this feature for now since it might not be needed. Try to
+	// find some other way of accepting trailing slashes where appropriate
+	// instead of globally.
+	//router.StrictSlash(true)
 
 	router.HandleFunc("/api", reqHandler(api.ViewAPI)).Methods("GET", "HEAD")
 	router.HandleFunc("/doc", reqHandler(api.ViewDoc)).Methods("GET", "HEAD")

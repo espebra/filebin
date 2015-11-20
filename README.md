@@ -12,15 +12,13 @@ Filebin is a web application written i [Go](https://golang.org/) that facilitate
 
 ## Requirements
 
-To build ``filebin``, a Golang build environment and some Golang packages are needed.
+To build Filebin, a Golang build environment and some Golang packages are needed. The build will produce a statically linked binary that doesn't require any external dependencies to run. It even comes with its own web server bundled.
 
-When ``filebin`` has been built, it doesn't have any specific requirements to run. It even comes with its own web server bundled.
-
-It is recommended but not required to run it behind a TLS/SSL proxy such as [Hitch](http://hitch-tls.org/) and web cache such as [Varnish Cache](https://www.varnish-cache.org/).
+It is recommended but not required to run it behind a TLS/SSL proxy such as [Hitch](http://hitch-tls.org/) and web cache such as [Varnish Cache](https://www.varnish-cache.org/). Example configurations for these are available below.
 
 ## Installation
 
-Install ``golang``:
+Install Golang:
 
 ```
 $ sudo yum/apt-get/brew install golang
@@ -36,7 +34,7 @@ $ export GOPATH="${HOME}/go"
 $ export PATH="${PATH}:${GOPATH}/bin"
 ```
 
-Download and install ``filebin``:
+Download and install Filebin:
 
 ```
 $ go get -d github.com/espebra/filebin
@@ -45,7 +43,7 @@ $ make get-deps
 $ make install
 ```
 
-The binary should be created as ``${GOPATH}/bin/filebin``. Execute it with the ``--version`` to verify that it is recent.
+The binary is created as ``${GOPATH}/bin/filebin``, which can be executed immediately. The ``--version`` argument prints the build time and the git commit hash used in the build.
 
 ```
 $ ${GOPATH}/bin/filebin --version
@@ -61,7 +59,7 @@ $ mkdir ~/filebin ~/filebin/files ~/filebin/logs ~/filebin/temp
 
 ## Configuration
 
-The built in help text will show the various command line arguments available:
+Configuration is done using command line arguments. The built in help text will show the various arguments available:
 
 ```
 $ ${GOPATH}/bin/filebin --help
@@ -79,13 +77,19 @@ $ ${GOPATH}/bin/filebin --verbose \
   --expiration 604800
 ```
 
-By default, ``filebin`` will listen on ``127.0.0.1:31337``.
+By default it will listen on ``127.0.0.1:31337``.
 
-### Baseurl
+### Command line arguments
 
-The ``baseurl`` parameter is used when building [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS) links.
+The following are elaborations on some of the command line arguments.
 
-An example when having a TLS/SSL proxy in front on port 443 would be ``--baseurl https://filebin.example.com/``.
+#### Baseurl
+
+The ``--baseurl`` parameter is used when building [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS) links in the JSON responses and to generate the correct hyperlinks in the HTML responses. If ``--baseurl`` is wrong, the required css and javascript resources will not load properly.
+
+An example when having a TLS/SSL proxy in front on port 443 would be ``--baseurl https://filebin.example.com``.
+
+It is also possible to run filebin from a subdirectory if specifying this accordingly with for example ``--baseurl https://www.example.com/filebin``. A trailing slash is not needed.
 
 ### Expiration
 
@@ -95,9 +99,17 @@ Tags expire after some time of inactivity. By default, tags will expire 3 months
 
 Triggers enable external scripts to be executed at certain events.
 
+#### New tag
+
+The parameter ``--trigger-new-tag <command>`` makes sure ``<command> <tag>`` is executed whenever a new tag is being created. The execution is non-blocking. Example:
+
+```--trigger-new-tag /usr/local/bin/new-tag`` will execute ``/usr/local/bin/new-tag <tagid>``.
+
 #### Uploaded file
 
-The parameter ``--trigger-uploaded-file /usr/local/bin/uploaded-file`` will make ``filebin`` execute ``/usr/local/bin/uploaded-file``, with the ``tag`` and ``filename`` as arguments for every file uploaded. The execution is non-blocking.
+The parameter ``--trigger-uploaded-file <command>`` makes sure ``<command> <tag> <filename>`` is executed whenever a new file is uploaded. The execution is non-blocking. Example:
+
+```--trigger-uploaded-file /usr/local/bin/uploaded-file`` will execute ``/usr/local/bin/uploaded-file <tagid> <filename>``.
 
 ## API
 
