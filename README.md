@@ -7,7 +7,8 @@ Filebin is a web application written i [Go](https://golang.org/) that facilitate
 * [Requirements](#requirements)
 * [Installation](#installation)
 * [Configuration](#configuration)
-* [API](#api)
+* [Web service](#web-service)
+* [Web interface](#web-interface)
 * [TODO](#todo)
 
 ## Requirements
@@ -91,33 +92,35 @@ An example when having a TLS/SSL proxy in front on port 443 would be ``--baseurl
 
 It is also possible to run filebin from a subdirectory if specifying this accordingly with for example ``--baseurl https://www.example.com/filebin``. A trailing slash is not needed.
 
-### Expiration
+#### Expiration
 
 Tags expire after some time of inactivity. By default, tags will expire 3 months after the most recent file was uploaded. It is not possible to download files or upload more files to tags that are expired.
 
-### Triggers
+``--expiration 86400`` will expire tags 24 hours after the last file has been uploaded.
+
+#### Triggers
 
 Triggers enable external scripts to be executed at certain events.
 
-#### New tag
+##### New tag
 
 The parameter ``--trigger-new-tag <command>`` makes sure ``<command> <tag>`` is executed whenever a new tag is being created. The execution is non-blocking. Example:
 
 ```--trigger-new-tag /usr/local/bin/new-tag`` will execute ``/usr/local/bin/new-tag <tagid>``.
 
-#### Uploaded file
+##### Uploaded file
 
 The parameter ``--trigger-uploaded-file <command>`` makes sure ``<command> <tag> <filename>`` is executed whenever a new file is uploaded. The execution is non-blocking. Example:
 
 ```--trigger-uploaded-file /usr/local/bin/uploaded-file`` will execute ``/usr/local/bin/uploaded-file <tagid> <filename>``.
 
-## API
+## Web service
 
 ### Upload file
 
 |			| Value			|
 | --------------------- | ----------------------|
-| **Method**		| POST			|
+| **Method**		| ``POST``		|
 | **URL**		| /			|
 | **URL parameters**	| *None*		|
 | **Success response**	| ``201``		|
@@ -148,15 +151,16 @@ $ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
   -H "content-sha256: 82b5f1d5d38641752d6cbb4b80f3ccae502973f8b77f1c712bd68d5324e67e33"
 ```
 
-### Show tag
+### Fetch tag
 
-|			| Value			|
-| --------------------- | ----------------------|
-| **Method**		| GET			|
-| **URL**		| /:tag			|
-| **URL parameters**	| *None*		|
-| **Success response**	| ``200``		|
-| **Error response**	| ``404``		|
+|			| Value					|
+| --------------------- | ------------------------------------- |
+| **Method**		| ``GET``				|
+| **Request headers**	| ``content-type: application/json``	|
+| **URL**		| /:tag					|
+| **URL parameters**	| *None*				|
+| **Success response**	| ``200``				|
+| **Error response**	| ``404``				|
 
 ###### Examples
 
@@ -170,7 +174,7 @@ $ curl http://localhost:31337/customtag
 
 |			| Value			|
 | --------------------- | ----------------------|
-| **Method**		| GET			|
+| **Method**		| ``GET``		|
 | **URL**		| /:tag/:filename	|
 | **URL parameters**	| *None*		|
 | **Success response**	| ``200``		|
@@ -188,7 +192,7 @@ $ curl http://localhost:31337/customtag/myfile
 
 |			| Value			|
 | --------------------- | ----------------------|
-| **Method**		| DELETE		|
+| **Method**		| ``DELETE``		|
 | **URL**		| /:tag/:filename	|
 | **URL parameters**	| *None*		|
 | **Success response**	| ``200``		|
@@ -200,6 +204,11 @@ $ curl http://localhost:31337/customtag/myfile
 $ curl -X DELETE http://localhost:31337/customtag/myfile
 ```
 
+## Web service
+
+![File uploads in progress](doc/screenshot-web-interface-uploading.png)
+
+
 ## TODO
 
 These are feature that would be nice to have:
@@ -209,5 +218,4 @@ These are feature that would be nice to have:
 * Streaming of entire (on the fly) compressed tags.
 * Thumbnail generation.
 * Image meta data (EXIF) extraction.
-* Web interface.
 * Administrator dashboard.
