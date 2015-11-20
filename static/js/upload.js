@@ -8,6 +8,7 @@ function FileAPI (c, t, d, f, tag, url) {
         counter_uploading = 0,
         counter_completed = 0,
         counter_failed = 0,
+        concurrency = 4,
         fileQueue = new Array(),
         preview = null;
 
@@ -78,10 +79,20 @@ function FileAPI (c, t, d, f, tag, url) {
 
     this.uploadQueue = function (ev) {
         ev.preventDefault();
-        while (fileQueue.length > 0) {
-            var item = fileQueue.pop();
-            uploadFile(item.file, item.container);
-        }
+
+        // Loop that will wait 100ms between each iteration
+        var i = setInterval(function(){
+            // Initiate a upload if within the concurrency limit
+            if (counter_uploading < concurrency) {
+                var item = fileQueue.pop();
+                uploadFile(item.file, item.container);
+            }
+
+            // Break out of the loop when the queue is empty
+            if (fileQueue.length == 0) {
+                clearInterval(i);
+            }
+        }, 100);
     }
 
     var addFileListItems = function (files) {
@@ -141,7 +152,6 @@ function FileAPI (c, t, d, f, tag, url) {
             container.appendChild(barcontainer)
 
             fileList.insertBefore(container, fileList.childNodes[0]);
-            counter_uploading += 1;
             updateFileCount();
             fileQueue.push({
                 file : file,
@@ -167,6 +177,8 @@ function FileAPI (c, t, d, f, tag, url) {
 
     var uploadFile = function (file, container) {
         if (container && file) {
+            counter_uploading += 1;
+
             var filesize = getReadableFileSizeString(file.size);
             var speed = container.getElementsByTagName("div")[2];
             var bar = container.getElementsByTagName("div")[4];
@@ -235,6 +247,7 @@ function FileAPI (c, t, d, f, tag, url) {
                 progress.value = 100;
                 speed.textContent = "Failed due to network error (" + filesize + ")";
                 counter_failed += 1;
+                counter_uploading -= 1;
                 updateFileCount();
             };
 
