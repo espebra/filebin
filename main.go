@@ -224,6 +224,9 @@ func main() {
 
 	http.Handle("/", httpInterceptor(router))
 
+	// Accept trailing slashes.
+	router.StrictSlash(true)
+
 	router.HandleFunc("/api", reqHandler(api.ViewAPI)).Methods("GET", "HEAD")
 	router.HandleFunc("/doc", reqHandler(api.ViewDoc)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.ViewIndex)).Methods("GET", "HEAD")
