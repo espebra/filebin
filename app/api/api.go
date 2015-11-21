@@ -53,7 +53,6 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		http.Error(w, err.Error(), http.StatusBadRequest);
 		return
 	}
-	ctx.Log.Println("Tag: " + f.TagID)
 	f.SetTagDir(cfg.Filedir)
 	ctx.Log.Println("Tag directory: " + f.TagDir)
 
