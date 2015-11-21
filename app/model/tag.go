@@ -8,7 +8,6 @@ import (
 	"time"
 	"os"
 
-	"github.com/golang/glog"
 	"github.com/dustin/go-humanize"
 )
 
@@ -31,7 +30,6 @@ type ExtendedTag struct {
 
 func (t *Tag) GenerateTagID() error {
 	var tag = randomString(16)
-        glog.Info("Generated tag: " + tag)
 	err := t.SetTagID(tag)
 	return err
 }

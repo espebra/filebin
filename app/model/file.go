@@ -9,14 +9,10 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	//"path"
 	"path/filepath"
 	"regexp"
-	"strconv"
-	//"strings"
 	"time"
 
-	"github.com/golang/glog"
         "github.com/dustin/go-humanize"
 )
 
@@ -58,10 +54,8 @@ func (f *File) SetFilename(s string) error {
 			"illegal characters or is too short.")
 	}
 
+	// Set filename to the safe variant
 	f.Filename = safe
-	if s != safe {
-		glog.Info("Sanitized the filename [" + s + "] into [" + safe + "]")
-	}
 
 	// Reject illegal filenames
 	switch f.Filename {
@@ -69,7 +63,6 @@ func (f *File) SetFilename(s string) error {
 			return errors.New("Invalid filename specified.")
 	}
 
-	glog.Info("Filename: " + safe)
 	return nil
 }
 
@@ -91,7 +84,6 @@ func (f *File) DetectMIME() error {
 		return err
 	}
 	f.MIME = http.DetectContentType(buffer)
-	glog.Info("Detected MIME type: " + f.MIME)
 	return nil
 }
 
@@ -110,8 +102,6 @@ func (f *File) GenerateLinks(baseurl string) {
 func (f *File) EnsureTagDirectoryExists() error {
 	var err error
 	if !isDir(f.TagDir) {
-		glog.Info("The directory " + f.TagDir + " does not exist. " +
-			"Creating.")
 		err = os.Mkdir(f.TagDir, 0700)
 	}
 	return err
@@ -178,14 +168,11 @@ func (f *ExtendedFile) WriteTempfile(d io.Reader, tempdir string) error {
 		return err
 	}
 	f.Tempfile = fp.Name()
-	glog.Info("Writing data to " + fp.Name())
 
 	f.Bytes, err = io.Copy(fp, d)
 	if err != nil {
 		return err
 	}
-	glog.Info("Upload complete after " + strconv.FormatInt(f.Bytes, 10) +
-		" bytes")
 
 	fp.Sync()
 
@@ -232,8 +219,6 @@ func (f *ExtendedFile) VerifySHA256(s string) error {
 		return nil
 	}
 
-	glog.Info("Checksum is ", f.Checksum)
-	glog.Info("The provided checksum is not correct: " + s)
 	return errors.New("Checksum " + s + " did not match " + f.Checksum)
 }
 
@@ -244,12 +229,7 @@ func (f *ExtendedFile) Publish() error {
 
 func (f *ExtendedFile) ClearTemp() error {
 	err := os.Remove(f.Tempfile)
-	if err != nil {
-		glog.Error("Unable to remove tempfile ", f.Tempfile, ": ", err)
-		return err
-	}
-	glog.Info("Removed tempfile: ", f.Tempfile)
-	return nil
+	return err
 }
 
 func isDir(path string) bool {

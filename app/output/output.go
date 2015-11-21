@@ -6,28 +6,25 @@ import (
 	"encoding/json"
 	"strconv"
 	"html/template"
-        "github.com/golang/glog"
 
-        "github.com/espebra/filebin/app/model"
+	"github.com/espebra/filebin/app/model"
 )
 
-func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d interface{}) {
-        dj, err := json.MarshalIndent(d, "", "    ")
-        if err != nil {
-                glog.Info("Unable to convert response to json: ", err)
-                http.Error(w, "Failed while generating a response", http.StatusInternalServerError)
-                return
-        }
+func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d interface{}, ctx model.Context) {
+	dj, err := json.MarshalIndent(d, "", "    ")
+	if err != nil {
+		ctx.Log.Println("Unable to convert response to json: ", err)
+		http.Error(w, "Failed while generating a response", http.StatusInternalServerError)
+		return
+	}
 
-        for header, value := range h {
-                w.Header().Set(header, value)
-        }
+	for header, value := range h {
+		w.Header().Set(header, value)
+	}
 
-        w.WriteHeader(status)
-        //log.Info("Status " + strconv.Itoa(status))
-        io.WriteString(w, string(dj))
-        //Info.Print("Output: ", string(dj))
-        glog.Info("Response status: " + strconv.Itoa(status))
+	w.WriteHeader(status)
+	ctx.Log.Println("Response status: " + strconv.Itoa(status))
+	io.WriteString(w, string(dj))
 }
 
 // This function is a hack. Need to figure out a better way to do this.
@@ -40,23 +37,23 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]st
 
 	templateString, err = box.String("viewtag.html")
 	if err != nil {
-		glog.Fatal(err)
+		ctx.Log.Fatalln(err)
 	}
 
 	t, err = t.Parse(templateString)
 	if err != nil {
-		glog.Error(err)
+		ctx.Log.Fatalln(err)
 	}
 
 	templateString, err = box.String("viewNewTag.html")
 	if err != nil {
-		glog.Fatal(err)
+		ctx.Log.Fatalln(err)
 	}
 	t.Parse(templateString)
 
 	templateString, err = box.String("viewExistingTag.html")
 	if err != nil {
-		glog.Fatal(err)
+		ctx.Log.Fatalln(err)
 	}
 	t.Parse(templateString)
 
@@ -65,6 +62,7 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]st
         }
 
         w.WriteHeader(status)
+	ctx.Log.Println("Response status: " + strconv.Itoa(status))
 
 	// To send multiple structs to the template
 	err = t.Execute(w, map[string]interface{}{
@@ -72,6 +70,6 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]st
 		"Ctx": ctx,
 	})
 	if err != nil {
-		glog.Error(err)
+		ctx.Log.Fatalln(err)
 	}
 }

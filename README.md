@@ -69,11 +69,10 @@ $ ${GOPATH}/bin/filebin --help
 Some arguments commonly used to start ``filebin`` are:
 
 ```
-$ ${GOPATH}/bin/filebin --verbose \
+$ ${GOPATH}/bin/filebin \
   --host 0.0.0.0 --port 31337
   --baseurl http://api.example.com:31337
   --filedir ~/filebin/files \
-  --logdir ~/filebin/logs \
   --tempdir ~/filebin/temp \
   --expiration 604800
 ```
@@ -112,7 +111,7 @@ The parameter ``--trigger-new-tag <command>`` makes sure ``<command> <tag>`` is 
 
 The parameter ``--trigger-uploaded-file <command>`` makes sure ``<command> <tag> <filename>`` is executed whenever a new file is uploaded. The execution is non-blocking. Example:
 
-```--trigger-uploaded-file /usr/local/bin/uploaded-file`` will execute ``/usr/local/bin/uploaded-file <tagid> <filename>``.
+``--trigger-uploaded-file /usr/local/bin/uploaded-file`` will execute ``/usr/local/bin/uploaded-file <tagid> <filename>``.
 
 ## Web service
 
@@ -208,6 +207,13 @@ $ curl -X DELETE http://localhost:31337/customtag/myfile
 
 ![File uploads in progress](doc/screenshot-web-interface-uploading.png)
 
+## Logging
+
+All logs are written to stdout. They can easily be redirected to for example syslog when using the [systemd service script provided](systemd/filebin.service).
+
+## Database
+
+Filebin does currently not use any other database than the filesystem itself.
 
 ## TODO
 

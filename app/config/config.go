@@ -9,8 +9,6 @@ type Configuration struct {
 	Filedir			string
 	Baseurl			string
 	Tempdir			string
-	Logdir			string
-	Verbose			bool
 	Expiration		int64
 	TriggerNewTag		string
 	TriggerUploadedFile	string
@@ -32,11 +30,6 @@ func init() {
 		Baseurl: "http://localhost:31337",
 		Filedir: "/srv/filebin/files",
 		Tempdir: "/tmp",
-		Logdir: "/var/log/filebin",
-		//Thumbdir: "/srv/filebin/thumbnails",
-		//Database: "/srv/filebin/filebin.db",
-		//GeoIP2: "/srv/filebin/GeoLite2-Country.mmdb",
-		//Pagination: 120,
 		TriggerNewTag: "",
 		TriggerUploadedFile: "",
 		TriggerExpiredTag: "",
