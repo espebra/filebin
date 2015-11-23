@@ -23,7 +23,7 @@
                 var fileDrop = document.body;
                 var fileField = document.getElementById("fileField");
                 var tag = "{{ .Data.Tag.TagID }}";
-                var url = "{{ .Ctx.Baseurl }}";
+                var url = "{{ .Ctx.Baseurl }}/";
                 FileAPI = new FileAPI(
                     fileCount,
                     fileList,
