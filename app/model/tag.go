@@ -19,8 +19,7 @@ type Tag struct {
 	Expired			bool		`json:"-"`
 	LastUpdateAt		time.Time	`json:"-"`
 	LastUpdateReadable	string		`json:"lastupdate"`
-	Files			[]File		`json:"files"`
-	//Links			[]Link		`json:"links"`
+	Files			[]interface{}	`json:"files"`
 }
 
 

@@ -99,6 +99,14 @@ func (f *File) DetectMIME() error {
 	return nil
 }
 
+func (f *File) MediaType() string {
+        s := regexp.MustCompile("/").Split(f.MIME, 2)
+        if len(s) > 0 {
+                return s[0]
+        }
+        return ""
+}
+
 func (f *File) GenerateLinks(baseurl string) {
 	fileLink := Link {}
 	fileLink.Rel = "file"

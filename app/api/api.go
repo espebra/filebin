@@ -171,6 +171,27 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		ctx.Log.Println("MIME detected: " + f.MIME)
 	}
 
+	ctx.Log.Println("Media type: " + f.MediaType())
+        //if f.MediaType() == "image" {
+	//	i := model.Image {}
+	//	i.Tag = f.Tag
+	//	i.TagDir = f.TagDir
+	//	i.Filename = f.Filename
+	//	i.Algorithm = f.Algorithm
+	//	i.Checksum = f.Checksum
+        //        //err = i.ExtractExif()
+        //        //if err != nil {
+        //        //        ctx.Log.Println(err)
+        //        //}
+
+        //        //dt, err := i.GetDateTime()
+        //        //if err != nil {
+        //        //        ctx.Log.Println(err)
+        //        //}
+        //        //ctx.Log.Println("Timestamp: " + dt)
+	//	f = i
+        //}
+
 	err = f.Info()
 	if err != nil {
 		ctx.Log.Println(err)
