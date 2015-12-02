@@ -19,7 +19,7 @@ type Tag struct {
 	Expired			bool		`json:"-"`
 	LastUpdateAt		time.Time	`json:"-"`
 	LastUpdateReadable	string		`json:"lastupdate"`
-	Files			[]interface{}	`json:"files"`
+	Files			[]File		`json:"files"`
 }
 
 
@@ -51,7 +51,7 @@ func (t *Tag) TagDirExists() bool {
 	}
 }
 
-func (t *Tag) Info() error {
+func (t *Tag) StatInfo() error {
 	if isDir(t.TagDir) == false {
 		return errors.New("Tag does not exist.")
 	}
@@ -98,7 +98,7 @@ func (t *Tag) List(baseurl string) error {
 		f.SetFilename(file.Name())
 		f.SetTag(t.Tag)
 		f.TagDir = t.TagDir
-		err = f.Info()
+		err = f.StatInfo()
 		if err != nil {
 			return err
 		}

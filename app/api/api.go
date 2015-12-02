@@ -172,27 +172,23 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	}
 
 	ctx.Log.Println("Media type: " + f.MediaType())
-        //if f.MediaType() == "image" {
-	//	i := model.Image {}
-	//	i.Tag = f.Tag
-	//	i.TagDir = f.TagDir
-	//	i.Filename = f.Filename
-	//	i.Algorithm = f.Algorithm
-	//	i.Checksum = f.Checksum
-        //        //err = i.ExtractExif()
-        //        //if err != nil {
-        //        //        ctx.Log.Println(err)
-        //        //}
+        if f.MediaType() == "image" {
+		i := model.Image {}
 
-        //        //dt, err := i.GetDateTime()
-        //        //if err != nil {
-        //        //        ctx.Log.Println(err)
-        //        //}
-        //        //ctx.Log.Println("Timestamp: " + dt)
-	//	f = i
-        //}
+                //err = i.ExtractExif()
+                //if err != nil {
+                //        ctx.Log.Println(err)
+                //}
 
-	err = f.Info()
+                //dt, err := i.GetDateTime()
+                //if err != nil {
+                //        ctx.Log.Println(err)
+                //}
+                //ctx.Log.Println("Timestamp: " + dt)
+		f.Extra = i
+        }
+
+	err = f.StatInfo()
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w,"Internal Server Error", 500)
@@ -303,7 +299,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		ctx.Log.Println("Unable to detect MIME: ", err)
 	}
 
-	err = f.Info()
+	err = f.StatInfo()
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w,"Internal Server Error", 500)
@@ -351,7 +347,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 			return
 		}
 
-		err = t.Info()
+		err = t.StatInfo()
 		if err != nil {
 			ctx.Log.Println(err)
 			http.Error(w, "Internal Server Error", 500)

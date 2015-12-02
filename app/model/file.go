@@ -31,6 +31,7 @@ type File struct {
 	RemoteAddr		string		`json:"-"`
 	UserAgent		string		`json:"-"`
 	Tempfile		string		`json:"-"`
+	Extra			interface{}	`json:"extra"`
 }
 
 func (f *File) SetTag(s string) error {
@@ -143,7 +144,7 @@ func (f *File) Exists() bool {
 	return true
 }
 
-func (f *File) Info() error {
+func (f *File) StatInfo() error {
 	if isDir(f.TagDir) == false {
 		return errors.New("Tag does not exist.")
 	}
