@@ -17,12 +17,14 @@
         <script src="{{ .Ctx.Baseurl }}/static/js/upload.js"></script>
         <script>
             window.onload = function () {
-                if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a mo    dern browser with File API support to upload files.");
+                if (typeof FileReader == "undefined") alert ("Your browser \
+                    is not supported. You will need to update to a modern \
+                    browser with File API support to upload files.");
                 var fileCount = document.getElementById("fileCount");
                 var fileList = document.getElementById("fileList");
                 var fileDrop = document.body;
                 var fileField = document.getElementById("fileField");
-                var tag = "{{ .Data.Tag.TagID }}";
+                var tag = "{{ .Data.Tag }}";
                 var url = "{{ .Ctx.Baseurl }}/";
                 FileAPI = new FileAPI(
                     fileCount,

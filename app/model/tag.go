@@ -12,15 +12,11 @@ import (
 )
 
 type Tag struct {
-	TagID		    	string		`json:"tag"`
+	Tag		    	string		`json:"tag"`
 	TagDir			string		`json:"-"`
 	ExpirationAt		time.Time	`json:"-"`
 	ExpirationReadable	string		`json:"expiration"`
 	Expired			bool		`json:"-"`
-}
-
-type ExtendedTag struct {
-	Tag
 	LastUpdateAt		time.Time	`json:"-"`
 	LastUpdateReadable	string		`json:"lastupdate"`
 	Files			[]File		`json:"files"`
@@ -28,24 +24,24 @@ type ExtendedTag struct {
 }
 
 
-func (t *Tag) GenerateTagID() error {
-	var tag = randomString(16)
-	err := t.SetTagID(tag)
-	return err
-}
+//func (t *Tag) GenerateTag() error {
+//	var tag = randomString(16)
+//	err := t.SetTag(tag)
+//	return err
+//}
 
-func (t *Tag) SetTagID(s string) error {
-	validTagID := regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
-	if validTagID.MatchString(s) == false {
+func (t *Tag) SetTag(s string) error {
+	validTag := regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
+	if validTag.MatchString(s) == false {
 		return errors.New("Invalid tag specified. It contains " +
 			"illegal characters or is too short")
 	}
-	t.TagID = s
+	t.Tag = s
 	return nil
 }
 
 func (t *Tag) SetTagDir(filedir string) {
-	t.TagDir = filepath.Join(filedir, t.TagID)
+	t.TagDir = filepath.Join(filedir, t.Tag)
 }
 
 func (t *Tag) TagDirExists() bool {
@@ -56,7 +52,7 @@ func (t *Tag) TagDirExists() bool {
 	}
 }
 
-func (t *ExtendedTag) Info() error {
+func (t *Tag) Info() error {
 	if isDir(t.TagDir) == false {
 		return errors.New("Tag does not exist.")
 	}
@@ -95,13 +91,13 @@ func (t *Tag) CalculateExpiration(expiration int64) error {
 	return nil
 }
 
-func (t *ExtendedTag) List(baseurl string) error {
+func (t *Tag) List(baseurl string) error {
 	var err error
 	files, err := ioutil.ReadDir(t.TagDir)
 	for _, file := range files {
 		var f = File {}
 		f.SetFilename(file.Name())
-		f.SetTagID(t.TagID)
+		f.SetTag(t.Tag)
 		f.TagDir = t.TagDir
 		err = f.Info()
 		if err != nil {
@@ -112,8 +108,8 @@ func (t *ExtendedTag) List(baseurl string) error {
 			return err
 		}
 
-		f.ExpirationAt = t.ExpirationAt
-		f.ExpirationReadable = t.ExpirationReadable
+		//f.ExpirationAt = t.ExpirationAt
+		//f.ExpirationReadable = t.ExpirationReadable
 
 		f.GenerateLinks(baseurl)
 		t.Files = append(t.Files, f)

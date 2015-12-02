@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,33 +15,40 @@ import (
         "github.com/dustin/go-humanize"
 )
 
-type Link struct {
-	Rel	string
-	Href	string
-}
-
 type File struct {
-	Tag
 	Filename		string		`json:"filename"`
-	//Tag		    	string		`json:"tag"`
-	//TagDir			string		`json:"-"`
-
+	Tag			string		`json:"tag"`
+	TagDir			string		`json:"-"`
 	Bytes			int64		`json:"bytes"`
 	BytesReadable		string		`json:"-"`
 	MIME			string		`json:"mime"`
 	CreatedReadable		string		`json:"created"`
 	CreatedAt		time.Time	`json:"-"`
 	Links			[]Link		`json:"links"`
-}
-
-type ExtendedFile struct {
-	File
 	Checksum		string		`json:"checksum"`
 	Algorithm		string		`json:"algorithm"`
 	Verified		bool		`json:"verified"`
-	RemoteAddr		string		`json:"remoteaddr"`
-	UserAgent		string		`json:"useragent"`
+	RemoteAddr		string		`json:"-"`
+	UserAgent		string		`json:"-"`
 	Tempfile		string		`json:"-"`
+}
+
+func (f *File) SetTag(s string) error {
+        validTag := regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
+        if validTag.MatchString(s) == false {
+                return errors.New("Invalid tag specified. It contains " +
+                        "illegal characters or is too short")
+        }
+        f.Tag = s
+        return nil
+}
+
+func (f *File) SetTagDir(filedir string) error {
+	if f.Tag == "" {
+		return errors.New("Tag not set.")
+	}
+        f.TagDir = filepath.Join(filedir, f.Tag)
+	return nil
 }
 
 func (f *File) SetFilename(s string) error {
@@ -54,19 +60,25 @@ func (f *File) SetFilename(s string) error {
 			"illegal characters or is too short.")
 	}
 
-	// Set filename to the safe variant
-	f.Filename = safe
-
 	// Reject illegal filenames
-	switch f.Filename {
+	switch safe {
 		case ".", "..":
 			return errors.New("Invalid filename specified.")
 	}
+
+	// Set filename to the safe variant
+	f.Filename = safe
 
 	return nil
 }
 
 func (f *File) DetectMIME() error {
+	if f.TagDir == "" {
+		return errors.New("TagDir not set.")
+	}
+	if f.Filename == "" {
+		return errors.New("Filename not set.")
+	}
 	var err error
 	path := filepath.Join(f.TagDir, f.Filename)
 	fp, err := os.Open(path)
@@ -90,12 +102,12 @@ func (f *File) DetectMIME() error {
 func (f *File) GenerateLinks(baseurl string) {
 	fileLink := Link {}
 	fileLink.Rel = "file"
-	fileLink.Href = baseurl + "/" + f.TagID + "/" + f.Filename
+	fileLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename
 	f.Links = append(f.Links, fileLink)
 
 	tagLink := Link {}
 	tagLink.Rel = "tag"
-	tagLink.Href = baseurl + "/" + f.TagID
+	tagLink.Href = baseurl + "/" + f.Tag
 	f.Links = append(f.Links, tagLink)
 }
 
@@ -162,7 +174,7 @@ func (f *File) Remove() error {
 	return err
 }
 
-func (f *ExtendedFile) WriteTempfile(d io.Reader, tempdir string) error {
+func (f *File) WriteTempfile(d io.Reader, tempdir string) error {
 	fp, err := ioutil.TempFile(tempdir, "upload")
 	if err != nil {
 		return err
@@ -181,7 +193,7 @@ func (f *ExtendedFile) WriteTempfile(d io.Reader, tempdir string) error {
 	return nil
 }
 
-func (f *ExtendedFile) calculateSHA256(path string) error {
+func (f *File) calculateSHA256(path string) error {
 	var err error
 	var result []byte
     	fp, err := os.Open(path)
@@ -200,7 +212,7 @@ func (f *ExtendedFile) calculateSHA256(path string) error {
 	return nil
 }
 
-func (f *ExtendedFile) VerifySHA256(s string) error {
+func (f *File) VerifySHA256(s string) error {
 	var err error
 	if f.Checksum == "" {
 		err = f.calculateSHA256(f.Tempfile)
@@ -222,15 +234,21 @@ func (f *ExtendedFile) VerifySHA256(s string) error {
 	return errors.New("Checksum " + s + " did not match " + f.Checksum)
 }
 
-func (f *ExtendedFile) Publish() error {
+func (f *File) Publish() error {
 	err := CopyFile(f.Tempfile, filepath.Join(f.TagDir, f.Filename))
 	return err
 }
 
-func (f *ExtendedFile) ClearTemp() error {
+func (f *File) ClearTemp() error {
 	err := os.Remove(f.Tempfile)
 	return err
 }
+
+//func (f *File) GenerateTag() error {
+//        var tag = randomString(16)
+//        err := f.SetTag(tag)
+//        return err
+//}
 
 func isDir(path string) bool {
 	fi, err := os.Stat(path)
@@ -255,16 +273,6 @@ func isFile(path string) bool {
 		return true
 	}
 }
-
-func randomString(n int) string {
-        var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
-        b := make([]rune, n)
-        for i := range b {
-                b[i] = letters[rand.Intn(len(letters))]
-        }
-        return string(b)
-}
-
 
 // http://stackoverflow.com/a/21067803
 // CopyFile copies a file from src to dst. If src and dst files exist, and are

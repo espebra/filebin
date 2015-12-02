@@ -13,6 +13,7 @@ type Configuration struct {
 	TriggerNewTag		string
 	TriggerUploadedFile	string
 	TriggerExpiredTag	string
+	DefaultTagLength	int
 	Version			bool
 }
 
@@ -33,6 +34,7 @@ func init() {
 		TriggerNewTag: "",
 		TriggerUploadedFile: "",
 		TriggerExpiredTag: "",
+		DefaultTagLength: 16,
 	}
 }
 

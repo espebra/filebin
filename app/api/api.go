@@ -5,6 +5,7 @@ import (
 	"time"
 	"strconv"
 	"net/http"
+        "math/rand"
 	"path/filepath"
 	"github.com/gorilla/mux"
 	"github.com/espebra/filebin/app/config"
@@ -35,17 +36,27 @@ func cmdHandler(cmd *exec.Cmd) error {
 	return err
 }
 
+func randomString(n int) string {
+        var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+        b := make([]rune, n)
+        for i := range b {
+                b[i] = letters[rand.Intn(len(letters))]
+        }
+        return string(b)
+}
+
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var err error
-	f := model.ExtendedFile { }
+	f := model.File { }
 
 	// Extract the tag from the request
 	if (r.Header.Get("tag") == "") {
-		err = f.GenerateTagID()
-		ctx.Log.Println("Tag generated: " + f.TagID)
+		tag := randomString(cfg.DefaultTagLength)
+		err = f.SetTag(tag)
+		ctx.Log.Println("Tag generated: " + f.Tag)
 	} else {
 		tag := r.Header.Get("tag")
-		err = f.SetTagID(tag)
+		err = f.SetTag(tag)
 		ctx.Log.Println("Tag specified: " + tag)
 	}
 	if err != nil {
@@ -96,10 +107,13 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	}
 
 	// Trigger new tag
-	if !f.TagDirExists() {
+	t := model.Tag{}
+	t.SetTag(f.Tag)
+	t.SetTagDir(cfg.Filedir)
+	if !t.TagDirExists() {
 		if cfg.TriggerNewTag != "" {
 			ctx.Log.Println("Executing trigger: New tag")
-			triggerNewTagHandler(cfg.TriggerNewTag, f.TagID)
+			triggerNewTagHandler(cfg.TriggerNewTag, f.Tag)
 		}
 	}
 
@@ -111,8 +125,8 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		return
 	}
 
-	f.CalculateExpiration(cfg.Expiration)
-	expired, err := f.IsExpired(cfg.Expiration)
+	t.CalculateExpiration(cfg.Expiration)
+	expired, err := t.IsExpired(cfg.Expiration)
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w,"Internal server error", 500)
@@ -172,7 +186,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 
 	if cfg.TriggerUploadedFile != "" {
 		ctx.Log.Println("Executing trigger: Uploaded file")
-		triggerUploadedFileHandler(cfg.TriggerUploadedFile, f.TagID, f.Filename)
+		triggerUploadedFileHandler(cfg.TriggerUploadedFile, f.Tag, f.Filename)
 	}
 
 	headers := make(map[string]string)
@@ -192,7 +206,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		http.Error(w,"Invalid filename specified. It contains illegal characters or is too short.", 400)
 		return
 	}
-	err = f.SetTagID(params["tag"])
+	err = f.SetTag(params["tag"])
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
@@ -200,15 +214,18 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	}
 	f.SetTagDir(cfg.Filedir)
 
-	f.CalculateExpiration(cfg.Expiration)
-	expired, err := f.IsExpired(cfg.Expiration)
+	t := model.Tag { }
+	t.SetTag(f.Tag)
+	t.SetTagDir(cfg.Filedir)
+	t.CalculateExpiration(cfg.Expiration)
+	expired, err := t.IsExpired(cfg.Expiration)
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w,"Internal server error", 500)
 		return
 	}
 	if expired {
-		ctx.Log.Println("Expired: " + f.ExpirationReadable)
+		ctx.Log.Println("Expired: " + t.ExpirationReadable)
 		http.Error(w,"This tag has expired.", 410)
 		return
 	}
@@ -229,7 +246,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		http.Error(w,"Invalid filename specified. It contains illegal characters or is too short.", 400)
 		return
 	}
-	err = f.SetTagID(params["tag"])
+	err = f.SetTag(params["tag"])
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
@@ -243,15 +260,18 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		return
 	}
 
-	f.CalculateExpiration(cfg.Expiration)
-	expired, err := f.IsExpired(cfg.Expiration)
+	t := model.Tag { }
+	t.SetTag(f.Tag)
+	t.SetTagDir(cfg.Filedir)
+	t.CalculateExpiration(cfg.Expiration)
+	expired, err := t.IsExpired(cfg.Expiration)
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w,"Internal server error", 500)
 		return
 	}
 	if expired {
-		ctx.Log.Println("Expired: " + f.ExpirationReadable)
+		ctx.Log.Println("Expired: " + t.ExpirationReadable)
 		http.Error(w,"This tag has expired.", 410)
 		return
 	}
@@ -287,8 +307,8 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var err error
 	params := mux.Vars(r)
-	t := model.ExtendedTag {}
-	err = t.SetTagID(params["tag"])
+	t := model.Tag {}
+	err = t.SetTag(params["tag"])
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w, "Invalid tag", 400)
@@ -342,33 +362,34 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 
 func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	t := model.Tag {}
-	err := t.GenerateTagID()
+	tag := randomString(cfg.DefaultTagLength)
+	err := t.SetTag(tag)
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	ctx.Log.Println("Tag generated: " + t.TagID)
+	ctx.Log.Println("Tag generated: " + t.Tag)
 
 	headers := make(map[string]string)
 	headers["Cache-Control"] = "max-age=0"
-	headers["Location"] = ctx.Baseurl + "/" + t.TagID
+	headers["Location"] = ctx.Baseurl + "/" + t.Tag
 	var status = 302
 	output.JSONresponse(w, status, headers, t, ctx)
 }
 
-func ViewAPI(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	t := model.Tag {}
-	headers := make(map[string]string)
-	headers["Cache-Control"] = "max-age=1"
-	var status = 200
-	output.HTMLresponse(w, "api", status, headers, t, ctx)
-}
-
-func ViewDoc(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	t := model.Tag {}
-	headers := make(map[string]string)
-	headers["Cache-Control"] = "max-age=1"
-	var status = 200
-	output.HTMLresponse(w, "doc", status, headers, t, ctx)
-}
+//func ViewAPI(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+//	t := model.Tag {}
+//	headers := make(map[string]string)
+//	headers["Cache-Control"] = "max-age=1"
+//	var status = 200
+//	output.HTMLresponse(w, "api", status, headers, t, ctx)
+//}
+//
+//func ViewDoc(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+//	t := model.Tag {}
+//	headers := make(map[string]string)
+//	headers["Cache-Control"] = "max-age=1"
+//	var status = 200
+//	output.HTMLresponse(w, "doc", status, headers, t, ctx)
+//}
