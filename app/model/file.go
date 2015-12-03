@@ -74,15 +74,17 @@ func (f *File) SetFilename(s string) error {
 }
 
 func (f *File) DetectMIME() error {
+	var err error
 	if f.TagDir == "" {
 		return errors.New("TagDir not set.")
 	}
-	if f.Filename == "" {
-		return errors.New("Filename not set.")
-	}
-	var err error
-	path := filepath.Join(f.TagDir, f.Filename)
-	fp, err := os.Open(path)
+
+        fpath := filepath.Join(f.TagDir, f.Filename)
+        if f.Tempfile != "" {
+                fpath = filepath.Join(f.Tempfile)
+        }
+
+	fp, err := os.Open(fpath)
 	if err != nil {
 		return err
 	}

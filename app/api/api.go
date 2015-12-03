@@ -158,12 +158,6 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		ctx.Log.Println("Filename sanitized: " + f.Filename)
 	}
 
-	// Promote file from tempdir to the published tagdir
-	f.Publish()
-
-	// Clean up by removing the tempfile
-	f.ClearTemp()
-
 	err = f.DetectMIME()
 	if err != nil {
 		ctx.Log.Println("Unable to detect MIME: ", err)
@@ -175,18 +169,29 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
         if f.MediaType() == "image" {
 		i := model.Image {}
 
-                //err = i.ExtractExif()
-                //if err != nil {
-                //        ctx.Log.Println(err)
-                //}
+                err = i.ExtractExif(f.Tempfile)
+                if err != nil {
+                        ctx.Log.Println(err)
+                }
 
-                //dt, err := i.GetDateTime()
-                //if err != nil {
-                //        ctx.Log.Println(err)
-                //}
-                //ctx.Log.Println("Timestamp: " + dt)
+                err = i.ParseExif()
+                if err != nil {
+                        ctx.Log.Println(err)
+                }
+
+                ctx.Log.Println("DateTime:", i.DateTime)
+                ctx.Log.Println("Latitude:", i.Latitude)
+                ctx.Log.Println("Longitude:", i.Longitude)
+
 		f.Extra = i
         }
+
+
+	// Promote file from tempdir to the published tagdir
+	f.Publish()
+
+	// Clean up by removing the tempfile
+	f.ClearTemp()
 
 	err = f.StatInfo()
 	if err != nil {
