@@ -263,6 +263,10 @@ func reqHandler(fn func (http.ResponseWriter, *http.Request, config.Configuratio
 		if xff != "" {
 			ctx.Log.Println("X-Forwarded-For: " + xff)
 		}
+		ua := r.Header.Get("User-Agent")
+		if ua != "" {
+			ctx.Log.Println("User-Agent: " + ua)
+		}
 
 		fn(w, r, cfg, ctx)
 

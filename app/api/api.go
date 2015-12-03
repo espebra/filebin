@@ -7,11 +7,22 @@ import (
 	"net/http"
         "math/rand"
 	"path/filepath"
+	"regexp"
+	"fmt"
+
 	"github.com/gorilla/mux"
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/model"
 	"github.com/espebra/filebin/app/output"
 )
+
+func isWorkaroundNeeded(useragent string) bool {
+	matched, err := regexp.MatchString("(iPhone|iPad|iPod)", useragent)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return matched
+}
 
 func triggerNewTagHandler(c string, tag string) error {
 	cmd := exec.Command(c, tag)
@@ -48,6 +59,8 @@ func randomString(n int) string {
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var err error
 	f := model.File { }
+	f.RemoteAddr = r.RemoteAddr
+	f.UserAgent = r.Header.Get("User-Agent")
 
 	// Extract the tag from the request
 	if (r.Header.Get("tag") == "") {
@@ -183,6 +196,31 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
                 ctx.Log.Println("Latitude:", i.Latitude)
                 ctx.Log.Println("Longitude:", i.Longitude)
 
+		// iOS devices provide only one filename even when uploading
+		// multiple images. Providing some workaround for this below.
+		// XXX: Refactoring needed.
+		if isWorkaroundNeeded(f.UserAgent) {
+			var fname string
+			dt := i.DateTime.Format("2006-01-02_15-04-05_MST")
+
+			// List of filenames to modify
+			if (f.Filename == "image.jpg") {
+				fname = "image_" + dt + ".jpg"
+			}
+			if (f.Filename == "image.gif") {
+				fname = "image_" + dt + ".gif"
+			}
+
+			if fname != "" {
+				ctx.Log.Println("Filename workaround triggered")
+				ctx.Log.Println("Filename modified: " + fname)
+				err = f.SetFilename(fname)
+				if err != nil {
+					ctx.Log.Println(err)
+				}
+			}
+		}
+
 		f.Extra = i
         }
 
@@ -201,8 +239,6 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	}
 
 	f.GenerateLinks(cfg.Baseurl)
-	f.RemoteAddr = r.RemoteAddr
-	f.UserAgent = r.Header.Get("User-Agent")
 	f.CreatedAt = time.Now().UTC()
 	//f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
 
