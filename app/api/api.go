@@ -204,8 +204,8 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 			dt := i.DateTime.Format("2006-01-02_15-04-05_MST")
 
 			// List of filenames to modify
-			if (f.Filename == "image.jpg") {
-				fname = "image_" + dt + ".jpg"
+			if (f.Filename == "image.jpeg") {
+				fname = "image_" + dt + ".jpeg"
 			}
 			if (f.Filename == "image.gif") {
 				fname = "image_" + dt + ".gif"
