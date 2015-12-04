@@ -220,7 +220,9 @@ Filebin does currently not use any other database than the filesystem itself.
 These are feature that would be nice to have:
 
 * Automatically clean up expired tags.
+* Avoid reuse of expired tags.
 * Support for deleting entires tags.
+* Support for deleting single files (already in the API).
 * Streaming of entire (on the fly) compressed tags.
 * Thumbnail generation.
 * Image meta data (EXIF) extraction.
