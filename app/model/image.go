@@ -16,7 +16,7 @@ type Image struct {
 	Exif			*exif.Exif	`json:"-"`
 }
 
-func (i *Image) ExtractExif(fpath string) error {
+func (i *Image) ParseExif(fpath string) error {
         fp, err := os.Open(fpath)
         if err != nil {
                 return err
@@ -28,12 +28,6 @@ func (i *Image) ExtractExif(fpath string) error {
                 return err
         }
 
-        //fmt.Println(i.Exif.String())
-        return err
-}
-
-func (i *Image) ParseExif() error {
-	var err error
 	i.DateTime, err = i.Exif.DateTime()
 	if err != nil {
         	return err
