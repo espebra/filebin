@@ -192,14 +192,17 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		// XXX: Refactoring needed.
 		if isWorkaroundNeeded(f.UserAgent) && !i.DateTime.IsZero() {
 			var fname string
-			dt := i.DateTime.Format("2006-01-02_15-04-05_MST")
+			dt := i.DateTime.Format("060102-150405")
 
 			// List of filenames to modify
 			if (f.Filename == "image.jpeg") {
-				fname = "image_" + dt + ".jpeg"
+				fname = "img-" + dt + ".jpeg"
 			}
 			if (f.Filename == "image.gif") {
-				fname = "image_" + dt + ".gif"
+				fname = "img-" + dt + ".gif"
+			}
+			if (f.Filename == "image.png") {
+				fname = "img-" + dt + ".png"
 			}
 
 			if fname != "" {
