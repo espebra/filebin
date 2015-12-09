@@ -122,17 +122,18 @@ The parameter ``--trigger-uploaded-file <command>`` makes sure ``<command> <tag>
 
 ### Upload file
 
-|			| Value			|
-| --------------------- | ----------------------|
-| **Method**		| ``POST``		|
-| **URL**		| /			|
-| **URL parameters**	| *None*		|
-| **Success response**	| ``201``		|
-| **Error response**	| ``400``		|
+|			| Value				|
+| --------------------- | ------------------------------|
+| **Method**		| ``POST``			|
+| **URL**		| /				|
+| **URL parameters**	| *None*			|
+| **Request body**	| File content in binary form	|
+| **Success response**	| ``201``			|
+| **Error response**	| ``400``			|
 
 ###### Examples
 
-In all examples, the file ``/path/to/some file`` will be uploaded.
+In all examples, the local file ``/path/to/some file`` will be uploaded.
 
 Using the following command, the ``tag`` will be automatically generated and the ``filename`` will be set to the SHA256 checksum of the content. The checksum of the content will not be verified.
 

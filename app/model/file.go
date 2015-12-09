@@ -13,6 +13,7 @@ import (
 	"time"
 
         "github.com/dustin/go-humanize"
+	"github.com/rwcarlsen/goexif/exif"
 )
 
 type File struct {
@@ -32,6 +33,14 @@ type File struct {
 	UserAgent		string		`json:"-"`
 	Tempfile		string		`json:"-"`
 	Extra			interface{}	`json:"extra"`
+
+	// Image specific attributes
+        DateTime                time.Time       `json:"-"`
+        Longitude               float64         `json:"-"`
+        Latitude                float64         `json:"-"`
+        Altitude                string          `json:"-"`
+        Thumbnail               bool            `json:"-"`
+        Exif                    *exif.Exif      `json:"-"`
 }
 
 func (f *File) SetTag(s string) error {
@@ -243,6 +252,36 @@ func (f *File) VerifySHA256(s string) error {
 	}
 
 	return errors.New("Checksum " + s + " did not match " + f.Checksum)
+}
+
+func (f *File) ParseExif() error {
+	fpath := filepath.Join(f.TagDir, f.Filename)
+	if f.Tempfile != "" {
+		fpath = f.Tempfile
+	}
+	fp, err := os.Open(fpath)
+	if err != nil {
+		return err
+	}
+	defer fp.Close()
+	
+	f.Exif, err = exif.Decode(fp)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (f *File) ExtractDateTime() error {
+	var err error
+	f.DateTime, err = f.Exif.DateTime()
+	return err
+}
+	
+func (f *File) ExtractLocationInfo() error {
+	var err error
+	f.Latitude, f.Longitude, err = f.Exif.LatLong()
+	return err
 }
 
 func (f *File) Publish() error {

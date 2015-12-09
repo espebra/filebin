@@ -180,9 +180,12 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 
 	ctx.Log.Println("Media type: " + f.MediaType())
         if f.MediaType() == "image" {
-		i := model.Image {}
+                err = f.ParseExif()
+                if err != nil {
+                        ctx.Log.Println(err)
+		}
 
-                err = i.ParseExif(f.Tempfile)
+                err = f.ExtractDateTime()
                 if err != nil {
                         ctx.Log.Println(err)
 		}
@@ -190,9 +193,9 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		// iOS devices provide only one filename even when uploading
 		// multiple images. Providing some workaround for this below.
 		// XXX: Refactoring needed.
-		if isWorkaroundNeeded(f.UserAgent) && !i.DateTime.IsZero() {
+		if isWorkaroundNeeded(f.UserAgent) && !f.DateTime.IsZero() {
 			var fname string
-			dt := i.DateTime.Format("060102-150405")
+			dt := f.DateTime.Format("060102-150405")
 
 			// List of filenames to modify
 			if (f.Filename == "image.jpeg") {
@@ -215,7 +218,11 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 			}
 		}
 
-		f.Extra = i
+		extra := make(map[string]string)
+		if !f.DateTime.IsZero() {
+			extra["DateTime"] = f.DateTime.String()
+		}
+		f.Extra = extra
         }
 
 
