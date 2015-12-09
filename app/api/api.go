@@ -218,6 +218,11 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 			}
 		}
 
+		err = f.GenerateThumbnail()
+		if err != nil {
+			ctx.Log.Println(err)
+		}
+
 		extra := make(map[string]string)
 		if !f.DateTime.IsZero() {
 			extra["DateTime"] = f.DateTime.String()
@@ -399,7 +404,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 		err = t.List(cfg.Baseurl)
 		if err != nil {
 			ctx.Log.Println(err)
-			http.Error(w,"Some error.", 404)
+			http.Error(w,"Error reading the tag contents.", 404)
 			return
 		}
 	}

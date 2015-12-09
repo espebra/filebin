@@ -14,6 +14,7 @@ import (
 
         "github.com/dustin/go-humanize"
 	"github.com/rwcarlsen/goexif/exif"
+	"github.com/daddye/vips"
 )
 
 type File struct {
@@ -133,8 +134,22 @@ func (f *File) GenerateLinks(baseurl string) {
 
 func (f *File) EnsureTagDirectoryExists() error {
 	var err error
+
+	// Tag directory
 	if !isDir(f.TagDir) {
 		err = os.Mkdir(f.TagDir, 0700)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Tag specific cache directory
+	cpath := filepath.Join(f.TagDir, ".cache")
+	if !isDir(cpath) {
+		err = os.Mkdir(cpath, 0700)
+		if err != nil {
+			return err
+		}
 	}
 	return err
 }
@@ -291,6 +306,64 @@ func (f *File) Publish() error {
 
 func (f *File) ClearTemp() error {
 	err := os.Remove(f.Tempfile)
+	return err
+}
+
+func (f *File) ThumbnailPath() string {
+	return filepath.Join(f.TagDir, ".cache", "thumb-" + f.Filename)
+}
+
+func (f *File) GenerateThumbnail() error {
+	// XXX: Offload this to a goroutine through a channel for concurrency.
+
+	fpath := filepath.Join(f.TagDir, f.Filename)
+	if f.Tempfile != "" {
+		fpath = f.Tempfile
+	}
+
+	// Open original
+	s, err := os.Open(fpath)
+	defer s.Close()
+	if err != nil {
+		return err
+	}
+
+	// Read the entire original
+	inBuf, err := ioutil.ReadAll(s)
+	if err != nil {
+		return err
+	}
+
+	// Specify the output
+	options := vips.Options{
+		Width:		75,
+		Height:		75,
+		Crop:		true,
+		Extend:		vips.EXTEND_WHITE,
+		Interpolator:	vips.BILINEAR,
+		Gravity:	vips.CENTRE,
+		Quality:	95,
+	}
+
+	// Resize in memory
+	buf, err := vips.Resize(inBuf, options)
+	if err != nil {
+		return err
+	}
+
+	// Create the thumbnail file
+	dst := f.ThumbnailPath()
+	d, err := os.Create(dst)
+	defer d.Close()
+	if err != nil {
+		return err
+	}
+
+	// Write the thumbnail
+	_, err = d.Write(buf)
+	if err != nil {
+		return err
+	}
 	return err
 }
 

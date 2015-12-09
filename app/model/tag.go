@@ -94,6 +94,11 @@ func (t *Tag) List(baseurl string) error {
 	var err error
 	files, err := ioutil.ReadDir(t.TagDir)
 	for _, file := range files {
+		// Do not care about sub directories (such as .cache)
+		if file.IsDir() == true {
+			continue
+		}
+
 		var f = File {}
 		f.SetFilename(file.Name())
 		f.SetTag(t.Tag)

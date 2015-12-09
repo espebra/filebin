@@ -13,6 +13,7 @@ get-deps:
 	go get github.com/dustin/go-humanize
 	go get github.com/gorilla/mux
 	go get github.com/rwcarlsen/goexif/exif
+	go get github.com/daddye/vips
 	go get github.com/GeertJohan/go.rice
 	go get github.com/GeertJohan/go.rice/rice
 
