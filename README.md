@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/espebra/filebin.svg)](https://travis-ci.org/espebra/filebin)
 
-Filebin is a web application written i [Go](https://golang.org/) that facilitates convenient file sharing over the web. This is the development branch of the next release that in the future will power [http://filebin.net](http://filebin.net).
+# Filebin
+
+Filebin is a web application that facilitates convenient file sharing over the web. This is the development branch of the next release that in the future will power [http://filebin.net](http://filebin.net). It can be distributed as a statically linked binary without specific dependencies for easy installations.
 
 ## Table of contents
 
@@ -13,7 +15,7 @@ Filebin is a web application written i [Go](https://golang.org/) that facilitate
 
 ## Requirements
 
-To build Filebin, a Golang build environment and some Golang packages are needed. The build will produce a statically linked binary that doesn't require any external dependencies to run. It even comes with its own web server bundled.
+To build Filebin, a Golang build environment and some Golang packages are needed. The build procedure will produce a statically linked binary that doesn't require any external dependencies to run. It even comes with its own web server bundled.
 
 It is recommended but not required to run it behind a TLS/SSL proxy such as [Hitch](http://hitch-tls.org/) and web cache such as [Varnish Cache](https://www.varnish-cache.org/). Example configurations for these are available below.
 
@@ -60,7 +62,7 @@ $ mkdir ~/filebin ~/filebin/files ~/filebin/logs ~/filebin/temp
 
 ## Configuration
 
-Configuration is done using command line arguments. The built in help text will show the various arguments available:
+Configuration is done using command line arguments when starting filebin. The built in help text will show the various arguments available:
 
 ```
 $ ${GOPATH}/bin/filebin --help
@@ -75,6 +77,7 @@ $ ${GOPATH}/bin/filebin \
   --filedir ~/filebin/files \
   --tempdir ~/filebin/temp \
   --expiration 604800
+  [...]
 ```
 
 By default it will listen on ``127.0.0.1:31337``.
@@ -89,7 +92,9 @@ The ``--baseurl`` parameter is used when building [HATEOAS](https://en.wikipedia
 
 An example when having a TLS/SSL proxy in front on port 443 would be ``--baseurl https://filebin.example.com``.
 
-It is also possible to run filebin from a subdirectory if specifying this accordingly with for example ``--baseurl https://www.example.com/filebin``. A trailing slash is not needed.
+It is also possible to run filebin from a subdirectory if specifying this accordingly with for example ``--baseurl https://www.example.com/filebin``.
+
+A trailing slash is not needed.
 
 #### Expiration
 
