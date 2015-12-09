@@ -2,7 +2,7 @@ language: go
 
 before_install:
  - sudo apt-get update -q
- - sudo apt-get install libvips-dev
+ - sudo apt-get install libvips15
 
 go:
   - tip
