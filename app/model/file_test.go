@@ -159,7 +159,7 @@ func TestEnsureDirectoryExists(t *testing.T) {
 	}
 
 	// Remove the directory to clean up
-	err = os.Remove(dir)
+	err = os.RemoveAll(dir)
 	if err != nil {
 		t.Fatal(err)
 	}

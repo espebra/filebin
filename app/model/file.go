@@ -14,7 +14,7 @@ import (
 
         "github.com/dustin/go-humanize"
 	"github.com/rwcarlsen/goexif/exif"
-	"github.com/daddye/vips"
+	"github.com/disintegration/imaging"
 )
 
 type File struct {
@@ -314,56 +314,20 @@ func (f *File) ThumbnailPath() string {
 }
 
 func (f *File) GenerateThumbnail() error {
-	// XXX: Offload this to a goroutine through a channel for concurrency.
-
 	fpath := filepath.Join(f.TagDir, f.Filename)
 	if f.Tempfile != "" {
 		fpath = f.Tempfile
 	}
 
-	// Open original
-	s, err := os.Open(fpath)
-	defer s.Close()
+	// XXX: Offload the following to a goroutine through a channel for
+	// concurrency.
+	s, err := imaging.Open(fpath)
 	if err != nil {
 		return err
 	}
 
-	// Read the entire original
-	inBuf, err := ioutil.ReadAll(s)
-	if err != nil {
-		return err
-	}
-
-	// Specify the output
-	options := vips.Options{
-		Width:		75,
-		Height:		75,
-		Crop:		true,
-		Extend:		vips.EXTEND_WHITE,
-		Interpolator:	vips.BILINEAR,
-		Gravity:	vips.CENTRE,
-		Quality:	95,
-	}
-
-	// Resize in memory
-	buf, err := vips.Resize(inBuf, options)
-	if err != nil {
-		return err
-	}
-
-	// Create the thumbnail file
-	dst := f.ThumbnailPath()
-	d, err := os.Create(dst)
-	defer d.Close()
-	if err != nil {
-		return err
-	}
-
-	// Write the thumbnail
-	_, err = d.Write(buf)
-	if err != nil {
-		return err
-	}
+	thumb := imaging.Resize(s, 75, 75, imaging.CatmullRom)
+	err = imaging.Save(thumb, f.ThumbnailPath())
 	return err
 }
 
