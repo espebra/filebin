@@ -130,6 +130,13 @@ func (f *File) GenerateLinks(baseurl string) {
 	tagLink.Rel = "tag"
 	tagLink.Href = baseurl + "/" + f.Tag
 	f.Links = append(f.Links, tagLink)
+
+	if f.ThumbnailExists() {
+		thumbLink := Link {}
+		thumbLink.Rel = "thumbnail"
+		thumbLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?size=thumbnail"
+		f.Links = append(f.Links, thumbLink)
+	}
 }
 
 func (f *File) EnsureTagDirectoryExists() error {
@@ -164,10 +171,18 @@ func (f *File) Exists() bool {
 	}
 
 	path := filepath.Join(f.TagDir, f.Filename)
-	if !isFile(path) {
-		return false
+	if isFile(path) {
+		return true
 	}
-	return true
+	return false
+}
+
+func (f *File) ThumbnailExists() bool {
+        path := f.ThumbnailPath()
+	if isFile(path) {
+		return true
+	}
+	return false
 }
 
 func (f *File) StatInfo() error {

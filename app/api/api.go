@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"fmt"
+	"net/url"
 
 	"github.com/gorilla/mux"
 	"github.com/espebra/filebin/app/config"
@@ -262,7 +263,21 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 
 func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var err error
+
+	// Query parameters
+	u, err := url.Parse(r.RequestURI)
+	if err != nil {
+		ctx.Log.Println(err)
+	}
+
+	queryParams, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		ctx.Log.Println(err)
+	}
+
+	// Request headers
 	params := mux.Vars(r)
+
 	f := model.File {}
 	f.SetFilename(params["filename"])
 	if err != nil {
@@ -294,7 +309,19 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 	
+	// Default path
 	path := filepath.Join(f.TagDir, f.Filename)
+
+	for param, values := range queryParams {
+		if param == "size" && values[0] == "thumbnail" {
+			if f.ThumbnailExists() {
+				path = f.ThumbnailPath()
+			} else {
+				http.Error(w,"Thumbnail not found", 404)
+				return
+			}
+		}
+	}
 	
 	w.Header().Set("Cache-Control", "max-age=1")
 	http.ServeFile(w, r, path)
