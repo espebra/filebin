@@ -92,6 +92,23 @@
             <!-- Upload status -->
             <div id="fileCount"></div>
 
+            <!-- Thumbnails -->
+            <p>
+                <div class="media">
+                {{ range $index, $value := .Data.Files }}
+                    {{ if eq (.Links | len) 3 }}
+                        {{ $thumbnail := index .Links 2 }}
+                        {{ $link := index .Links 0 }}
+                        {{ if $thumbnail }}
+                            <a href="{{ $link.Href }}">
+                                 <img class="media-object" style="float: left;" src="{{ $thumbnail.Href }}"/>
+                            </a>
+                        {{ end }}
+                    {{ end }}
+                {{ end }}
+                </div>
+            </p>
+
             <!-- Existing files in the tag -->
             <div class="table-responsive">
                 <table class="table">

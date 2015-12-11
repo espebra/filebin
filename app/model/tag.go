@@ -107,10 +107,29 @@ func (t *Tag) List(baseurl string) error {
 		if err != nil {
 			return err
 		}
+
 		err = f.DetectMIME ()
 		if err != nil {
 			return err
 		}
+
+        	if f.MediaType() == "image" {
+        		err = f.ParseExif()
+			if err != nil {
+				return err
+        		}
+
+        		err = f.ExtractDateTime()
+			if err != nil {
+				return err
+        		}
+
+        		extra := make(map[string]string)
+        		if !f.DateTime.IsZero() {
+        			extra["DateTime"] = f.DateTime.String()
+        		}
+        		f.Extra = extra
+        	}
 
 		//f.ExpirationAt = t.ExpirationAt
 		//f.ExpirationReadable = t.ExpirationReadable
