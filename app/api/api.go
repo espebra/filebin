@@ -254,6 +254,8 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		triggerUploadedFileHandler(cfg.TriggerUploadedFile, f.Tag, f.Filename)
 	}
 
+	ctx.WorkQueue <- f
+
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
 

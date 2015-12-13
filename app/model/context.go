@@ -1,8 +1,8 @@
 package model
 
 import (
-        "github.com/GeertJohan/go.rice"
-        "log"
+	"log"
+	"github.com/GeertJohan/go.rice"
 )
 
 type Context struct {
@@ -10,4 +10,5 @@ type Context struct {
 	StaticBox	*rice.Box
 	Baseurl		string
 	Log		*log.Logger
+	WorkQueue	chan File
 }

@@ -25,6 +25,9 @@ var buildstamp = "No buildstamp provided"
 var staticBox *rice.Box
 var templateBox *rice.Box
 
+// Initiate buffered channel for batch processing
+var WorkQueue = make(chan model.File, 1000)
+
 func isDir(path string) bool {
         fi, err := os.Stat(path)
         if err != nil {
@@ -234,6 +237,9 @@ func main() {
 	//router.HandleFunc("/user/view/{id:[0-9]+}", user.GetViewPage).Methods("GET")
 	//router.HandleFunc("/user/{id:[0-9]+}", user.GetViewPage).Methods("GET")
 
+	// Start dispatcher that will handle all background processing
+	model.StartDispatcher(2, WorkQueue, log)
+
 	err := http.ListenAndServe(cfg.Host + ":" + strconv.Itoa(cfg.Port), nil)
 	if err != nil {
 		log.Fatalln(err.Error())
@@ -250,6 +256,7 @@ func reqHandler(fn func (http.ResponseWriter, *http.Request, config.Configuratio
 		ctx.TemplateBox = templateBox
 		ctx.StaticBox = staticBox
 		ctx.Baseurl = cfg.Baseurl
+		ctx.WorkQueue = WorkQueue
 
 		// Initialize logger for this request
 		ctx.Log = log.New(os.Stdout, reqId + " ", log.LstdFlags)
