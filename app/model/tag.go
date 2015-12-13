@@ -116,12 +116,14 @@ func (t *Tag) List(baseurl string) error {
         	if f.MediaType() == "image" {
         		err = f.ParseExif()
 			if err != nil {
-				return err
+				// XXX: Log this
+				//return err
         		}
 
         		err = f.ExtractDateTime()
 			if err != nil {
-				return err
+				// XXX: Log this
+				//return err
         		}
 
         		extra := make(map[string]string)

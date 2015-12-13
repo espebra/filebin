@@ -226,6 +226,7 @@ func (f *File) Remove() error {
 
 func (f *File) WriteTempfile(d io.Reader, tempdir string) error {
 	fp, err := ioutil.TempFile(tempdir, "upload")
+	defer fp.Close()
 	if err != nil {
 		return err
 	}
@@ -237,9 +238,6 @@ func (f *File) WriteTempfile(d io.Reader, tempdir string) error {
 	}
 
 	fp.Sync()
-
-	// Store the tempfile path for later
-	defer fp.Close()
 	return nil
 }
 
@@ -290,10 +288,10 @@ func (f *File) ParseExif() error {
 		fpath = f.Tempfile
 	}
 	fp, err := os.Open(fpath)
+	defer fp.Close()
 	if err != nil {
 		return err
 	}
-	defer fp.Close()
 	
 	f.Exif, err = exif.Decode(fp)
 	if err != nil {
