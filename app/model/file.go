@@ -336,7 +336,7 @@ func (f *File) GenerateThumbnail() error {
 		return err
 	}
 
-	thumb := imaging.Resize(s, 75, 75, imaging.CatmullRom)
+	thumb := imaging.Fill(s, 75, 75, imaging.Center, imaging.Lanczos)
 	err = imaging.Save(thumb, f.ThumbnailPath())
 	return err
 }
