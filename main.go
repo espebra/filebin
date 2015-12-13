@@ -85,6 +85,9 @@ func init() {
 	flag.IntVar(&cfg.Maxheaderbytes, "maxheaderbytes",
 		cfg.Maxheaderbytes, "Max header size in bytes.")
 
+	flag.IntVar(&cfg.Workers, "workers",
+		cfg.Workers, "Number of workers for background processing.")
+
 	//flag.IntVar(&cfg.Pagination, "pagination",
 	//	cfg.Pagination,
 	//	"Files to show per page for pagination.")
@@ -180,6 +183,8 @@ func main() {
 		strconv.Itoa(cfg.Writetimeout) + " seconds")
 	log.Println("Max header size: " +
 		strconv.Itoa(cfg.Maxheaderbytes) + " bytes")
+	log.Println("Workers: " +
+		strconv.Itoa(cfg.Workers))
 	log.Println("Expiration time: " +
 		strconv.FormatInt(cfg.Expiration, 10) + " seconds")
 	log.Println("Files directory: " + cfg.Filedir)
@@ -238,7 +243,7 @@ func main() {
 	//router.HandleFunc("/user/{id:[0-9]+}", user.GetViewPage).Methods("GET")
 
 	// Start dispatcher that will handle all background processing
-	model.StartDispatcher(2, WorkQueue, log)
+	model.StartDispatcher(cfg.Workers, WorkQueue, log)
 
 	err := http.ListenAndServe(cfg.Host + ":" + strconv.Itoa(cfg.Port), nil)
 	if err != nil {
