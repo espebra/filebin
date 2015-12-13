@@ -249,7 +249,7 @@ func main() {
 func reqHandler(fn func (http.ResponseWriter, *http.Request, config.Configuration, model.Context)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now().UTC()
-		reqId := generateReqId(5)
+		reqId := "r-" + generateReqId(5)
 
 		// Populate the context for this request here
 		var ctx = model.Context {}

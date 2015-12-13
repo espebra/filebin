@@ -330,12 +330,7 @@ func (f *File) ThumbnailPath() string {
 
 func (f *File) GenerateThumbnail() error {
 	fpath := filepath.Join(f.TagDir, f.Filename)
-	if f.Tempfile != "" {
-		fpath = f.Tempfile
-	}
 
-	// XXX: Offload the following to a goroutine through a channel for
-	// concurrency.
 	s, err := imaging.Open(fpath)
 	if err != nil {
 		return err

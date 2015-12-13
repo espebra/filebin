@@ -219,10 +219,10 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 			}
 		}
 
-		err = f.GenerateThumbnail()
-		if err != nil {
-			ctx.Log.Println(err)
-		}
+		//err = f.GenerateThumbnail()
+		//if err != nil {
+		//	ctx.Log.Println(err)
+		//}
 
 		extra := make(map[string]string)
 		if !f.DateTime.IsZero() {

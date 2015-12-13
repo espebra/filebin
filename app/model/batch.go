@@ -3,6 +3,7 @@ package model
 import (
 	"log"
 	"time"
+	"math/rand"
 	//"github.com/disintegration/imaging"
 )
 
@@ -17,10 +18,31 @@ func StartWorker(WorkQueue chan File, log *log.Logger) {
 	for {
 		select {
 			case f := <-WorkQueue:
-			        log.Print("Batch processing: " + f.Tag + ", " + f.Filename)
+		                startTime := time.Now().UTC()
+
+				jobId := "b-" + randomString(5) + " "
+				log.SetPrefix(jobId)
+
+			        log.Print("Batch process starting: " + f.Tag + ", " + f.Filename)
 				// Simulate some processing time
-				time.Sleep(10 * time.Second)
-			        log.Print("Completed")
+				if f.MediaType() == "image" {
+					err := f.GenerateThumbnail()
+					if err != nil {
+						log.Print(err)
+					}
+				}
+				finishTime := time.Now().UTC()
+				elapsedTime := finishTime.Sub(startTime)
+				log.Println("Completed in: " + elapsedTime.String())
 		}
 	}
+}
+
+func randomString(n int) string {
+        var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+        b := make([]rune, n)
+        for i := range b {
+                b[i] = letters[rand.Intn(len(letters))]
+        }
+        return string(b)
 }
