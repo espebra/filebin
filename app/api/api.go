@@ -12,6 +12,8 @@ import (
 	"net/url"
 
 	"github.com/gorilla/mux"
+        "github.com/rwcarlsen/goexif/exif"
+
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/model"
 	"github.com/espebra/filebin/app/output"
@@ -186,9 +188,11 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
                         ctx.Log.Println(err)
 		}
 
-                err = f.ExtractDateTime()
-                if err != nil {
-                        ctx.Log.Println(err)
+		if exif.IsCriticalError(err) == false {
+			err = f.ExtractDateTime()
+			if err != nil {
+				ctx.Log.Println(err)
+			}
 		}
 
 		// iOS devices provide only one filename even when uploading

@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/dustin/go-humanize"
+        "github.com/rwcarlsen/goexif/exif"
 )
 
 type Tag struct {
@@ -120,11 +121,13 @@ func (t *Tag) List(baseurl string) error {
 				//return err
         		}
 
-        		err = f.ExtractDateTime()
-			if err != nil {
-				// XXX: Log this
-				//return err
-        		}
+			if exif.IsCriticalError(err) == false {
+				err = f.ExtractDateTime()
+				if err != nil {
+					// XXX: Log this
+					//return err
+				}
+			}
 
         		extra := make(map[string]string)
         		if !f.DateTime.IsZero() {
