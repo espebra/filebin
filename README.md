@@ -203,6 +203,16 @@ $ curl http://localhost:31337/customtag/myfile
 | **Success response**	| ``200``		|
 | **Error response**	| ``404``		|
 
+### Delete tag
+
+|			| Value			|
+| --------------------- | ----------------------|
+| **Method**		| ``DELETE``		|
+| **URL**		| /:tag			|
+| **URL parameters**	| *None*		|
+| **Success response**	| ``200``		|
+| **Error response**	| ``404``		|
+
 ###### Examples
 
 ```

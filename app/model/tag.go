@@ -91,6 +91,14 @@ func (t *Tag) CalculateExpiration(expiration int64) error {
 	return nil
 }
 
+func (t *Tag) Remove() error {
+	if t.TagDir == "" {
+		return errors.New("Tag dir is not set")
+	}
+	err := os.RemoveAll(t.TagDir)
+	return err
+}
+
 func (t *Tag) List(baseurl string) error {
 	var err error
 	files, err := ioutil.ReadDir(t.TagDir)

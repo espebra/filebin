@@ -306,7 +306,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	expired, err := t.IsExpired(cfg.Expiration)
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w,"Internal server error", 500)
+		http.Error(w,"Internal Server Error", 500)
 		return
 	}
 	if expired {
@@ -331,6 +331,48 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	
 	w.Header().Set("Cache-Control", "max-age=1")
 	http.ServeFile(w, r, path)
+}
+
+func DeleteTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	var err error
+	params := mux.Vars(r)
+
+	t := model.Tag { }
+
+	err = t.SetTag(params["tag"])
+	if err != nil {
+		ctx.Log.Println(err)
+		http.Error(w, "Invalid tag", 400)
+		return
+	}
+	t.SetTagDir(cfg.Filedir)
+
+	// Tag does not exist
+	if t.TagDirExists() == false {
+		http.Error(w, "Tag Not Found", 404)
+		return
+	}
+
+	// Tag exists, so let's remove it.
+	err = t.Remove()
+	if err != nil {
+		ctx.Log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	// Verify that the tag directory is removed before sending the response.
+	if t.TagDirExists() == true {
+		// Failsafe. This should not happen.
+		ctx.Log.Println("Failed to delete the tag. The tag dir still exists.")
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	ctx.Log.Println("Tag deleted successfully.")
+	http.Error(w, "Tag Deleted Successfully", 200)
+	return
+
 }
 
 func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
