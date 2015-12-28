@@ -12,9 +12,13 @@
         <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.css"/>
         <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/upload.css"/>
         <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/custom.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/font-awesome.css"/>
 
+        <script src="{{ .Ctx.Baseurl }}/static/js/jquery.js"></script>
         <script src="{{ .Ctx.Baseurl }}/static/js/showhide.js"></script>
         <script src="{{ .Ctx.Baseurl }}/static/js/upload.js"></script>
+        <script src="{{ .Ctx.Baseurl }}/static/bootstrap/js/bootstrap.js"></script>
+
         <script>
             window.onload = function () {
                 if (typeof FileReader == "undefined") alert ("Your browser \
@@ -56,21 +60,21 @@
                 <div class="col-sm-6">
                     <div align="right">
                         <p>
-                        <small class="text-muted pull-right">
-                            {{ if eq (.Data.Files | len) 1 }}
-                                This tag contains {{ .Data.Files | len }} file.
-                            {{ else }}
-                                This tag contains {{ .Data.Files | len }} files.
-                            {{ end }}
-                            <br/>
-                            {{ if .Data.LastUpdateReadable }}
-                                Last updated {{ .Data.LastUpdateReadable }}.
+                            <small class="text-muted pull-right">
+                                {{ if eq (.Data.Files | len) 1 }}
+                                    This tag contains {{ .Data.Files | len }} file.
+                                {{ else }}
+                                    This tag contains {{ .Data.Files | len }} files.
+                                {{ end }}
                                 <br/>
-                            {{ end }}
-                            {{ if .Data.ExpirationReadable }}
-                                Expires {{ .Data.ExpirationReadable }}.
-                            {{ end }}
-                        </small>
+                                {{ if .Data.LastUpdateReadable }}
+                                    Last updated {{ .Data.LastUpdateReadable }}.
+                                    <br/>
+                                {{ end }}
+                                {{ if .Data.ExpirationReadable }}
+                                    Expires {{ .Data.ExpirationReadable }}.
+                                {{ end }}
+                            </small>
                         </p>
                     </div>
                 </div>
@@ -95,47 +99,149 @@
             <!-- Thumbnails -->
             <p>
                 <div class="media">
-                {{ range $index, $value := .Data.Files }}
-                    {{ if eq (.Links | len) 3 }}
-                        {{ $thumbnail := index .Links 2 }}
-                        {{ $link := index .Links 0 }}
-                        {{ if $thumbnail }}
-                            <a href="{{ $link.Href }}">
-                                 <img class="media-object" style="float: left;" src="{{ $thumbnail.Href }}"/>
-                            </a>
+                    {{ range $index, $value := .Data.Files }}
+                        {{ if eq (.Links | len) 3 }}
+                            {{ $thumbnail := index .Links 2 }}
+                            {{ $link := index .Links 0 }}
+                            {{ if $thumbnail }}
+                                <a href="{{ $link.Href }}">
+                                     <img class="media-object" style="float: left;" src="{{ $thumbnail.Href }}"/>
+                                </a>
+                            {{ end }}
                         {{ end }}
                     {{ end }}
-                {{ end }}
                 </div>
             </p>
 
             <!-- Existing files in the tag -->
-            <div class="table-responsive">
-                <table class="table">
-                    {{ if .Data.Files }}
+            {{ if .Data.Files }}
+                <div class="table-responsive">
+                    <table class="table">
 	                <thead class="thead thead-default">
                             <th>Filename</th>
                             <th>Size</th>
                             <th class="hidden-sm-down">Type</th>
                             <th class="hidden-sm-down">Created</th>
+                            <th></th>
 	                </thead>
-                    {{ end }}
-	            <tbody>
-                        {{ range $index, $value := .Data.Files }}
-                            <tr>
-                                <td>
-                                    {{ $link := index .Links 0 }}
-                                    <a href="{{ $link.Href }}">{{ .Filename }}</a>
-                                </td>
-                                <td>{{ .BytesReadable }}</td>
-                                <td class="hidden-sm-down">{{ .MIME }}</td>
-                                <td class="hidden-sm-down">{{ .CreatedReadable }}</td>
-                            </tr>
-                        {{ end }}
-	            <tbody>
-                </table>
-            </div>
+	                <tbody>
+                            {{ range $index, $value := .Data.Files }}
+                                <tr>
+                                    <td>
+                                        {{ $link := index .Links 0 }}
+                                        <a href="{{ $link.Href }}">{{ .Filename }}</a>
+                                    </td>
+                                    <td>{{ .BytesReadable }}</td>
+                                    <td class="hidden-sm-down">{{ .MIME }}</td>
+                                    <td class="hidden-sm-down">{{ .CreatedReadable }}</td>
+                                    <td>
+                                        <div class="pull-right">
+                                            <a href="" data-toggle="modal" data-target="#Modal-{{ $index }}">
+                                                <span class="label label-info">
+                                                    <i class="fa fa-info"></i>
+                                                </span>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {{ end }}
+	                <tbody>
+                    </table>
+                </div>
+            {{ end }}
         </div>
+
+        <!-- Modals start -->
+        {{ range $index, $value := .Data.Files }}
+            <div class="modal fade" id="Modal-{{ $index }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel-{{ $index }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                          <h4 class="modal-title">{{ .Filename }}</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="media">
+                                {{ if eq (.Links | len) 3 }}
+                                    {{ $thumbnail := index .Links 2 }}
+                                    {{ $link := index .Links 0 }}
+                                    {{ if $thumbnail }}
+                                        <p>
+                                            <div class="media">
+                                                <a class="media-left" href="{{ $link.Href }}">
+                                                    <img class="media-object" src="{{ $thumbnail.Href }}"/>
+                                                </a>
+                                            </div>
+                                        </p>
+                                    {{ end }}
+                                {{ end }}
+                            </div>
+                            <table class="table">
+                                <tr>
+                                    <th>
+                                        Filename
+                                    </th>
+                                    <td>
+                                        {{ $link := index .Links 0 }}
+                                        <a href="{{ $link.Href }}">
+                                            {{ .Filename }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        Tag
+                                    </th>
+                                    <td>
+                                        {{ $link := index .Links 1 }}
+                                        <a href="{{ $link.Href }}">
+                                            {{ .Tag }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        Bytes
+                                    </th>
+                                    <td>
+                                        {{ .Bytes }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        MIME
+                                    </th>
+                                    <td>
+                                        {{ .MIME }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        Created
+                                    </th>
+                                    <td>
+                                        {{ .CreatedAt }}
+                                        ({{ .CreatedReadable }})
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="pull-right">
+                                        <button type="button" class="btn btn-danger" disabled>Delete file</button>
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {{ end }}
+        <!-- Modals end -->
     </body>
 </html>
 {{ end }}
