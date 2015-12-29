@@ -72,7 +72,8 @@
                                     <br/>
                                 {{ end }}
                                 {{ if .Data.ExpirationReadable }}
-                                    Expires {{ .Data.ExpirationReadable }}.
+                                    Expires {{ .Data.ExpirationReadable }} 
+                                    <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#expiration"><i class="fa fa-question-circle"></i></a>.
                                 {{ end }}
                             </small>
                         </p>
@@ -237,7 +238,7 @@
                                     </tr>
                                     <tr>
                                         <th>
-                                            Expiration
+                                            Expires
                                         </th>
                                         <td>
                                             {{ if $.Data.ExpirationReadable }}
@@ -289,6 +290,33 @@
             </div>
             <!-- Delete modal end -->
         {{ end }}
+
+        <!-- Expiration modal start -->
+        <div class="modal fade" id="expiration" tabindex="-1" role="dialog" aria-labelledby="expiration-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                      <h4 class="modal-title">Expiration</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <p>Tags are automatically expired after a period of time. Files inherit the expiration time from their tags.</p>
+
+                        <p>Expired files are deleted and are no longer accessible. It is not possible to view or upload files to expired tags.</p>
+
+                        <p>The expiration time of a tag is renewed whenever a file is uploaded, which means that tags can potentially be long lived if files are uploaded in intervals.</p>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-check"></i> Back</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Expiration modal end -->
         <!-- Modals end -->
     </body>
 </html>
