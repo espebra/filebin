@@ -83,11 +83,11 @@
             <!-- Menu -->
             <p>
                 <div class="fileUpload btn btn-primary">
-                    <span><i class="fa fa-cloud-upload"></i> Upload more files</span>
+                    <span><i class="fa fa-cloud-upload"></i> Upload files</span>
                     <input type="file" class="upload" id="fileField"/ multiple>
                 </div>
 
-                <a class="btn btn-primary" href="{{ .Ctx.Baseurl }}"><i class="fa fa-plus"></i> Create new tag</a>
+                <a class="btn btn-primary-outline" href="{{ .Ctx.Baseurl }}"><i class="fa fa-plus"></i> New tag</a>
             </p>
 
             <!-- Upload queue -->
@@ -144,16 +144,9 @@
                                         <div class="pull-right">
                                             <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#info-{{ $index }}">
                                                 <span class="label label-info">
-                                                    <i class="fa fa-fw fa-lg fa-info-circle"></i>
+                                                    <i class="fa fa-lg fa-cog"></i>
                                                 </span>
                                             </a>
-
-                                            <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#delete-{{ $index }}">
-                                                <span class="label label-danger">
-                                                    <i class="fa fa-fw fa-lg fa-trash"></i>
-                                                </span>
-                                            </a>
-
                                         </div>
                                     </td>
                                 </tr>
@@ -170,12 +163,14 @@
             <div class="modal fade" id="info-{{ $index }}" tabindex="-1" role="dialog" aria-labelledby="info-label-{{ $index }}" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
+<!--
                         <div class="modal-header">
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                           </button>
                           <h4 class="modal-title">Extra information</h4>
                         </div>
+-->
                         <div class="modal-body">
                             <div class="media">
                                 {{ if eq (.Links | len) 3 }}
@@ -255,6 +250,10 @@
                             </table>
 
                             <div class="modal-footer">
+                                <div class="pull-left">
+                                <button type="button" class="btn btn-danger" data-toggle="modal" data-dismiss="modal" data-target="#delete-{{ $index }}"><i class="fa fa-trash"></i> Delete file</button>
+                                </div>
+
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Close</button>
                             </div>
                         </div>
@@ -273,26 +272,15 @@
                           <h4 class="modal-title">Delete file</h4>
                         </div>
                         <div class="modal-body">
-                            <div class="media">
-                                {{ if eq (.Links | len) 3 }}
-                                    {{ $thumbnail := index .Links 2 }}
-                                    {{ $link := index .Links 0 }}
-                                    {{ if $thumbnail }}
-                                        <p>
-                                            <div class="media">
-                                                <a class="media-left" href="{{ $link.Href }}">
-                                                    <img class="media-object" src="{{ $thumbnail.Href }}"/>
-                                                </a>
-                                            </div>
-                                        </p>
-                                    {{ end }}
-                                {{ end }}
-                            </div>
 
-                            <p class="lead">Are you sure you want to delete the file {{ .Filename }}?</p>
+                            <p>You are encouraged to use this feature only if you shared the wrong file or if some other person shared a file with obvious malicious or illegal content. This action is not reversible.</li>
+
+                            {{ $link := index .Links 0 }}
+                            <p class="lead">Are you sure you want to delete the file <a href="{{ $link.Href }}">{{ .Filename }}</a>?</p>
+</ul>
 
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-danger" disabled><i class="fa fa-trash-o"></i> Yes</button>
+                                <button type="button" class="btn btn-danger" disabled><i class="fa fa-trash-o"></i> Yes!</button>
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Cancel</button>
                             </div>
                         </div>
