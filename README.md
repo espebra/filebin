@@ -156,16 +156,16 @@ $ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
   -H "content-sha256: 82b5f1d5d38641752d6cbb4b80f3ccae502973f8b77f1c712bd68d5324e67e33"
 ```
 
-### Fetch tag
+### Fetch tag details
 
-|			| Value					|
-| --------------------- | ------------------------------------- |
-| **Method**		| ``GET``				|
-| **Request headers**	| ``content-type: application/json``	|
-| **URL**		| /:tag					|
-| **URL parameters**	| *None*				|
-| **Success response**	| ``200``				|
-| **Error response**	| ``404``				|
+|			| Value						|
+| --------------------- | --------------------------------------------- |
+| **Method**		| ``GET``					|
+| **Request headers**	| ``content-type: application/json``		|
+| **URL**		| /:tag						|
+| **URL parameters**	| *None*					|
+| **Success response**	| ``200``					|
+| **Error response**	| ``404``					|
 
 ###### Examples
 
@@ -173,6 +173,26 @@ The following command will print a JSON structure showing which files that avail
 
 ```
 $ curl http://localhost:31337/customtag
+```
+
+### Fetch tag as a zip archive
+
+|			| Value						|
+| --------------------- | --------------------------------------------- |
+| **Method**		| ``GET``					|
+| **Request headers**	| ``content-type: application/zip``		|
+| **URL**		| /:tag						|
+| **URL parameters**	| o=zip						|
+| **Success response**	| ``200``					|
+| **Error response**	| ``404``					|
+
+###### Examples
+
+The following commands will download the files in ``customtag`` as a zip archive:
+
+```
+$ curl http://localhost:31337/customtag?o=zip
+$ curl -H "content-type: application/zip" http://localhost:31337/customtag
 ```
 
 ### Download file

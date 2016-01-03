@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"strconv"
 	"html/template"
+	"path/filepath"
+	"archive/zip"
+	"os"
 
 	"github.com/espebra/filebin/app/model"
 )
@@ -72,4 +75,59 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]st
 	if err != nil {
 		ctx.Log.Fatalln(err)
 	}
+}
+
+func ZIPresponse(w http.ResponseWriter, status int, tag string, h map[string]string, paths []string, ctx model.Context) {
+	ctx.Log.Println("Generating zip archive")
+
+	for header, value := range h {
+		w.Header().Set(header, value)
+	}
+
+	w.Header().Set("Content-Disposition", `attachment; filename="` + tag + `.zip"`)
+
+	zw := zip.NewWriter(w)
+
+	for _, path := range paths {
+		// Extract the filename from the absolute path
+		fname := filepath.Base(path)
+		ctx.Log.Println("Adding to zip archive: " + fname)
+
+		// Get stat info for modtime etc
+		info, err := os.Stat(path)
+		if err != nil {
+			ctx.Log.Println(err)
+			return
+		}
+
+		// Generate the Zip info header for this file based on the stat info
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			ctx.Log.Println(err)
+			return
+		}
+
+		ze, err := zw.CreateHeader(header)
+		if err != nil {
+			ctx.Log.Println(err)
+			return
+		}
+
+		file, err := os.Open(path)
+		if err != nil {
+			ctx.Log.Println(err)
+			return
+		}
+		defer file.Close()
+		io.Copy(ze, file)
+	}
+
+	err := zw.Close()
+	if err != nil {
+		ctx.Log.Println(err)
+		return
+	}
+
+	ctx.Log.Println("Zip archive successfully generated")
+	return
 }

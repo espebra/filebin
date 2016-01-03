@@ -491,11 +491,26 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 
 	var status = 200
 
-	if (r.Header.Get("Content-Type") == "application/json") {
+	if r.Header.Get("Content-Type") == "application/zip" || r.FormValue("o") == "zip" {
+		headers["Content-Type"] = "application/zip"
+
+		// Generate a map of paths to add to the zip response
+		var paths []string
+		for _, f := range t.Files {
+			path := filepath.Join(f.TagDir, f.Filename)
+			paths = append(paths, path)
+		}
+		output.ZIPresponse(w, status, t.Tag, headers, paths, ctx)
+		return
+	}
+
+	if r.Header.Get("Content-Type") == "application/json" {
 		headers["Content-Type"] = "application/json"
 		output.JSONresponse(w, status, headers, t, ctx)
+		return
 	} else {
 		output.HTMLresponse(w, "viewtag", status, headers, t, ctx)
+		return
 	}
 }
 
