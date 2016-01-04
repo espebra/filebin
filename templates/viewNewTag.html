@@ -60,7 +60,7 @@
             <p class="lead">
                 Convenient file sharing on the web, without
                 registration. Simply upload files and share
-                the link. The files will expire automatically
+                the URL. The files will expire automatically
                 {{ .Data.ExpirationReadable }}.
             </p>
             <p class="lead">
@@ -70,11 +70,11 @@
             </p>
             <p class="lead">
                 <strong>2.</strong>
-                Wait until all the file uploads <em>complete</em>.
+                Wait until the file uploads complete, and the page is refreshed.
             </p>
             <p class="lead">
                 <strong>3.</strong>
-                Distribute <a href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}">this link</a> to share access to the files.
+                Distribute the <a href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}">URL</a> to share access to the files.
             </p>
 
             <!-- Menu -->
