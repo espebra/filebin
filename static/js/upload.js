@@ -41,8 +41,8 @@ function FileAPI (c, t, d, f, tag, url) {
             text = text + ", all done!";
             box.className = "alert alert-success";
 
-            // Automatic refresh
-            //location.reload(true);
+            // Automatic refresh when uploads complete
+            location.reload(true);
         }
 
         if ((counter_completed + counter_failed) != counter_queue) {
