@@ -157,8 +157,12 @@
                 </div>
             {{ end }}
 
-            <div class="pull-right">
- 	           <a class="btn btn-secondary btn-sm" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}?o=zip"><i class="fa fa-file-archive-o"></i> Download all files</a>
+            <div class="row">
+                <div class="pull-right">
+                   <p>
+                       <a class="btn btn-secondary btn-sm" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}?o=zip"><i class="fa fa-file-archive-o"></i> Download all files</a>
+                   </p>
+                </div>
             </div>
         </div>
 
@@ -314,7 +318,7 @@
                         <p>The expiration time of a tag is renewed whenever a file is uploaded, which means that tags can potentially be long lived if files are uploaded in intervals.</p>
 
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-check"></i> Back</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Close</button>
                         </div>
                     </div>
                 </div>
