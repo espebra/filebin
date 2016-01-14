@@ -277,18 +277,18 @@ function getReadableFileSizeString(fileSizeInBytes) {
     return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
 };
 
-function deleteURL (url, index) {
+function deleteURL (url, messageBoxID) {
     console.log("Delete url: " + url);
     var xhr = new XMLHttpRequest();
-    var box = document.getElementById("deleteStatus-" + index);
+    var box = document.getElementById(messageBoxID);
 
     xhr.onload = function(e) {
         if (xhr.status == 200 && xhr.readyState == 4) {
             console.log("Deleted successfully");
-            box.textContent = "The file has been deleted successfully.";
+            box.textContent = "Operation completed successfully.";
             box.className = "alert alert-info";
         } else if (xhr.status  == 404 && xhr.readyState == 4) {
-            box.textContent = "File not found.";
+            box.textContent = "Not found.";
             box.className = "alert alert-info";
         } else {
             console.log("Failed to delete");

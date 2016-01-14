@@ -158,9 +158,12 @@
             {{ end }}
 
             <div class="row">
-                <div class="col-sm-6">
+                <div class="col-sm-12">
                     <p>
-                        <a class="btn btn-primary" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}?o=zip"><i class="fa fa-copy"></i> Download archive</a>
+                        <a class="btn btn-primary" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}?o=zip"><i class="fa fa-cloud-download"></i> Download files</a>
+                        <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#info" class="btn btn-info">
+                            <i class="fa fa-lg fa-cogs"></i>
+                        </a>
                     </p>
                 </div>
                 <div class="col-sm-6">
@@ -170,10 +173,16 @@
 
         <!-- Modals start -->
         {{ range $index, $value := .Data.Files }}
-            <!-- Info modal start -->
+            <!-- File info modal start -->
             <div class="modal fade" id="info-{{ $index }}" tabindex="-1" role="dialog" aria-labelledby="info-label-{{ $index }}" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
+                        <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                          <h4 class="modal-title">File extras</h4>
+                        </div>
 <!--
                         <div class="modal-header">
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -259,20 +268,20 @@
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
 
-                            <div class="modal-footer">
-                                <div class="pull-left">
-                                <button type="button" class="btn btn-danger" data-toggle="modal" data-dismiss="modal" data-target="#delete-{{ $index }}"><i class="fa fa-trash"></i> Delete file</button>
-                                </div>
-
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Close</button>
+                        <div class="modal-footer">
+                            <div class="pull-left">
+                            <button type="button" class="btn btn-danger" data-toggle="modal" data-dismiss="modal" data-target="#delete-{{ $index }}"><i class="fa fa-trash"></i> Delete file</button>
                             </div>
+
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Close</button>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- Info modal end -->
-            <!-- Delete modal start -->
+            <!-- File info modal end -->
+            <!-- File delete modal start -->
             <div class="modal fade" id="delete-{{ $index }}" tabindex="-1" role="dialog" aria-labelledby="delete-label-{{ $index }}" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -294,7 +303,7 @@
 
                             <div class="modal-footer">
                                 <div class="pull-left"> 
-                                <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}/{{ .Filename }}', {{ $index }})"><i class="fa fa-trash-o"></i> Confirm</button>
+                                <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}/{{ .Filename }}', 'deleteStatus-{{ $index }}')"><i class="fa fa-trash-o"></i> Confirm</button>
                                 </div>
                                 <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
                             </div>
@@ -302,7 +311,7 @@
                     </div>
                 </div>
             </div>
-            <!-- Delete modal end -->
+            <!-- File delete modal end -->
         {{ end }}
 
         <!-- Expiration modal start -->
@@ -331,6 +340,100 @@
             </div>
         </div>
         <!-- Expiration modal end -->
+        <!-- File info modal start -->
+        <div class="modal fade" id="info" tabindex="-1" role="dialog" aria-labelledby="info-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                      <h4 class="modal-title">Tag extras</h4>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th>
+                                        Tag
+                                    </th>
+                                    <td>
+                                        <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}">
+                                            {{ $.Data.Tag }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        Files
+                                    </th>
+                                    <td>
+                                        {{ $.Data.Files | len }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        Last updated
+                                    </th>
+                                    <td>
+                                        {{ $.Data.LastUpdateReadable }} ({{ $.Data.LastUpdateAt.Format "2006-01-02 15:04:05 UTC" }}).
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        Expires
+                                    </th>
+                                    <td>
+                                        {{ if $.Data.ExpirationReadable }}
+                                            {{ $.Data.ExpirationReadable }}
+                                        {{ end }}
+                                        ({{ $.Data.ExpirationAt.Format "2006-01-02 15:04:05 UTC" }}).
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="pull-left">
+                        <button type="button" class="btn btn-danger" data-toggle="modal" data-dismiss="modal" data-target="#delete"><i class="fa fa-trash"></i> Delete tag</button>
+                        </div>
+
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Tag info modal end -->
+        <!-- Tag delete modal start -->
+        <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="delete-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                      <h4 class="modal-title">Delete tag</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <p>You are encouraged to use this feature only if you shared the wrong file or if some other person shared a file with obvious malicious or illegal content. This action is not reversible.</li>
+
+                        <p class="lead">Are you sure you want to delete all the files in tag <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}">{{ $.Data.Tag }}</a>?</p>
+</ul>
+
+                        <div id="deleteStatus"></div>
+
+                        <div class="modal-footer">
+                            <div class="pull-left"> 
+                            <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}','deleteStatus')"><i class="fa fa-trash-o"></i> Confirm</button>
+                            </div>
+                            <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Tag delete modal end -->
         <!-- Modals end -->
     </body>
 </html>
