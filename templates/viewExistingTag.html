@@ -290,9 +290,13 @@
                             <p class="lead">Are you sure you want to delete the file <a href="{{ $link.Href }}">{{ .Filename }}</a>?</p>
 </ul>
 
+                            <div id="deleteStatus-{{ $index }}"></div>
+
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-danger" disabled><i class="fa fa-trash-o"></i> Yes!</button>
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Cancel</button>
+                                <div class="pull-left"> 
+                                <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}/{{ .Filename }}', {{ $index }})"><i class="fa fa-trash-o"></i> Confirm</button>
+                                </div>
+                                <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
                             </div>
                         </div>
                     </div>
