@@ -296,17 +296,17 @@
                             <p>You are encouraged to use this feature only if you shared the wrong file or if some other person shared a file with obvious malicious or illegal content. This action is not reversible.</li>
 
                             {{ $link := index .Links 0 }}
-                            <p class="lead">Are you sure you want to delete the file <a href="{{ $link.Href }}">{{ .Filename }}</a>?</p>
+                            <p class="lead">Delete the file <a href="{{ $link.Href }}">{{ .Filename }}</a>?</p>
 </ul>
 
                             <div id="deleteStatus-{{ $index }}"></div>
+                        </div>
 
-                            <div class="modal-footer">
-                                <div class="pull-left"> 
-                                <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}/{{ .Filename }}', 'deleteStatus-{{ $index }}')"><i class="fa fa-trash-o"></i> Confirm</button>
-                                </div>
-                                <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
+                        <div class="modal-footer">
+                            <div class="pull-left"> 
+                            <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}/{{ .Filename }}', 'deleteStatus-{{ $index }}')"><i class="fa fa-trash-o"></i> Confirm</button>
                             </div>
+                            <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
                         </div>
                     </div>
                 </div>
@@ -416,19 +416,19 @@
                     </div>
                     <div class="modal-body">
 
-                        <p>You are encouraged to use this feature only if you shared the wrong file or if some other person shared a file with obvious malicious or illegal content. This action is not reversible.</li>
+                        <p>You are encouraged to use this feature only if you shared the wrong files or if some other person shared files with obvious malicious or illegal content. This action is not reversible.</li>
 
-                        <p class="lead">Are you sure you want to delete all the files in tag <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}">{{ $.Data.Tag }}</a>?</p>
+                        <p class="lead">Delete all the files in tag <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}">{{ $.Data.Tag }}</a>?</p>
 </ul>
 
                         <div id="deleteStatus"></div>
+                    </div>
 
-                        <div class="modal-footer">
-                            <div class="pull-left"> 
-                            <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}','deleteStatus')"><i class="fa fa-trash-o"></i> Confirm</button>
-                            </div>
-                            <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
+                    <div class="modal-footer">
+                        <div class="pull-left"> 
+                        <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}','deleteStatus')"><i class="fa fa-trash-o"></i> Confirm</button>
                         </div>
+                        <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
                     </div>
                 </div>
             </div>
