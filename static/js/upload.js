@@ -287,8 +287,13 @@ function deleteURL (url, index) {
             console.log("Deleted successfully");
             box.textContent = "The file has been deleted successfully.";
             box.className = "alert alert-info";
+        } else if (xhr.status  == 404 && xhr.readyState == 4) {
+            box.textContent = "File not found.";
+            box.className = "alert alert-info";
         } else {
             console.log("Failed to delete");
+            box.textContent = "Error " + xhr.status + ". Unable to verify the operation.";
+            box.className = "alert alert-danger";
         }
     };
 
