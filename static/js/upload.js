@@ -285,7 +285,7 @@ function deleteURL (url, messageBoxID) {
     xhr.onload = function(e) {
         if (xhr.status == 200 && xhr.readyState == 4) {
             console.log("Deleted successfully");
-            box.textContent = "Operation completed successfully.";
+            box.textContent = "Delete operation completed successfully.";
             box.className = "alert alert-info";
         } else if (xhr.status  == 404 && xhr.readyState == 4) {
             box.textContent = "Not found.";
