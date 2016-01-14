@@ -100,7 +100,6 @@ func (t *Tag) Remove() error {
 }
 
 func (t *Tag) List(baseurl string) error {
-	var err error
 	files, err := ioutil.ReadDir(t.TagDir)
 	for _, file := range files {
 		// Do not care about sub directories (such as .cache)
@@ -114,33 +113,28 @@ func (t *Tag) List(baseurl string) error {
 		f.TagDir = t.TagDir
 
 		if f.MediaType() == "image" {
-			err = f.ParseExif()
-			if err == nil {
+			if err := f.ParseExif(); err == nil {
 				f.ExtractDateTime()
 				f.ExtractLocationInfo()
 			}
 		}
 
-		err = f.StatInfo()
-		if err != nil {
+		if err := f.StatInfo(); err != nil {
 			return err
 		}
 
-		err = f.DetectMIME ()
-		if err != nil {
+		if err := f.DetectMIME (); err != nil {
 			return err
 		}
 
         	if f.MediaType() == "image" {
-        		err = f.ParseExif()
-			if err != nil {
+			if err := f.ParseExif(); err != nil {
 				// XXX: Log this
 				//return err
         		}
 
 			if exif.IsCriticalError(err) == false {
-				err = f.ExtractDateTime()
-				if err != nil {
+				if err := f.ExtractDateTime(); err != nil {
 					// XXX: Log this
 					//return err
 				}
