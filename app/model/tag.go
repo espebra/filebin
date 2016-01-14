@@ -112,6 +112,15 @@ func (t *Tag) List(baseurl string) error {
 		f.SetFilename(file.Name())
 		f.SetTag(t.Tag)
 		f.TagDir = t.TagDir
+
+		if f.MediaType() == "image" {
+			err = f.ParseExif()
+			if err == nil {
+				f.ExtractDateTime()
+				f.ExtractLocationInfo()
+			}
+		}
+
 		err = f.StatInfo()
 		if err != nil {
 			return err
