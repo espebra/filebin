@@ -158,10 +158,12 @@
             {{ end }}
 
             <div class="row">
-                <div class="pull-right">
-                   <p>
-                       <a class="btn btn-secondary btn-sm" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}?o=zip"><i class="fa fa-file-archive-o"></i> Download all files</a>
-                   </p>
+                <div class="col-sm-6">
+                    <p>
+                        <a class="btn btn-primary btn-sm" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}?o=zip"><i class="fa fa-file-archive-o"></i> Download archive</a>
+                    </p>
+                </div>
+                <div class="col-sm-6">
                 </div>
             </div>
         </div>
