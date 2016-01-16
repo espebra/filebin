@@ -2,7 +2,9 @@
 
 # Filebin
 
-Filebin is a web application that facilitates convenient file sharing over the web. This is the development branch of the next release that in the future will power [http://filebin.net](http://filebin.net). It can be distributed as a statically linked binary without specific dependencies for easy installations.
+Filebin is a web application that facilitates convenient file sharing over the web. This is the development branch of the next release that in the future will power [http://filebin.net](http://filebin.net).
+
+![Viewing a tag](doc/screenshot-web-interface-tag.png)
 
 ## Table of contents
 
