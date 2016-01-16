@@ -6,12 +6,24 @@ Filebin is a web application that facilitates convenient file sharing over the w
 
 ## Table of contents
 
+* [Features](#features)
 * [Requirements](#requirements)
 * [Installation](#installation)
 * [Configuration](#configuration)
 * [Web interface](#web-interface)
 * [Web service](#web-service)
 * [TODO](#todo)
+
+## Features
+
+* Responsive and mobile friendly [web interface](#web-interface).
+* All functionality available through an [HTTP API](#web-service).
+* Upload files using drag and drop or select files from a dialog box.
+* Archive (zip) download to make it easy to download multiple files in one go.
+* Files expire automatically after a configurable period.
+* Files can be deleted manually.
+* Thumnails are displayed for image files.
+* No external dependencies once built.
 
 ## Requirements
 
