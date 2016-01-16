@@ -188,8 +188,7 @@ function FileAPI (c, t, d, f, tag, url) {
             upload = xhr.upload;
 
             // For speed measurements
-            var lastLoaded;
-            var lastTime;
+            var startTime = (new Date()).getTime();
 
             // Upload in progress
             upload.addEventListener("progress", function (e) {
@@ -198,13 +197,14 @@ function FileAPI (c, t, d, f, tag, url) {
                     progress.max = 100;
                     progress.className = "progress progress-info progress-striped progress-animated";
 
-                    var curTime = (new Date()).getTime();
                     if (e.loaded == e.total && e.total > 0) {
                         // Upload complete
                         speedText = "Server side processing... (" + filesize + ")";
-                    } else if (lastTime !== 'undefined' && lastLoaded !== 'undefined') {
+                    } else if (e.loaded > 0) {
                         // Upload in progress
-                        var bps = (e.loaded - lastLoaded) / (curTime - lastTime);
+                        var curTime = (new Date()).getTime();
+                        var seconds = curTime - startTime;
+                        var bps = seconds ? e.loaded / seconds : 0;
                         if (isNaN(bps)) {
                             speedText = "Uploading... (" + filesize + ")";
                         } else {
@@ -216,8 +216,6 @@ function FileAPI (c, t, d, f, tag, url) {
                     }
 
                     speed.textContent = speedText;
-                    lastTime = curTime;
-                    lastLoaded = e.loaded;
                 }
             }, false);
 
