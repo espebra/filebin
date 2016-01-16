@@ -15,6 +15,7 @@ func StartDispatcher(nworkers int, WorkQueue chan File, log *log.Logger) {
 }
 
 func StartWorker(WorkQueue chan File, log *log.Logger) {
+	var err error
 	for {
 		select {
 			case f := <-WorkQueue:
@@ -26,7 +27,11 @@ func StartWorker(WorkQueue chan File, log *log.Logger) {
 			        log.Print("Batch process starting: " + f.Tag + ", " + f.Filename)
 				// Simulate some processing time
 				if f.MediaType() == "image" {
-					err := f.GenerateThumbnail()
+					err = f.GenerateImage(75, 75, true)
+					if err != nil {
+						log.Print(err)
+					}
+					err = f.GenerateImage(1000, 0, false)
 					if err != nil {
 						log.Print(err)
 					}

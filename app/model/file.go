@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -131,10 +132,10 @@ func (f *File) GenerateLinks(baseurl string) {
 	tagLink.Href = baseurl + "/" + f.Tag
 	f.Links = append(f.Links, tagLink)
 
-	if f.ThumbnailExists() {
+	if f.ImageExists(75, 75) {
 		thumbLink := Link {}
 		thumbLink.Rel = "thumbnail"
-		thumbLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?size=thumbnail"
+		thumbLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?width=75&height=75"
 		f.Links = append(f.Links, thumbLink)
 	}
 }
@@ -177,8 +178,8 @@ func (f *File) Exists() bool {
 	return false
 }
 
-func (f *File) ThumbnailExists() bool {
-        path := f.ThumbnailPath()
+func (f *File) ImageExists(width int, height int) bool {
+        path := f.ImagePath(width, height)
 	if isFile(path) {
 		return true
 	}
@@ -322,11 +323,13 @@ func (f *File) ClearTemp() error {
 	return err
 }
 
-func (f *File) ThumbnailPath() string {
-	return filepath.Join(f.TagDir, ".cache", "thumb-" + f.Filename)
+func (f *File) ImagePath(width int, height int) (string) {
+	return filepath.Join(f.TagDir, ".cache", 
+		strconv.Itoa(width) + "x" + strconv.Itoa(height) + "-" +
+		f.Filename)
 }
 
-func (f *File) GenerateThumbnail() error {
+func (f *File) GenerateImage(width int, height int, crop bool) error {
 	fpath := filepath.Join(f.TagDir, f.Filename)
 
 	s, err := imaging.Open(fpath)
@@ -334,10 +337,30 @@ func (f *File) GenerateThumbnail() error {
 		return err
 	}
 
-	thumb := imaging.Fill(s, 75, 75, imaging.Center, imaging.NearestNeighbor)
-	err = imaging.Save(thumb, f.ThumbnailPath())
+	if crop {
+		im := imaging.Fill(s, width, height, imaging.Center,
+		imaging.NearestNeighbor)
+		err = imaging.Save(im, f.ImagePath(width, height))
+	} else {
+		im := imaging.Resize(s, width, height, imaging.NearestNeighbor)
+		err = imaging.Save(im, f.ImagePath(width, height))
+	}
 	return err
 }
+
+//func (f *File) ResizeImage(width int, height width, crop bool) error {
+//	fpath := filepath.Join(f.TagDir, f.Filename)
+//
+//	s, err := imaging.Open(fpath)
+//	if err != nil {
+//		return err
+//	}
+//
+//	thumb := imaging.Fill(s, width, height, imaging.Center,
+//		imaging.NearestNeighbor)
+//	err = imaging.Save(thumb, f.ThumbnailPath())
+//	return err
+//}
 
 //func (f *File) GenerateTag() error {
 //        var tag = randomString(16)

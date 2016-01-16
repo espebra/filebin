@@ -268,8 +268,6 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 }
 
 func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	var err error
-
 	// Query parameters
 	u, err := url.Parse(r.RequestURI)
 	if err != nil {
@@ -318,12 +316,24 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	// Default path
 	path := filepath.Join(f.TagDir, f.Filename)
 
-	for param, values := range queryParams {
-		if param == "size" && values[0] == "thumbnail" {
-			if f.ThumbnailExists() {
-				path = f.ThumbnailPath()
+	err = f.DetectMIME()
+	if err != nil {
+		ctx.Log.Println("Unable to detect MIME: ", err)
+	} else {
+		ctx.Log.Println("MIME detected: " + f.MIME)
+	}
+
+        if f.MediaType() == "image" {
+		width, _ := strconv.Atoi(queryParams.Get("width"))
+		height, _ := strconv.Atoi(queryParams.Get("height"))
+		if (width > 0)||(height > 0) {
+			ctx.Log.Println("Size requested: " +
+				strconv.Itoa(width) + "x" +
+				strconv.Itoa(height) + " px")
+			if f.ImageExists(width, height) {
+				path = f.ImagePath(width, height)
 			} else {
-				http.Error(w,"Thumbnail not found", 404)
+				http.Error(w,"Image not found", 404)
 				return
 			}
 		}
