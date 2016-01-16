@@ -9,8 +9,8 @@ Filebin is a web application that facilitates convenient file sharing over the w
 * [Requirements](#requirements)
 * [Installation](#installation)
 * [Configuration](#configuration)
-* [Web service](#web-service)
 * [Web interface](#web-interface)
+* [Web service](#web-service)
 * [TODO](#todo)
 
 ## Requirements
@@ -117,6 +117,10 @@ The parameter ``--trigger-new-tag <command>`` makes sure ``<command> <tag>`` is 
 The parameter ``--trigger-uploaded-file <command>`` makes sure ``<command> <tag> <filename>`` is executed whenever a new file is uploaded. The execution is non-blocking. Example:
 
 ``--trigger-uploaded-file /usr/local/bin/uploaded-file`` will execute ``/usr/local/bin/uploaded-file <tagid> <filename>``.
+
+## Web interface
+
+![File uploads in progress](doc/screenshot-web-interface-uploading.png)
 
 ## Web service
 
@@ -238,10 +242,6 @@ $ curl http://localhost:31337/customtag/myfile
 ```
 $ curl -X DELETE http://localhost:31337/customtag/myfile
 ```
-
-## Web service
-
-![File uploads in progress](doc/screenshot-web-interface-uploading.png)
 
 ## Logging
 
