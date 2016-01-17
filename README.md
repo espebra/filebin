@@ -19,11 +19,12 @@ Filebin is a web application that facilitates convenient file sharing over the w
 * Responsive and mobile friendly [web interface](#web-interface).
 * All functionality available through an [HTTP API](#web-service).
 * Upload files using drag and drop or select files from a dialog box.
+* Large file support.
 * Archive (zip) download to make it easy to download multiple files in one go.
-* Files expire automatically after a configurable period.
-* Files can be deleted manually.
-* Thumnails are displayed for image files.
-* Triggers capable of calling external scripts on certain events. One potential use case is to notify virus/malware scanners on file upload.
+* Files expire automatically after a configurable period of time.
+* Files and entire tags can be deleted manually.
+* Thumbnails are displayed for image files.
+* Triggers are capable of calling external scripts on certain events. One potential use case is to notify virus/malware scanners on file upload.
 * No external dependencies once built.
 
 ## Requirements

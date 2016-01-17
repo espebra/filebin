@@ -38,27 +38,26 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]st
 	var templateString string
 	var err error
 
-	templateString, err = box.String("viewtag.html")
+	templateString, err = box.String(tpl + ".html")
 	if err != nil {
 		ctx.Log.Fatalln(err)
 	}
-
 	t, err = t.Parse(templateString)
 	if err != nil {
 		ctx.Log.Fatalln(err)
 	}
 
-	templateString, err = box.String("viewNewTag.html")
-	if err != nil {
-		ctx.Log.Fatalln(err)
-	}
-	t.Parse(templateString)
+	//templateString, err = box.String("viewNewTag.html")
+	//if err != nil {
+	//	ctx.Log.Fatalln(err)
+	//}
+	//t.Parse(templateString)
 
-	templateString, err = box.String("viewExistingTag.html")
-	if err != nil {
-		ctx.Log.Fatalln(err)
-	}
-	t.Parse(templateString)
+	//templateString, err = box.String("viewExistingTag.html")
+	//if err != nil {
+	//	ctx.Log.Fatalln(err)
+	//}
+	//t.Parse(templateString)
 
         for header, value := range h {
                 w.Header().Set(header, value)

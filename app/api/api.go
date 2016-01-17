@@ -519,7 +519,11 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 		output.JSONresponse(w, status, headers, t, ctx)
 		return
 	} else {
-		output.HTMLresponse(w, "viewtag", status, headers, t, ctx)
+		if len(t.Files) == 0 {
+			output.HTMLresponse(w, "newtag", status, headers, t, ctx)
+		} else {
+			output.HTMLresponse(w, "viewtag", status, headers, t, ctx)
+		}
 		return
 	}
 }
