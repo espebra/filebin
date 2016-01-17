@@ -23,6 +23,7 @@ Filebin is a web application that facilitates convenient file sharing over the w
 * Files expire automatically after a configurable period.
 * Files can be deleted manually.
 * Thumnails are displayed for image files.
+* Triggers capable of calling external scripts on certain events. One potential use case is to notify virus/malware scanners on file upload.
 * No external dependencies once built.
 
 ## Requirements
@@ -257,15 +258,13 @@ $ curl -X DELETE http://localhost:31337/customtag/myfile
 
 ## Logging
 
-All logs are written to stdout. They can easily be redirected to for example syslog when using the [systemd service script provided](systemd/filebin.service).
+Logs are written to stdout, and can easily be redirected to for example syslog when using the [systemd service script provided](systemd/filebin.service).
 
 ## Database
 
 Filebin does currently not use any other database than the filesystem itself.
 
 ## TODO
-
-These are feature that would be nice to have:
 
 * Automatically clean up expired tags.
 * Avoid reuse of expired tags.
