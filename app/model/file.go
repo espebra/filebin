@@ -339,10 +339,10 @@ func (f *File) GenerateImage(width int, height int, crop bool) error {
 
 	if crop {
 		im := imaging.Fill(s, width, height, imaging.Center,
-		imaging.NearestNeighbor)
+		imaging.Lanczos)
 		err = imaging.Save(im, f.ImagePath(width, height))
 	} else {
-		im := imaging.Resize(s, width, height, imaging.NearestNeighbor)
+		im := imaging.Resize(s, width, height, imaging.Lanczos)
 		err = imaging.Save(im, f.ImagePath(width, height))
 	}
 	return err
