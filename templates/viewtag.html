@@ -80,14 +80,22 @@
                 </div>
             </div>
 
-            <!-- Menu -->
             <p>
-                <div class="fileUpload btn btn-primary">
+                <span class="fileUpload btn btn-primary">
                     <span><i class="fa fa-cloud-upload"></i> Upload files</span>
                     <input type="file" class="upload" id="fileField"/ multiple>
-                </div>
+                </span>
+
+                <a class="btn btn-primary" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}?o=zip"><i class="fa fa-cloud-download"></i> Download files</a>
+
+                <a class="btn btn-success" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}?o=album"><i class="fa fa-image"></i> Album</a>
+
+                <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#info" class="btn btn-info">
+                    <i class="fa fa-lg fa-cogs"></i> Extras
+                </a>
 
                 <a class="btn btn-primary-outline" href="{{ .Ctx.Baseurl }}"><i class="fa fa-plus"></i> New tag</a>
+
             </p>
 
             <!-- Upload queue -->
@@ -100,7 +108,7 @@
             <p>
                 <div class="media">
                     {{ range $index, $value := .Data.Files }}
-                        {{ if eq (.Links | len) 3 }}
+                        {{ if eq (.Links | len) 4 }}
                             {{ $thumbnail := index .Links 2 }}
                             {{ $link := index .Links 0 }}
                             {{ if $thumbnail }}
@@ -155,19 +163,6 @@
                     </table>
                 </div>
             {{ end }}
-
-            <div class="row">
-                <div class="col-sm-12">
-                    <p>
-                        <a class="btn btn-primary" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}?o=zip"><i class="fa fa-cloud-download"></i> Download files</a>
-                        <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#info" class="btn btn-info">
-                            <i class="fa fa-lg fa-cogs"></i>
-                        </a>
-                    </p>
-                </div>
-                <div class="col-sm-6">
-                </div>
-            </div>
         </div>
 
         <!-- Modals start -->

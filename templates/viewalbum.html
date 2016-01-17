@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <title>Filebin</title>
+
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/custom.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/font-awesome.css"/>
+    </head>
+
+    <body>
+        <div class="container">
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <h1 class="display-4">
+                        Filebin
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <div align="right">
+                        <p>
+                            <br/>
+                            <a class="btn btn-secondary" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}"><i class="fa fa-angle-left"></i> Back</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {{ range $index, $value := .Data.Files }}
+                {{ if eq (.Links | len) 4 }}
+                    {{ $image := index .Links 3 }}
+                    {{ $link := index .Links 0 }}
+                    {{ if $image }}
+                        <figure class="figure">
+                            <img src="{{ $image.Href }}" class="figure-img img-fluid" alt="File {{ .Filename }} in tag {{ .Tag }}.">
+                            <figcaption class="figure-caption">
+                                 {{ .Filename }}
+                                 (<a href="{{ $link.Href }}">Full size</a>).
+                            </figcaption>
+                        </figure>
+                    {{ end }}
+                {{ end }}
+            {{ end }}
+
+            {{ if gt (.Data.Files | len) 1 }}
+                <div class="row">
+                    <div class="col-sm-6">
+                    </div>
+                    <div class="col-sm-6">
+                        <div align="right">
+                            <p>
+                                <a class="btn btn-secondary" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}"><i class="fa fa-angle-left"></i> Back</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {{ end }}
+        </div>
+    </body>
+</html>

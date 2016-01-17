@@ -454,10 +454,9 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 }
 
 func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	var err error
 	params := mux.Vars(r)
 	t := model.Tag {}
-	err = t.SetTag(params["tag"])
+	err := t.SetTag(params["tag"])
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w, "Invalid tag", 400)
@@ -521,8 +520,12 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	} else {
 		if len(t.Files) == 0 {
 			output.HTMLresponse(w, "newtag", status, headers, t, ctx)
-		} else {
-			output.HTMLresponse(w, "viewtag", status, headers, t, ctx)
+		} else  {
+			if r.FormValue("o") == "album" {
+				output.HTMLresponse(w, "viewalbum", status, headers, t, ctx)
+			} else {
+				output.HTMLresponse(w, "viewtag", status, headers, t, ctx)
+			}
 		}
 		return
 	}

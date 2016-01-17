@@ -138,6 +138,13 @@ func (f *File) GenerateLinks(baseurl string) {
 		thumbLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?width=75&height=75"
 		f.Links = append(f.Links, thumbLink)
 	}
+
+	if f.ImageExists(1140, 0) {
+		albumLink := Link {}
+		albumLink.Rel = "album"
+		albumLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?width=1140"
+		f.Links = append(f.Links, albumLink)
+	}
 }
 
 func (f *File) EnsureTagDirectoryExists() error {

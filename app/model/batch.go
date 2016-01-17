@@ -31,7 +31,7 @@ func StartWorker(WorkQueue chan File, log *log.Logger) {
 					if err != nil {
 						log.Print(err)
 					}
-					err = f.GenerateImage(1000, 0, false)
+					err = f.GenerateImage(1140, 0, false)
 					if err != nil {
 						log.Print(err)
 					}
