@@ -24,6 +24,7 @@ Filebin is a web application that facilitates convenient file sharing over the w
 * Files expire automatically after a configurable period of time.
 * Files and entire tags can be deleted manually.
 * Thumbnails are displayed for image files.
+* Album view is available in tags with images.
 * Triggers are capable of calling external scripts on certain events. One potential use case is to notify virus/malware scanners on file upload.
 * No external dependencies once built.
 

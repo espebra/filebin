@@ -82,19 +82,24 @@
 
             <div class="row">
                 <div class="col-md-6">
-                    <p>
                     <span class="fileUpload btn btn-primary btn-sm">
                         <span><i class="fa fa-cloud-upload"></i> Upload files</span>
                         <input type="file" class="upload" id="fileField"/ multiple>
                     </span>
                     <a class="btn btn-primary btn-sm" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}?o=zip"><i class="fa fa-cloud-download"></i> Save files</a>
+
+                    <!--
+                        Only show the album link if there are images in the tag.
+                    -->
+                    {{ if .Data.Album }}
                     <a class="btn btn-success btn-sm" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}?o=album"><i class="fa fa-image"></i> Album</a>
-                    </p>
+                    {{ end }}
+
                 </div>
                 <div class="col-md-6">
-                    <p class="pull-right">
+                    <div class="pull-right">
                         <a class="btn btn-primary-outline btn-sm" href="{{ .Ctx.Baseurl }}"><i class="fa fa-plus"></i> New tag</a>
-                    </p>
+                    </div>
                 </div>
             </div>
 

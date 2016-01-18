@@ -21,6 +21,7 @@ type Tag struct {
 	LastUpdateAt		time.Time	`json:"-"`
 	LastUpdateReadable	string		`json:"lastupdate"`
 	Files			[]File		`json:"files"`
+	Album		    	bool		`json:"-"`
 }
 
 
@@ -112,7 +113,13 @@ func (t *Tag) List(baseurl string) error {
 		f.SetTag(t.Tag)
 		f.TagDir = t.TagDir
 
+		f.DetectMIME()
 		if f.MediaType() == "image" {
+			// At least one image in the tag. Flip the album bit
+			// to true to make it easier for the html template to
+			// render correctly.
+			t.Album = true
+
 			if err := f.ParseExif(); err == nil {
 				f.ExtractDateTime()
 				f.ExtractLocationInfo()

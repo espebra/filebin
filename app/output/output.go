@@ -47,18 +47,6 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]st
 		ctx.Log.Fatalln(err)
 	}
 
-	//templateString, err = box.String("viewNewTag.html")
-	//if err != nil {
-	//	ctx.Log.Fatalln(err)
-	//}
-	//t.Parse(templateString)
-
-	//templateString, err = box.String("viewExistingTag.html")
-	//if err != nil {
-	//	ctx.Log.Fatalln(err)
-	//}
-	//t.Parse(templateString)
-
         for header, value := range h {
                 w.Header().Set(header, value)
         }
