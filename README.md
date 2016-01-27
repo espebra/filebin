@@ -33,7 +33,7 @@ Filebin is a web application that facilitates convenient file sharing over the w
 
 To build Filebin, a Golang build environment and some Golang packages are needed. The build procedure will produce a statically linked binary that doesn't require any external dependencies to run. It even comes with its own web server bundled.
 
-It is recommended but not required to run it behind a TLS/SSL proxy such as [Hitch](http://hitch-tls.org/) and web cache such as [Varnish Cache](https://www.varnish-cache.org/). Example configurations for these are available below.
+It is recommended but not required to run it behind a TLS/SSL proxy such as [Hitch](http://hitch-tls.org/) and web cache such as [Varnish Cache](https://www.varnish-cache.org/). Example configurations for these [are provided](etc/).
 
 ## Installation
 
@@ -261,7 +261,7 @@ $ curl -X DELETE http://localhost:31337/customtag/myfile
 
 ## Logging
 
-Logs are written to stdout, and can easily be redirected to for example syslog when using the [systemd service script provided](systemd/filebin.service).
+Logs are written to stdout, and can easily be redirected to for example syslog when using the [systemd service script provided](etc/systemd/filebin.service.example).
 
 ## Database
 

@@ -1,3 +1,5 @@
+# Example configuration for /etc/systemd/system/filebin.service
+
 [Unit]
 Description=Filebin
 After=network.target

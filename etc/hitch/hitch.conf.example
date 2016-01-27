@@ -1,0 +1,23 @@
+# Example configuration for /etc/hitch/hitch.conf
+
+frontend = "[*]:443"
+backend = "[127.0.0.1]:80"
+pem-file = "/etc/ssl/private/example.com.pem"
+ciphers = ""
+prefer-server-ciphers = off
+ssl-engine = ""
+workers = 1
+backlog = 100
+keepalive = 3600
+chroot = ""
+user = "hitch"
+group = "hitch"
+quiet = on
+syslog = on
+syslog-facility = "daemon"
+daemon = off
+write-ip = off
+write-proxy-v1 = off
+write-proxy-v2 = off
+proxy-proxy = off
+sni-nomatch-abort = off

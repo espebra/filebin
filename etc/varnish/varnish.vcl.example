@@ -1,0 +1,39 @@
+# Example configuration for /etc/varnish/default.vcl
+
+vcl 4.0;
+import std;
+
+backend default {
+    .host = "127.0.0.1";
+    .port = "8080";
+}
+
+acl acceptable_on_http {
+    "127.0.0.1";
+}
+
+
+sub vcl_recv {
+    if (client.ip !~ acceptable_on_http) {
+        # Force https
+        return (synth(750, "https://" + req.http.host + req.url));
+    }
+}
+
+sub vcl_synth {
+    # Permanent redirect 
+    if (resp.status == 750) {
+        set resp.http.location = resp.reason;
+        set resp.status = 301;
+        return (deliver);
+    }
+}
+
+sub vcl_backend_error {
+    set beresp.http.Content-Type = "text/plain";
+    set beresp.http.Retry-After = "5";
+
+    # Non-html version of the backend error
+    synthetic({"Filebin is currently not available ("} + beresp.status + {")"});
+    return (deliver);
+}
