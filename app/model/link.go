@@ -1,6 +1,6 @@
 package model
 
 type Link struct {
-	Rel	string
-	Href	string
+	Rel  string
+	Href string
 }

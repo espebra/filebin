@@ -3,27 +3,26 @@ package model
 import (
 	"errors"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"time"
-	"os"
 
 	"github.com/dustin/go-humanize"
-        "github.com/rwcarlsen/goexif/exif"
+	"github.com/rwcarlsen/goexif/exif"
 )
 
 type Tag struct {
-	Tag		    	string		`json:"tag"`
-	TagDir			string		`json:"-"`
-	ExpirationAt		time.Time	`json:"-"`
-	ExpirationReadable	string		`json:"expiration"`
-	Expired			bool		`json:"-"`
-	LastUpdateAt		time.Time	`json:"-"`
-	LastUpdateReadable	string		`json:"lastupdate"`
-	Files			[]File		`json:"files"`
-	Album		    	bool		`json:"-"`
+	Tag                string    `json:"tag"`
+	TagDir             string    `json:"-"`
+	ExpirationAt       time.Time `json:"-"`
+	ExpirationReadable string    `json:"expiration"`
+	Expired            bool      `json:"-"`
+	LastUpdateAt       time.Time `json:"-"`
+	LastUpdateReadable string    `json:"lastupdate"`
+	Files              []File    `json:"files"`
+	Album              bool      `json:"-"`
 }
-
 
 //func (t *Tag) GenerateTag() error {
 //	var tag = randomString(16)
@@ -57,7 +56,7 @@ func (t *Tag) StatInfo() error {
 	if isDir(t.TagDir) == false {
 		return errors.New("Tag does not exist.")
 	}
-	
+
 	i, err := os.Lstat(t.TagDir)
 	if err != nil {
 		return err
@@ -68,17 +67,17 @@ func (t *Tag) StatInfo() error {
 }
 
 func (t *Tag) IsExpired(expiration int64) (bool, error) {
-        now := time.Now().UTC()
+	now := time.Now().UTC()
 
-        // Calculate if the tag is expired or not
-        if now.Before(t.ExpirationAt) {
-                // Tag still valid
+	// Calculate if the tag is expired or not
+	if now.Before(t.ExpirationAt) {
+		// Tag still valid
 		return false, nil
-        } else {
-                // Tag expired
-                t.Expired = true
+	} else {
+		// Tag expired
+		t.Expired = true
 		return true, nil
-        }
+	}
 }
 
 func (t *Tag) CalculateExpiration(expiration int64) error {
@@ -108,7 +107,7 @@ func (t *Tag) List(baseurl string) error {
 			continue
 		}
 
-		var f = File {}
+		var f = File{}
 		f.SetFilename(file.Name())
 		f.SetTag(t.Tag)
 		f.TagDir = t.TagDir
@@ -130,15 +129,15 @@ func (t *Tag) List(baseurl string) error {
 			return err
 		}
 
-		if err := f.DetectMIME (); err != nil {
+		if err := f.DetectMIME(); err != nil {
 			return err
 		}
 
-        	if f.MediaType() == "image" {
+		if f.MediaType() == "image" {
 			if err := f.ParseExif(); err != nil {
 				// XXX: Log this
 				//return err
-        		}
+			}
 
 			if exif.IsCriticalError(err) == false {
 				if err := f.ExtractDateTime(); err != nil {
@@ -147,12 +146,12 @@ func (t *Tag) List(baseurl string) error {
 				}
 			}
 
-        		extra := make(map[string]string)
-        		if !f.DateTime.IsZero() {
-        			extra["DateTime"] = f.DateTime.String()
-        		}
-        		f.Extra = extra
-        	}
+			extra := make(map[string]string)
+			if !f.DateTime.IsZero() {
+				extra["DateTime"] = f.DateTime.String()
+			}
+			f.Extra = extra
+		}
 
 		//f.ExpirationAt = t.ExpirationAt
 		//f.ExpirationReadable = t.ExpirationReadable

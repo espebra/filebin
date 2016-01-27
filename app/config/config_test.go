@@ -15,4 +15,3 @@ func TestInit(t *testing.T) {
 		t.Fatal("Missing Host")
 	}
 }
-

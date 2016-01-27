@@ -1,14 +1,14 @@
 package output
 
 import (
+	"archive/zip"
+	"encoding/json"
+	"html/template"
 	"io"
 	"net/http"
-	"encoding/json"
-	"strconv"
-	"html/template"
-	"path/filepath"
-	"archive/zip"
 	"os"
+	"path/filepath"
+	"strconv"
 
 	"github.com/espebra/filebin/app/model"
 )
@@ -47,17 +47,17 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]st
 		ctx.Log.Fatalln(err)
 	}
 
-        for header, value := range h {
-                w.Header().Set(header, value)
-        }
+	for header, value := range h {
+		w.Header().Set(header, value)
+	}
 
-        w.WriteHeader(status)
+	w.WriteHeader(status)
 	ctx.Log.Println("Response status: " + strconv.Itoa(status))
 
 	// To send multiple structs to the template
 	err = t.Execute(w, map[string]interface{}{
 		"Data": d,
-		"Ctx": ctx,
+		"Ctx":  ctx,
 	})
 	if err != nil {
 		ctx.Log.Fatalln(err)
@@ -71,7 +71,7 @@ func ZIPresponse(w http.ResponseWriter, status int, tag string, h map[string]str
 		w.Header().Set(header, value)
 	}
 
-	w.Header().Set("Content-Disposition", `attachment; filename="` + tag + `.zip"`)
+	w.Header().Set("Content-Disposition", `attachment; filename="`+tag+`.zip"`)
 
 	zw := zip.NewWriter(w)
 

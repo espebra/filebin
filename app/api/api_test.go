@@ -1,8 +1,8 @@
 package api
 
 import (
-	"testing"
 	"math/rand"
+	"testing"
 )
 
 func TestTriggers(t *testing.T) {
@@ -40,9 +40,9 @@ func TestTriggers(t *testing.T) {
 }
 
 func TestRandomString(t *testing.T) {
-      rand.Seed(1)
-      str := randomString(16)
-      if str != "fpllngzieyoh43e0" {
-              t.Fatal("Random string from known seed is not", str)
-      }
+	rand.Seed(1)
+	str := randomString(16)
+	if str != "fpllngzieyoh43e0" {
+		t.Fatal("Random string from known seed is not", str)
+	}
 }

@@ -1,21 +1,21 @@
 package main
 
 import (
-	"os"
-	"fmt"
 	"flag"
-	"time"
-	"strconv"
-	"net/http"
-	"math/rand"
+	"fmt"
 	"log"
+	"math/rand"
+	"net/http"
+	"os"
+	"strconv"
+	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/GeertJohan/go.rice"
+	"github.com/gorilla/mux"
 
+	"github.com/espebra/filebin/app/api"
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/model"
-	"github.com/espebra/filebin/app/api"
 )
 
 var cfg = config.Global
@@ -29,24 +29,24 @@ var templateBox *rice.Box
 var WorkQueue = make(chan model.File, 1000)
 
 func isDir(path string) bool {
-        fi, err := os.Stat(path)
-        if err != nil {
-                return false
-        }
-        if fi.IsDir() {
-                return true
-        } else {
-                return false
-        }
+	fi, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	if fi.IsDir() {
+		return true
+	} else {
+		return false
+	}
 }
 
 func generateReqId(n int) string {
-        var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
-        b := make([]rune, n)
-        for i := range b {
-                b[i] = letters[rand.Intn(len(letters))]
-        }
-        return string(b)
+	var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }
 
 func init() {
@@ -110,9 +110,9 @@ func init() {
 		cfg.TriggerUploadedFile,
 		"Command to execute when a file is uploaded.")
 
-//	flag.StringVar(&cfg.TriggerExpiredTag, "trigger-expired-tag",
-//		cfg.TriggerExpiredTag,
-//		"Trigger to execute when a tag expires.")
+	//	flag.StringVar(&cfg.TriggerExpiredTag, "trigger-expired-tag",
+	//		cfg.TriggerExpiredTag,
+	//		"Trigger to execute when a tag expires.")
 
 	flag.BoolVar(&cfg.Version, "version",
 		cfg.Version, "Show the version information.")
@@ -124,7 +124,7 @@ func init() {
 		fmt.Println("UTC Build Time: " + buildstamp)
 		os.Exit(0)
 	}
-	
+
 	//if (!IsDir(cfg.Logdir)) {
 	//    fmt.Println("The specified log directory is not a directory: ",
 	//        cfg.Logdir)
@@ -144,16 +144,16 @@ func init() {
 	}
 
 	if cfg.Maxheaderbytes < 1 ||
-		cfg.Maxheaderbytes > 2 << 40 {
+		cfg.Maxheaderbytes > 2<<40 {
 		log.Fatalln("Invalid max header bytes, aborting.")
 	}
 
-	if (!isDir(cfg.Tempdir)) {
-	    log.Fatalln("The directory " + cfg.Tempdir + " does not exist.")
+	if !isDir(cfg.Tempdir) {
+		log.Fatalln("The directory " + cfg.Tempdir + " does not exist.")
 	}
 
-	if (!isDir(cfg.Filedir)) {
-	    log.Fatalln("The directory " + cfg.Filedir + " does not exist.")
+	if !isDir(cfg.Filedir) {
+		log.Fatalln("The directory " + cfg.Filedir + " does not exist.")
 	}
 
 	//if _, err := os.Stat(cfg.GeoIP2); err == nil {
@@ -192,16 +192,16 @@ func main() {
 	//log.Println("Log directory: " + cfg.Logdir)
 	log.Println("Baseurl: " + cfg.Baseurl)
 
-        var trigger = cfg.TriggerNewTag
-        if trigger == "" {
-            trigger = "Not set"
-        }
+	var trigger = cfg.TriggerNewTag
+	if trigger == "" {
+		trigger = "Not set"
+	}
 	log.Println("Trigger - New tag: " + trigger)
 
-        trigger = cfg.TriggerUploadedFile
-        if trigger == "" {
-            trigger = "Not set"
-        }
+	trigger = cfg.TriggerUploadedFile
+	if trigger == "" {
+		trigger = "Not set"
+	}
 	log.Println("Trigger - Uploaded file: " + trigger)
 
 	//fmt.Println("Trigger Expired tag: " + cfg.TriggerExpiredTag)
@@ -215,7 +215,7 @@ func main() {
 	http.Handle("/", httpInterceptor(router))
 
 	// Accept trailing slashes.
-        // Disabling this feature for now since it might not be needed. Try to
+	// Disabling this feature for now since it might not be needed. Try to
 	// find some other way of accepting trailing slashes where appropriate
 	// instead of globally.
 	//router.StrictSlash(true)
@@ -246,26 +246,26 @@ func main() {
 	// Start dispatcher that will handle all background processing
 	model.StartDispatcher(cfg.Workers, WorkQueue, log)
 
-	err := http.ListenAndServe(cfg.Host + ":" + strconv.Itoa(cfg.Port), nil)
+	err := http.ListenAndServe(cfg.Host+":"+strconv.Itoa(cfg.Port), nil)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 }
 
-func reqHandler(fn func (http.ResponseWriter, *http.Request, config.Configuration, model.Context)) http.HandlerFunc {
+func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration, model.Context)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now().UTC()
 		reqId := "r-" + generateReqId(5)
 
 		// Populate the context for this request here
-		var ctx = model.Context {}
+		var ctx = model.Context{}
 		ctx.TemplateBox = templateBox
 		ctx.StaticBox = staticBox
 		ctx.Baseurl = cfg.Baseurl
 		ctx.WorkQueue = WorkQueue
 
 		// Initialize logger for this request
-		ctx.Log = log.New(os.Stdout, reqId + " ", log.LstdFlags)
+		ctx.Log = log.New(os.Stdout, reqId+" ", log.LstdFlags)
 
 		ctx.Log.Println(r.Method + " " + r.RequestURI)
 		ctx.Log.Println("Remote address: " + r.RemoteAddr)
@@ -294,5 +294,3 @@ func httpInterceptor(router http.Handler) http.Handler {
 		router.ServeHTTP(w, r)
 	})
 }
-
-

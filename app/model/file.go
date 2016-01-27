@@ -7,59 +7,59 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"time"
 
-        "github.com/dustin/go-humanize"
-	"github.com/rwcarlsen/goexif/exif"
 	"github.com/disintegration/imaging"
+	"github.com/dustin/go-humanize"
+	"github.com/rwcarlsen/goexif/exif"
 )
 
 type File struct {
-	Filename		string		`json:"filename"`
-	Tag			string		`json:"tag"`
-	TagDir			string		`json:"-"`
-	Bytes			int64		`json:"bytes"`
-	BytesReadable		string		`json:"-"`
-	MIME			string		`json:"mime"`
-	CreatedReadable		string		`json:"created"`
-	CreatedAt		time.Time	`json:"-"`
-	Links			[]Link		`json:"links"`
-	Checksum		string		`json:"checksum"`
-	Algorithm		string		`json:"algorithm"`
-	Verified		bool		`json:"verified"`
-	RemoteAddr		string		`json:"-"`
-	UserAgent		string		`json:"-"`
-	Tempfile		string		`json:"-"`
-	Extra			interface{}	`json:"extra"`
+	Filename        string      `json:"filename"`
+	Tag             string      `json:"tag"`
+	TagDir          string      `json:"-"`
+	Bytes           int64       `json:"bytes"`
+	BytesReadable   string      `json:"-"`
+	MIME            string      `json:"mime"`
+	CreatedReadable string      `json:"created"`
+	CreatedAt       time.Time   `json:"-"`
+	Links           []Link      `json:"links"`
+	Checksum        string      `json:"checksum"`
+	Algorithm       string      `json:"algorithm"`
+	Verified        bool        `json:"verified"`
+	RemoteAddr      string      `json:"-"`
+	UserAgent       string      `json:"-"`
+	Tempfile        string      `json:"-"`
+	Extra           interface{} `json:"extra"`
 
 	// Image specific attributes
-        DateTime                time.Time       `json:"-"`
-        Longitude               float64         `json:"-"`
-        Latitude                float64         `json:"-"`
-        Altitude                string          `json:"-"`
-        Thumbnail               bool            `json:"-"`
-        Exif                    *exif.Exif      `json:"-"`
+	DateTime  time.Time  `json:"-"`
+	Longitude float64    `json:"-"`
+	Latitude  float64    `json:"-"`
+	Altitude  string     `json:"-"`
+	Thumbnail bool       `json:"-"`
+	Exif      *exif.Exif `json:"-"`
 }
 
 func (f *File) SetTag(s string) error {
-        validTag := regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
-        if validTag.MatchString(s) == false {
-                return errors.New("Invalid tag specified. It contains " +
-                        "illegal characters or is too short")
-        }
-        f.Tag = s
-        return nil
+	validTag := regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
+	if validTag.MatchString(s) == false {
+		return errors.New("Invalid tag specified. It contains " +
+			"illegal characters or is too short")
+	}
+	f.Tag = s
+	return nil
 }
 
 func (f *File) SetTagDir(filedir string) error {
 	if f.Tag == "" {
 		return errors.New("Tag not set.")
 	}
-        f.TagDir = filepath.Join(filedir, f.Tag)
+	f.TagDir = filepath.Join(filedir, f.Tag)
 	return nil
 }
 
@@ -74,8 +74,8 @@ func (f *File) SetFilename(s string) error {
 
 	// Reject illegal filenames
 	switch safe {
-		case ".", "..":
-			return errors.New("Invalid filename specified.")
+	case ".", "..":
+		return errors.New("Invalid filename specified.")
 	}
 
 	// Set filename to the safe variant
@@ -90,10 +90,10 @@ func (f *File) DetectMIME() error {
 		return errors.New("TagDir not set.")
 	}
 
-        fpath := filepath.Join(f.TagDir, f.Filename)
-        if f.Tempfile != "" {
-                fpath = filepath.Join(f.Tempfile)
-        }
+	fpath := filepath.Join(f.TagDir, f.Filename)
+	if f.Tempfile != "" {
+		fpath = filepath.Join(f.Tempfile)
+	}
 
 	fp, err := os.Open(fpath)
 	if err != nil {
@@ -114,33 +114,33 @@ func (f *File) DetectMIME() error {
 }
 
 func (f *File) MediaType() string {
-        s := regexp.MustCompile("/").Split(f.MIME, 2)
-        if len(s) > 0 {
-                return s[0]
-        }
-        return ""
+	s := regexp.MustCompile("/").Split(f.MIME, 2)
+	if len(s) > 0 {
+		return s[0]
+	}
+	return ""
 }
 
 func (f *File) GenerateLinks(baseurl string) {
-	fileLink := Link {}
+	fileLink := Link{}
 	fileLink.Rel = "file"
 	fileLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename
 	f.Links = append(f.Links, fileLink)
 
-	tagLink := Link {}
+	tagLink := Link{}
 	tagLink.Rel = "tag"
 	tagLink.Href = baseurl + "/" + f.Tag
 	f.Links = append(f.Links, tagLink)
 
 	if f.ImageExists(75, 75) {
-		thumbLink := Link {}
+		thumbLink := Link{}
 		thumbLink.Rel = "thumbnail"
 		thumbLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?width=75&height=75"
 		f.Links = append(f.Links, thumbLink)
 	}
 
 	if f.ImageExists(1140, 0) {
-		albumLink := Link {}
+		albumLink := Link{}
 		albumLink.Rel = "album"
 		albumLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?width=1140"
 		f.Links = append(f.Links, albumLink)
@@ -186,7 +186,7 @@ func (f *File) Exists() bool {
 }
 
 func (f *File) ImageExists(width int, height int) bool {
-        path := f.ImagePath(width, height)
+	path := f.ImagePath(width, height)
 	if isFile(path) {
 		return true
 	}
@@ -197,7 +197,7 @@ func (f *File) StatInfo() error {
 	if isDir(f.TagDir) == false {
 		return errors.New("Tag does not exist.")
 	}
-	
+
 	path := filepath.Join(f.TagDir, f.Filename)
 	i, err := os.Lstat(path)
 	if err != nil {
@@ -207,7 +207,7 @@ func (f *File) StatInfo() error {
 	f.CreatedReadable = humanize.Time(f.CreatedAt)
 	f.Bytes = i.Size()
 	f.BytesReadable = humanize.Bytes(uint64(f.Bytes))
-	
+
 	//i, err = os.Lstat(f.TagDir)
 	//if err != nil {
 	//	return err
@@ -227,7 +227,7 @@ func (f *File) Remove() error {
 	}
 
 	path := filepath.Join(f.TagDir, f.Filename)
-	
+
 	err := os.Remove(path)
 	return err
 }
@@ -252,17 +252,17 @@ func (f *File) WriteTempfile(d io.Reader, tempdir string) error {
 func (f *File) calculateSHA256(path string) error {
 	var err error
 	var result []byte
-    	fp, err := os.Open(path)
-    	if err != nil {
-    	    return err
-    	}
-    	defer fp.Close()
-
-    	hash := sha256.New()
-    	_, err = io.Copy(hash, fp)
+	fp, err := os.Open(path)
 	if err != nil {
-    	    return err
-    	}
+		return err
+	}
+	defer fp.Close()
+
+	hash := sha256.New()
+	_, err = io.Copy(hash, fp)
+	if err != nil {
+		return err
+	}
 	f.Checksum = hex.EncodeToString(hash.Sum(result))
 	f.Algorithm = "SHA256"
 	return nil
@@ -300,7 +300,7 @@ func (f *File) ParseExif() error {
 	if err != nil {
 		return err
 	}
-	
+
 	f.Exif, err = exif.Decode(fp)
 	if err != nil {
 		return err
@@ -313,7 +313,7 @@ func (f *File) ExtractDateTime() error {
 	f.DateTime, err = f.Exif.DateTime()
 	return err
 }
-	
+
 func (f *File) ExtractLocationInfo() error {
 	var err error
 	f.Latitude, f.Longitude, err = f.Exif.LatLong()
@@ -330,10 +330,10 @@ func (f *File) ClearTemp() error {
 	return err
 }
 
-func (f *File) ImagePath(width int, height int) (string) {
-	return filepath.Join(f.TagDir, ".cache", 
-		strconv.Itoa(width) + "x" + strconv.Itoa(height) + "-" +
-		f.Filename)
+func (f *File) ImagePath(width int, height int) string {
+	return filepath.Join(f.TagDir, ".cache",
+		strconv.Itoa(width)+"x"+strconv.Itoa(height)+"-"+
+			f.Filename)
 }
 
 func (f *File) GenerateImage(width int, height int, crop bool) error {
@@ -346,7 +346,7 @@ func (f *File) GenerateImage(width int, height int, crop bool) error {
 
 	if crop {
 		im := imaging.Fill(s, width, height, imaging.Center,
-		imaging.Lanczos)
+			imaging.Lanczos)
 		err = imaging.Save(im, f.ImagePath(width, height))
 	} else {
 		im := imaging.Resize(s, width, height, imaging.Lanczos)

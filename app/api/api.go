@@ -1,18 +1,18 @@
 package api
 
 import (
-	"os/exec"
-	"time"
-	"strconv"
+	"fmt"
+	"math/rand"
 	"net/http"
-        "math/rand"
+	"net/url"
+	"os/exec"
 	"path/filepath"
 	"regexp"
-	"fmt"
-	"net/url"
+	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
-        "github.com/rwcarlsen/goexif/exif"
+	"github.com/rwcarlsen/goexif/exif"
 
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/model"
@@ -51,22 +51,22 @@ func cmdHandler(cmd *exec.Cmd) error {
 }
 
 func randomString(n int) string {
-        var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
-        b := make([]rune, n)
-        for i := range b {
-                b[i] = letters[rand.Intn(len(letters))]
-        }
-        return string(b)
+	var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }
 
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var err error
-	f := model.File { }
+	f := model.File{}
 	f.RemoteAddr = r.RemoteAddr
 	f.UserAgent = r.Header.Get("User-Agent")
 
 	// Extract the tag from the request
-	if (r.Header.Get("tag") == "") {
+	if r.Header.Get("tag") == "" {
 		tag := randomString(cfg.DefaultTagLength)
 		err = f.SetTag(tag)
 		ctx.Log.Println("Tag generated: " + f.Tag)
@@ -77,7 +77,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	}
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest);
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	f.SetTagDir(cfg.Filedir)
@@ -91,7 +91,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		// Clean up by removing the tempfile
 		f.ClearTemp()
 
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 	ctx.Log.Println("Tempfile: " + f.Tempfile)
@@ -104,8 +104,8 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		// Clean up by removing the tempfile
 		f.ClearTemp()
 
-		http.Error(w, "No content. The file size must be more than " +
-			"0 bytes.", http.StatusBadRequest);
+		http.Error(w, "No content. The file size must be more than "+
+			"0 bytes.", http.StatusBadRequest)
 		return
 	}
 
@@ -118,7 +118,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	ctx.Log.Println("Checksum calculated: " + f.Checksum)
 	if err != nil {
 		ctx.Log.Println("The specified checksum did not match")
-		http.Error(w, "Checksum did not match", http.StatusConflict);
+		http.Error(w, "Checksum did not match", http.StatusConflict)
 		return
 	}
 
@@ -137,7 +137,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	err = f.EnsureTagDirectoryExists()
 	if err != nil {
 		ctx.Log.Println("Unable to create tag directory: ", f.TagDir)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError);
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
@@ -145,18 +145,18 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	expired, err := t.IsExpired(cfg.Expiration)
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w,"Internal server error", 500)
+		http.Error(w, "Internal server error", 500)
 		return
 	}
 	if expired {
 		ctx.Log.Println("The tag has expired. Aborting.")
-		http.Error(w,"This tag has expired.", 410)
+		http.Error(w, "This tag has expired.", 410)
 		return
 	}
 
 	// Extract the filename from the request
 	fname := r.Header.Get("filename")
-	if (fname == "") {
+	if fname == "" {
 		ctx.Log.Println("Filename generated: " + f.Checksum)
 		f.SetFilename(f.Checksum)
 	} else {
@@ -165,7 +165,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		if err != nil {
 			ctx.Log.Println(err)
 			http.Error(w, "Invalid filename specified. It contains illegal characters or is too short.",
-				http.StatusBadRequest);
+				http.StatusBadRequest)
 			return
 		}
 	}
@@ -182,10 +182,10 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	}
 
 	ctx.Log.Println("Media type: " + f.MediaType())
-        if f.MediaType() == "image" {
-                err = f.ParseExif()
-                if err != nil {
-                        ctx.Log.Println(err)
+	if f.MediaType() == "image" {
+		err = f.ParseExif()
+		if err != nil {
+			ctx.Log.Println(err)
 		}
 
 		if exif.IsCriticalError(err) == false {
@@ -203,13 +203,13 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 			dt := f.DateTime.Format("060102-150405")
 
 			// List of filenames to modify
-			if (f.Filename == "image.jpeg") {
+			if f.Filename == "image.jpeg" {
 				fname = "img-" + dt + ".jpeg"
 			}
-			if (f.Filename == "image.gif") {
+			if f.Filename == "image.gif" {
 				fname = "img-" + dt + ".gif"
 			}
-			if (f.Filename == "image.png") {
+			if f.Filename == "image.png" {
 				fname = "img-" + dt + ".png"
 			}
 
@@ -233,8 +233,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 			extra["DateTime"] = f.DateTime.String()
 		}
 		f.Extra = extra
-        }
-
+	}
 
 	// Promote file from tempdir to the published tagdir
 	f.Publish()
@@ -245,7 +244,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	err = f.StatInfo()
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w,"Internal Server Error", 500)
+		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 
@@ -282,37 +281,37 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	// Request headers
 	params := mux.Vars(r)
 
-	f := model.File {}
+	f := model.File{}
 	f.SetFilename(params["filename"])
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w,"Invalid filename specified. It contains illegal characters or is too short.", 400)
+		http.Error(w, "Invalid filename specified. It contains illegal characters or is too short.", 400)
 		return
 	}
 	err = f.SetTag(params["tag"])
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
+		http.Error(w, "Invalid tag specified. It contains illegal characters or is too short.", 400)
 		return
 	}
 	f.SetTagDir(cfg.Filedir)
 
-	t := model.Tag { }
+	t := model.Tag{}
 	t.SetTag(f.Tag)
 	t.SetTagDir(cfg.Filedir)
 	t.CalculateExpiration(cfg.Expiration)
 	expired, err := t.IsExpired(cfg.Expiration)
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w,"Internal Server Error", 500)
+		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 	if expired {
 		ctx.Log.Println("Expired: " + t.ExpirationReadable)
-		http.Error(w,"This tag has expired.", 410)
+		http.Error(w, "This tag has expired.", 410)
 		return
 	}
-	
+
 	// Default path
 	path := filepath.Join(f.TagDir, f.Filename)
 
@@ -323,22 +322,22 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		ctx.Log.Println("MIME detected: " + f.MIME)
 	}
 
-        if f.MediaType() == "image" {
+	if f.MediaType() == "image" {
 		width, _ := strconv.Atoi(queryParams.Get("width"))
 		height, _ := strconv.Atoi(queryParams.Get("height"))
-		if (width > 0)||(height > 0) {
+		if (width > 0) || (height > 0) {
 			ctx.Log.Println("Size requested: " +
 				strconv.Itoa(width) + "x" +
 				strconv.Itoa(height) + " px")
 			if f.ImageExists(width, height) {
 				path = f.ImagePath(width, height)
 			} else {
-				http.Error(w,"Image not found", 404)
+				http.Error(w, "Image not found", 404)
 				return
 			}
 		}
 	}
-	
+
 	w.Header().Set("Cache-Control", "max-age=1")
 	http.ServeFile(w, r, path)
 }
@@ -347,7 +346,7 @@ func DeleteTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	var err error
 	params := mux.Vars(r)
 
-	t := model.Tag { }
+	t := model.Tag{}
 
 	err = t.SetTag(params["tag"])
 	if err != nil {
@@ -388,40 +387,40 @@ func DeleteTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var err error
 	params := mux.Vars(r)
-	f := model.File {}
+	f := model.File{}
 	f.SetFilename(params["filename"])
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w,"Invalid filename specified. It contains illegal characters or is too short.", 400)
+		http.Error(w, "Invalid filename specified. It contains illegal characters or is too short.", 400)
 		return
 	}
 	err = f.SetTag(params["tag"])
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w,"Invalid tag specified. It contains illegal characters or is too short.", 400)
+		http.Error(w, "Invalid tag specified. It contains illegal characters or is too short.", 400)
 		return
 	}
 	f.SetTagDir(cfg.Filedir)
 
 	if f.Exists() == false {
 		ctx.Log.Println("The file does not exist.")
-		http.Error(w,"File Not Found", 404)
+		http.Error(w, "File Not Found", 404)
 		return
 	}
 
-	t := model.Tag { }
+	t := model.Tag{}
 	t.SetTag(f.Tag)
 	t.SetTagDir(cfg.Filedir)
 	t.CalculateExpiration(cfg.Expiration)
 	expired, err := t.IsExpired(cfg.Expiration)
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w,"Internal server error", 500)
+		http.Error(w, "Internal server error", 500)
 		return
 	}
 	if expired {
 		ctx.Log.Println("Expired: " + t.ExpirationReadable)
-		http.Error(w,"This tag has expired.", 410)
+		http.Error(w, "This tag has expired.", 410)
 		return
 	}
 
@@ -434,14 +433,14 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	err = f.StatInfo()
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w,"Internal Server Error", 500)
+		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 
 	err = f.Remove()
- 	if err != nil {
+	if err != nil {
 		ctx.Log.Println("Unable to remove file: ", err)
-		http.Error(w,"Internal Server Error", 500)
+		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 
@@ -455,7 +454,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 
 func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	params := mux.Vars(r)
-	t := model.Tag {}
+	t := model.Tag{}
 	err := t.SetTag(params["tag"])
 	if err != nil {
 		ctx.Log.Println(err)
@@ -469,12 +468,12 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 		expired, err := t.IsExpired(cfg.Expiration)
 		if err != nil {
 			ctx.Log.Println(err)
-			http.Error(w,"Internal server error", 500)
+			http.Error(w, "Internal server error", 500)
 			return
 		}
 		if expired {
 			ctx.Log.Println("Expired: " + t.ExpirationReadable)
-			http.Error(w,"This tag has expired.", 410)
+			http.Error(w, "This tag has expired.", 410)
 			return
 		}
 
@@ -488,7 +487,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 		err = t.List(cfg.Baseurl)
 		if err != nil {
 			ctx.Log.Println(err)
-			http.Error(w,"Error reading the tag contents.", 404)
+			http.Error(w, "Error reading the tag contents.", 404)
 			return
 		}
 	}
@@ -520,7 +519,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	} else {
 		if len(t.Files) == 0 {
 			output.HTMLresponse(w, "newtag", status, headers, t, ctx)
-		} else  {
+		} else {
 			if r.FormValue("o") == "album" {
 				output.HTMLresponse(w, "viewalbum", status, headers, t, ctx)
 			} else {
@@ -532,7 +531,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 }
 
 func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	t := model.Tag {}
+	t := model.Tag{}
 	tag := randomString(cfg.DefaultTagLength)
 	err := t.SetTag(tag)
 	if err != nil {

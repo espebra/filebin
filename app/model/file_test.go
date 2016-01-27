@@ -1,15 +1,15 @@
 package model
 
 import (
-	"testing"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"testing"
 )
 
 func TestSetFilename(t *testing.T) {
 	var err error
-	f := File {}
+	f := File{}
 	err = f.SetFilename("foo")
 	if err != nil {
 		t.Fatal(err)
@@ -34,7 +34,7 @@ func TestSetFilename(t *testing.T) {
 		t.Fatal("c Sanitizing failed:", f.Filename)
 	}
 
-	e := File {}
+	e := File{}
 	err = e.SetFilename("foo")
 	if err != nil {
 		t.Fatal(err)
@@ -44,7 +44,7 @@ func TestSetFilename(t *testing.T) {
 	}
 
 	// Reset
-	e = File {}
+	e = File{}
 	e.Checksum = "123456789012345678901234567890"
 	err = e.SetFilename("")
 	if err != nil {
@@ -53,7 +53,7 @@ func TestSetFilename(t *testing.T) {
 		t.Fatal("Should not accept empty filename")
 	}
 	if e.Filename != e.Checksum {
-		t.Fatal("c Sanitizing failed " + e.Filename + " should be the checksum:", e.Checksum)
+		t.Fatal("c Sanitizing failed "+e.Filename+" should be the checksum:", e.Checksum)
 	}
 
 }
@@ -61,7 +61,7 @@ func TestSetFilename(t *testing.T) {
 func TestSetTag(t *testing.T) {
 	var err error
 
-	f := File {}
+	f := File{}
 	err = f.SetTag("s")
 	if err == nil {
 		t.Fatal("Invalid tag specified.")
@@ -91,7 +91,7 @@ func TestSetTag(t *testing.T) {
 func TestDetectMIME(t *testing.T) {
 	var err error
 
-	f := File {}
+	f := File{}
 	f.TagDir = "testdata"
 
 	f.Filename = "image.png"
@@ -137,8 +137,8 @@ func TestEnsureDirectoryExists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	
-	f := File {}
+
+	f := File{}
 	f.SetTag("foofoofoo")
 	f.TagDir = filepath.Join(dir, f.Tag)
 
@@ -206,7 +206,7 @@ func TestWriteTempfile(t *testing.T) {
 	from_file.Sync()
 	from_file.Seek(0, 0)
 
-	f := File {}
+	f := File{}
 	f.SetTag("foo")
 	f.SetFilename("bar")
 	f.TagDir = filepath.Join(dir, f.Tag)
@@ -231,7 +231,7 @@ func TestPublish(t *testing.T) {
 	}
 	defer os.Remove(dir)
 
-	f := File {}
+	f := File{}
 	f.SetTag("foo")
 	f.SetFilename("bar")
 	f.TagDir = filepath.Join(dir, f.Tag)
@@ -247,7 +247,7 @@ func TestPublish(t *testing.T) {
 }
 
 func TestGenerateLinks(t *testing.T) {
-	f := File {}
+	f := File{}
 	f.SetFilename("foo")
 	f.SetTag("validtag")
 	f.GenerateLinks("http://localhost:8080")
