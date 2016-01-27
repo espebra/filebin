@@ -12,6 +12,7 @@ Filebin is a web application that facilitates convenient file sharing over the w
 * [Configuration](#configuration)
 * [Web interface](#web-interface)
 * [Web service](#web-service)
+* [Development](#development)
 * [TODO](#todo)
 
 ## Features
@@ -265,6 +266,16 @@ Logs are written to stdout, and can easily be redirected to for example syslog w
 ## Database
 
 Filebin does currently not use any other database than the filesystem itself.
+
+## Development
+
+### Git hooks
+
+There is a pre-commit hook available in the repository that will make sure that commited go source code is properly formatted. Enable it with a symlink:
+
+```bash
+$ ln -s tools/git/pre-commit .git/hooks/pre-commit
+```
 
 ## TODO
 
