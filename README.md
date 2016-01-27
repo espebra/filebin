@@ -18,8 +18,8 @@ Filebin is a web application that facilitates convenient file sharing over the w
 
 * Responsive and mobile friendly [web interface](#web-interface).
 * All functionality available through an [HTTP API](#web-service).
-* Upload files using drag and drop or select files from a dialog box.
-* Large file support.
+* Upload files using drag and drop, select files from a dialog box or use cURL ([examples below](#web-service))
+* Large file support. 10 GB file upload has been tested, but it should work fine with larger files as well.
 * Archive (zip) download to make it easy to download multiple files in one go.
 * Files expire automatically after a configurable period of time.
 * Files and entire tags can be deleted manually.
@@ -38,13 +38,13 @@ It is recommended but not required to run it behind a TLS/SSL proxy such as [Hit
 
 Install Golang:
 
-```
+```bash
 $ sudo yum/apt-get/brew install golang
 ```
 
 Create the Go workspace and set the ``GOPATH`` environment variable:
 
-```
+```bash
 $ mkdir ${HOME}/go
 $ cd ${HOME}/go
 $ mkdir src bin pkg
@@ -54,7 +54,7 @@ $ export PATH="${PATH}:${GOPATH}/bin"
 
 Download and install Filebin:
 
-```
+```bash
 $ go get -d github.com/espebra/filebin
 $ cd ${GOPATH}/src/github.com/espebra/filebin
 $ make get-deps
@@ -63,7 +63,7 @@ $ make install
 
 The binary is created as ``${GOPATH}/bin/filebin``, which can be executed immediately. The ``--version`` argument prints the build time and the git commit hash used in the build.
 
-```
+```bash
 $ ${GOPATH}/bin/filebin --version
 Git Commit Hash: 40bd401ec350c86a46cdb3dc87f6b70c3c0b796b
 UTC Build Time: 2015-11-11 23:01:35
@@ -71,7 +71,7 @@ UTC Build Time: 2015-11-11 23:01:35
 
 Create the directories to use for storing files, logs and temporary files:
 
-```
+```bash
 $ mkdir ~/filebin ~/filebin/files ~/filebin/logs ~/filebin/temp
 ```
 
@@ -79,13 +79,13 @@ $ mkdir ~/filebin ~/filebin/files ~/filebin/logs ~/filebin/temp
 
 Configuration is done using command line arguments when starting filebin. The built in help text will show the various arguments available:
 
-```
+```bash
 $ ${GOPATH}/bin/filebin --help
 ```
 
 Some arguments commonly used to start ``filebin`` are:
 
-```
+```bash
 $ ${GOPATH}/bin/filebin \
   --host 0.0.0.0 --port 31337
   --baseurl http://api.example.com:31337
@@ -156,20 +156,20 @@ In all examples, the local file ``/path/to/some file`` will be uploaded.
 
 Using the following command, the ``tag`` will be automatically generated and the ``filename`` will be set to the SHA256 checksum of the content. The checksum of the content will not be verified.
 
-```
+```bash
 $ curl --data-binary "@/path/to/some file" http://localhost:31337/
 ```
 
 Using the following command, ``tag`` will be set to ``customtag`` and ``filename`` will be set to ``myfile``.
 
-```
+```bash
 $ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
   -H "tag: customtag" -H "filename: myfile"
 ```
 
 Using the following command, ``filebin`` will verify the checksum of the uploaded file and discard the upload if the checksum does not match the specified checksum:
 
-```
+```bash
 $ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
   -H "tag: customtag" -H "filename: myfile" \
   -H "content-sha256: 82b5f1d5d38641752d6cbb4b80f3ccae502973f8b77f1c712bd68d5324e67e33"
@@ -190,7 +190,7 @@ $ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
 
 The following command will print a JSON structure showing which files that available in the tag ``customtag``.
 
-```
+```bash
 $ curl http://localhost:31337/customtag
 ```
 
@@ -209,7 +209,7 @@ $ curl http://localhost:31337/customtag
 
 The following commands will download the files in ``customtag`` as a zip archive:
 
-```
+```bash
 $ curl http://localhost:31337/customtag?o=zip
 $ curl -H "content-type: application/zip" http://localhost:31337/customtag
 ```
@@ -228,7 +228,7 @@ $ curl -H "content-type: application/zip" http://localhost:31337/customtag
 
 Downloading a file is as easy as specifying the ``tag`` and the ``filename`` in the request URI:
 
-```
+```bash
 $ curl http://localhost:31337/customtag/myfile
 ```
 
@@ -254,7 +254,7 @@ $ curl http://localhost:31337/customtag/myfile
 
 ###### Examples
 
-```
+```bash
 $ curl -X DELETE http://localhost:31337/customtag/myfile
 ```
 
