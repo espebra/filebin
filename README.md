@@ -158,20 +158,20 @@ In all examples, the local file ``/path/to/some file`` will be uploaded.
 Using the following command, the ``tag`` will be automatically generated and the ``filename`` will be set to the SHA256 checksum of the content. The checksum of the content will not be verified.
 
 ```bash
-$ curl --data-binary "@/path/to/some file" http://localhost:31337/
+$ curl --data-binary "@/path/to/some file" https://filebin.example.com/
 ```
 
 Using the following command, ``tag`` will be set to ``customtag`` and ``filename`` will be set to ``myfile``.
 
 ```bash
-$ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
+$ curl --data-binary "@/path/to/some file" https://filebin.example.com/ \
   -H "tag: customtag" -H "filename: myfile"
 ```
 
 Using the following command, ``filebin`` will verify the checksum of the uploaded file and discard the upload if the checksum does not match the specified checksum:
 
 ```bash
-$ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
+$ curl --data-binary "@/path/to/some file" https://filebin.example.com/ \
   -H "tag: customtag" -H "filename: myfile" \
   -H "content-sha256: 82b5f1d5d38641752d6cbb4b80f3ccae502973f8b77f1c712bd68d5324e67e33"
 ```
@@ -192,7 +192,7 @@ $ curl --data-binary "@/path/to/some file" http://localhost:31337/ \
 The following command will print a JSON structure showing which files that available in the tag ``customtag``.
 
 ```bash
-$ curl http://localhost:31337/customtag
+$ curl https://filebin.example.com//customtag
 ```
 
 ### Fetch tag as a zip archive
@@ -211,8 +211,8 @@ $ curl http://localhost:31337/customtag
 The following commands will download the files in ``customtag`` as a zip archive:
 
 ```bash
-$ curl http://localhost:31337/customtag?o=zip
-$ curl -H "content-type: application/zip" http://localhost:31337/customtag
+$ curl https://filebin.example.com//customtag?o=zip
+$ curl -H "content-type: application/zip" https://filebin.example.com//customtag
 ```
 
 ### Download file
@@ -230,7 +230,7 @@ $ curl -H "content-type: application/zip" http://localhost:31337/customtag
 Downloading a file is as easy as specifying the ``tag`` and the ``filename`` in the request URI:
 
 ```bash
-$ curl http://localhost:31337/customtag/myfile
+$ curl https://filebin.example.com//customtag/myfile
 ```
 
 ### Delete file
@@ -256,7 +256,7 @@ $ curl http://localhost:31337/customtag/myfile
 ###### Examples
 
 ```bash
-$ curl -X DELETE http://localhost:31337/customtag/myfile
+$ curl -X DELETE https://filebin.example.com//customtag/myfile
 ```
 
 ## Logging
