@@ -192,7 +192,7 @@ $ curl --data-binary "@/path/to/some file" https://filebin.example.com/ \
 The following command will print a JSON structure showing which files that available in the tag ``customtag``.
 
 ```bash
-$ curl https://filebin.example.com//customtag
+$ curl https://filebin.example.com/customtag
 ```
 
 ### Fetch tag as a zip archive
@@ -211,8 +211,8 @@ $ curl https://filebin.example.com//customtag
 The following commands will download the files in ``customtag`` as a zip archive:
 
 ```bash
-$ curl https://filebin.example.com//customtag?o=zip
-$ curl -H "content-type: application/zip" https://filebin.example.com//customtag
+$ curl https://filebin.example.com/customtag?o=zip
+$ curl -H "content-type: application/zip" https://filebin.example.com/customtag
 ```
 
 ### Download file
@@ -230,7 +230,7 @@ $ curl -H "content-type: application/zip" https://filebin.example.com//customtag
 Downloading a file is as easy as specifying the ``tag`` and the ``filename`` in the request URI:
 
 ```bash
-$ curl https://filebin.example.com//customtag/myfile
+$ curl https://filebin.example.com/customtag/myfile
 ```
 
 ### Delete file
@@ -256,7 +256,7 @@ $ curl https://filebin.example.com//customtag/myfile
 ###### Examples
 
 ```bash
-$ curl -X DELETE https://filebin.example.com//customtag/myfile
+$ curl -X DELETE https://filebin.example.com/customtag/myfile
 ```
 
 ## Logging
