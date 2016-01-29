@@ -8,13 +8,13 @@ import (
 )
 
 // Dispatcher function to spawn a number of workers
-func StartDispatcher(nworkers int, WorkQueue chan File, log *log.Logger) {
+func StartDispatcher(nworkers int, CacheInvalidation bool, WorkQueue chan File, log *log.Logger) {
 	for i := 0; i < nworkers; i++ {
-		go StartWorker(WorkQueue, log)
+		go StartWorker(CacheInvalidation, WorkQueue, log)
 	}
 }
 
-func StartWorker(WorkQueue chan File, log *log.Logger) {
+func StartWorker(CacheInvalidation bool, WorkQueue chan File, log *log.Logger) {
 	var err error
 	for {
 		select {
@@ -34,6 +34,12 @@ func StartWorker(WorkQueue chan File, log *log.Logger) {
 				err = f.GenerateImage(1140, 0, false)
 				if err != nil {
 					log.Print(err)
+				}
+
+				if CacheInvalidation {
+					if err := f.Purge(); err != nil {
+						log.Print(err)
+					}
 				}
 			}
 			finishTime := time.Now().UTC()

@@ -257,6 +257,13 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		triggerUploadedFileHandler(cfg.TriggerUploadedFile, f.Tag, f.Filename)
 	}
 
+	// Purging any old content
+	if cfg.CacheInvalidation {
+		if err := f.Purge(); err != nil {
+			ctx.Log.Println(err)
+		}
+	}
+
 	ctx.WorkQueue <- f
 
 	headers := make(map[string]string)
@@ -338,7 +345,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		}
 	}
 
-	w.Header().Set("Cache-Control", "max-age=1")
+	w.Header().Set("Cache-Control", "max-age=3600")
 	http.ServeFile(w, r, path)
 }
 
@@ -362,6 +369,13 @@ func DeleteTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
+	t.List(cfg.Baseurl)
+	if err != nil {
+		ctx.Log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
 	// Tag exists, so let's remove it.
 	err = t.Remove()
 	if err != nil {
@@ -376,6 +390,15 @@ func DeleteTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		ctx.Log.Println("Failed to delete the tag. The tag dir still exists.")
 		http.Error(w, "Internal Server Error", 500)
 		return
+	}
+
+	// Purging any old content
+	if cfg.CacheInvalidation {
+		for _, f := range t.Files {
+			if err := f.Purge(); err != nil {
+				ctx.Log.Println(err)
+			}
+		}
 	}
 
 	ctx.Log.Println("Tag deleted successfully.")
@@ -444,6 +467,13 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		return
 	}
 
+	// Purging any old content
+	if cfg.CacheInvalidation {
+		if err := f.Purge(); err != nil {
+			ctx.Log.Println(err)
+		}
+	}
+
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
 
@@ -495,7 +525,6 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	//t.GenerateLinks(cfg.Baseurl)
 
 	headers := make(map[string]string)
-	headers["Cache-Control"] = "max-age=1"
 
 	var status = 200
 
@@ -508,15 +537,19 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 			path := filepath.Join(f.TagDir, f.Filename)
 			paths = append(paths, path)
 		}
+		// Low TTL since it is not cache invalidated
+		headers["Cache-Control"] = "max-age=120"
 		output.ZIPresponse(w, status, t.Tag, headers, paths, ctx)
 		return
 	}
 
 	if r.Header.Get("Content-Type") == "application/json" {
 		headers["Content-Type"] = "application/json"
+		headers["Cache-Control"] = "max-age=3600"
 		output.JSONresponse(w, status, headers, t, ctx)
 		return
 	} else {
+		headers["Cache-Control"] = "max-age=3600"
 		if len(t.Files) == 0 {
 			output.HTMLresponse(w, "newtag", status, headers, t, ctx)
 		} else {

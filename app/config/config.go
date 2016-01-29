@@ -16,6 +16,7 @@ type Configuration struct {
 	DefaultTagLength    int
 	Workers             int
 	Version             bool
+	CacheInvalidation   bool
 }
 
 var Global Configuration
@@ -37,5 +38,6 @@ func init() {
 		TriggerExpiredTag:   "",
 		DefaultTagLength:    16,
 		Workers:             1,
+		CacheInvalidation:   false,
 	}
 }

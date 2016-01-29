@@ -85,6 +85,10 @@ func init() {
 	flag.IntVar(&cfg.Maxheaderbytes, "maxheaderbytes",
 		cfg.Maxheaderbytes, "Max header size in bytes.")
 
+	flag.BoolVar(&cfg.CacheInvalidation, "cache-invalidation",
+		cfg.CacheInvalidation,
+		"HTTP PURGE requests will be sent on every change if enabled.")
+
 	flag.IntVar(&cfg.Workers, "workers",
 		cfg.Workers, "Number of workers for background processing.")
 
@@ -183,6 +187,8 @@ func main() {
 		strconv.Itoa(cfg.Writetimeout) + " seconds")
 	log.Println("Max header size: " +
 		strconv.Itoa(cfg.Maxheaderbytes) + " bytes")
+	log.Println("Cache invalidation enabled: " +
+		strconv.FormatBool(cfg.CacheInvalidation))
 	log.Println("Workers: " +
 		strconv.Itoa(cfg.Workers))
 	log.Println("Expiration time: " +
@@ -244,7 +250,7 @@ func main() {
 	//router.HandleFunc("/user/{id:[0-9]+}", user.GetViewPage).Methods("GET")
 
 	// Start dispatcher that will handle all background processing
-	model.StartDispatcher(cfg.Workers, WorkQueue, log)
+	model.StartDispatcher(cfg.Workers, cfg.CacheInvalidation, WorkQueue, log)
 
 	err := http.ListenAndServe(cfg.Host+":"+strconv.Itoa(cfg.Port), nil)
 	if err != nil {

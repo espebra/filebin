@@ -5,7 +5,7 @@ Description=Filebin
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/filebin --filedir /srv/filebin/files --tempdir /srv/filebin/temp --logdir /var/log/filebin --baseurl https://filebin.example.com --port 8080
+ExecStart=/usr/bin/filebin --filedir /srv/filebin/files --tempdir /srv/filebin/temp --logdir /var/log/filebin --baseurl https://filebin.example.com --port 8080 --cache-invalidation
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=filebin

@@ -375,6 +375,38 @@ func (f *File) GenerateImage(width int, height int, crop bool) error {
 //        return err
 //}
 
+func (f *File) Purge() error {
+	for _, l := range f.Links {
+		if err := purge(l.Href); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func purge(url string) error {
+	timeout := time.Duration(2 * time.Second)
+	client := &http.Client{
+		Timeout: timeout,
+	}
+
+	// Invalidate the file
+	req, err := http.NewRequest("PURGE", url, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Do(req)
+	if err != nil {
+		return err
+	}
+	// Should probably log the URL and response code
+	//fmt.Println("PURGE " + url + ": ", resp.StatusCode)
+
+	return nil
+}
+
 func isDir(path string) bool {
 	fi, err := os.Stat(path)
 	if err != nil {

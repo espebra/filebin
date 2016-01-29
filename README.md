@@ -93,6 +93,7 @@ $ ${GOPATH}/bin/filebin \
   --filedir ~/filebin/files \
   --tempdir ~/filebin/temp \
   --expiration 604800
+  --cache-invalidation
   [...]
 ```
 
@@ -117,6 +118,10 @@ A trailing slash is not needed.
 Tags expire after some time of inactivity. By default, tags will expire 3 months after the most recent file was uploaded. It is not possible to download files or upload more files to tags that are expired.
 
 ``--expiration 86400`` will expire tags 24 hours after the last file has been uploaded.
+
+#### Cache invalidation
+
+Enabled with the parameter ``--cache-invalidation``. When enabled, HTTP PURGE requests will be sent to baseurl/path for every change to ensure content is invalidated on any frontend web cache.
 
 #### Triggers
 
@@ -283,3 +288,4 @@ $ ln -s tools/git/pre-commit .git/hooks/pre-commit
 * Avoid reuse of expired tags.
 * Image meta data (EXIF) extraction.
 * Administrator dashboard.
+* Trigger cache invalidation on tag expiration.
