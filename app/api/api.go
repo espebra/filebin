@@ -266,11 +266,10 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 
 	ctx.WorkQueue <- f
 
-	headers := make(map[string]string)
-	headers["Content-Type"] = "application/json"
+	w.Header().Set("Content-Type", "application/json")
 
 	var status = 201
-	output.JSONresponse(w, status, headers, f, ctx)
+	output.JSONresponse(w, status, f, ctx)
 }
 
 func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
@@ -345,6 +344,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		}
 	}
 
+	w.Header().Set("Vary", "Content-Type")
 	w.Header().Set("Cache-Control", "max-age=3600")
 	http.ServeFile(w, r, path)
 }
@@ -474,11 +474,10 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		}
 	}
 
-	headers := make(map[string]string)
-	headers["Content-Type"] = "application/json"
+	w.Header().Set("Content-Type", "application/json")
 
 	var status = 200
-	output.JSONresponse(w, status, headers, f, ctx)
+	output.JSONresponse(w, status, f, ctx)
 	return
 }
 
@@ -522,14 +521,13 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 		}
 	}
 
-	//t.GenerateLinks(cfg.Baseurl)
-
-	headers := make(map[string]string)
+	w.Header().Set("Vary", "Content-Type")
+	w.Header().Set("Cache-Control", "max-age=3600")
 
 	var status = 200
 
 	if r.Header.Get("Content-Type") == "application/zip" || r.FormValue("o") == "zip" {
-		headers["Content-Type"] = "application/zip"
+		w.Header().Set("Content-Type", "application/zip")
 
 		// Generate a map of paths to add to the zip response
 		var paths []string
@@ -537,26 +535,22 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 			path := filepath.Join(f.TagDir, f.Filename)
 			paths = append(paths, path)
 		}
-		// Low TTL since it is not cache invalidated
-		headers["Cache-Control"] = "max-age=120"
-		output.ZIPresponse(w, status, t.Tag, headers, paths, ctx)
+		output.ZIPresponse(w, status, t.Tag, paths, ctx)
 		return
 	}
 
 	if r.Header.Get("Content-Type") == "application/json" {
-		headers["Content-Type"] = "application/json"
-		headers["Cache-Control"] = "max-age=3600"
-		output.JSONresponse(w, status, headers, t, ctx)
+		w.Header().Set("Content-Type", "application/json")
+		output.JSONresponse(w, status, t, ctx)
 		return
 	} else {
-		headers["Cache-Control"] = "max-age=3600"
 		if len(t.Files) == 0 {
-			output.HTMLresponse(w, "newtag", status, headers, t, ctx)
+			output.HTMLresponse(w, "newtag", status, t, ctx)
 		} else {
 			if r.FormValue("o") == "album" {
-				output.HTMLresponse(w, "viewalbum", status, headers, t, ctx)
+				output.HTMLresponse(w, "viewalbum", status, t, ctx)
 			} else {
-				output.HTMLresponse(w, "viewtag", status, headers, t, ctx)
+				output.HTMLresponse(w, "viewtag", status, t, ctx)
 			}
 		}
 		return
@@ -574,11 +568,10 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	}
 	ctx.Log.Println("Tag generated: " + t.Tag)
 
-	headers := make(map[string]string)
-	headers["Cache-Control"] = "max-age=0"
-	headers["Location"] = ctx.Baseurl + "/" + t.Tag
+	w.Header().Set("Cache-Control", "max-age=3600")
+	w.Header().Set("Location", ctx.Baseurl + "/" + t.Tag)
 	var status = 302
-	output.JSONresponse(w, status, headers, t, ctx)
+	output.JSONresponse(w, status, t, ctx)
 }
 
 //func ViewAPI(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {

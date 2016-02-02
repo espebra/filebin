@@ -113,14 +113,12 @@
             <p>
                 <div class="media">
                     {{ range $index, $value := .Data.Files }}
-                        {{ if eq (.Links | len) 4 }}
-                            {{ $thumbnail := index .Links 2 }}
-                            {{ $link := index .Links 0 }}
-                            {{ if $thumbnail }}
-                                <a href="{{ $link.Href }}">
-                                     <img class="media-object" style="float: left;" src="{{ $thumbnail.Href }}"/>
-                                </a>
-                            {{ end }}
+                        {{ $thumbnail := .GetLink "thumbnail" }}
+                        {{ $file := .GetLink "file" }}
+                        {{ if $thumbnail }}
+                            <a href="{{ $file }}">
+                                 <img class="media-object" style="float: left;" src="{{ $thumbnail }}"/>
+                            </a>
                         {{ end }}
                     {{ end }}
                 </div>
@@ -147,8 +145,8 @@
                                         <i class="fa fa-fw fa-file-o"></i>
                                         {{ end }}
 
-                                        {{ $link := index .Links 0 }}
-                                        <a href="{{ $link.Href }}">{{ .Filename }}</a>
+                                        {{ $file := .GetLink "file" }}
+                                        <a href="{{ $file }}">{{ .Filename }}</a>
                                     </td>
                                     <td>{{ .BytesReadable }}</td>
                                     <td class="hidden-sm-down">{{ .MIME }}</td>
@@ -201,18 +199,16 @@
 -->
                         <div class="modal-body">
                             <div class="media">
-                                {{ if eq (.Links | len) 3 }}
-                                    {{ $thumbnail := index .Links 2 }}
-                                    {{ $link := index .Links 0 }}
-                                    {{ if $thumbnail }}
-                                        <p>
-                                            <div class="media">
-                                                <a class="media-left" href="{{ $link.Href }}">
-                                                    <img class="media-object" src="{{ $thumbnail.Href }}"/>
-                                                </a>
-                                            </div>
-                                        </p>
-                                    {{ end }}
+                                {{ $thumbnail := .GetLink "thumbnail" }}
+                                {{ $file := .GetLink "file" }}
+                                {{ if $thumbnail }}
+                                    <p>
+                                        <div class="media">
+                                            <a class="media-left" href="{{ $file }}">
+                                                <img class="media-object" src="{{ $thumbnail }}"/>
+                                            </a>
+                                        </div>
+                                    </p>
                                 {{ end }}
                             </div>
                             <table class="table">
@@ -222,8 +218,8 @@
                                             Filename
                                         </th>
                                         <td>
-                                            {{ $link := index .Links 0 }}
-                                            <a href="{{ $link.Href }}">
+                                            {{ $file := .GetLink "file" }}
+                                            <a href="{{ $file }}">
                                                 {{ .Filename }}
                                             </a>
                                         </td>
@@ -233,8 +229,8 @@
                                             Tag
                                         </th>
                                         <td>
-                                            {{ $link := index .Links 1 }}
-                                            <a href="{{ $link.Href }}">
+                                            {{ $tag := .GetLink "tag" }}
+                                            <a href="{{ $tag }}">
                                                 {{ .Tag }}
                                             </a>
                                         </td>
@@ -303,8 +299,8 @@
 
                             <p>You are encouraged to use this feature only if you shared the wrong file or if some other person shared a file with obvious malicious or illegal content. This action is not reversible.</li>
 
-                            {{ $link := index .Links 0 }}
-                            <p class="lead">Delete the file <a href="{{ $link.Href }}">{{ .Filename }}</a>?</p>
+                            {{ $file := .GetLink "file" }}
+                            <p class="lead">Delete the file <a href="{{ $file }}">{{ .Filename }}</a>?</p>
 </ul>
 
                             <div id="deleteStatus-{{ $index }}"></div>

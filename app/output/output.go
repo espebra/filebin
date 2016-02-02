@@ -13,16 +13,12 @@ import (
 	"github.com/espebra/filebin/app/model"
 )
 
-func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d interface{}, ctx model.Context) {
+func JSONresponse(w http.ResponseWriter, status int, d interface{}, ctx model.Context) {
 	dj, err := json.MarshalIndent(d, "", "    ")
 	if err != nil {
 		ctx.Log.Println("Unable to convert response to json: ", err)
 		http.Error(w, "Failed while generating a response", http.StatusInternalServerError)
 		return
-	}
-
-	for header, value := range h {
-		w.Header().Set(header, value)
 	}
 
 	w.WriteHeader(status)
@@ -31,7 +27,7 @@ func JSONresponse(w http.ResponseWriter, status int, h map[string]string, d inte
 }
 
 // This function is a hack. Need to figure out a better way to do this.
-func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]string, d interface{}, ctx model.Context) {
+func HTMLresponse(w http.ResponseWriter, tpl string, status int, d interface{}, ctx model.Context) {
 	box := ctx.TemplateBox
 	t := template.New(tpl)
 
@@ -47,10 +43,6 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]st
 		ctx.Log.Fatalln(err)
 	}
 
-	for header, value := range h {
-		w.Header().Set(header, value)
-	}
-
 	w.WriteHeader(status)
 	ctx.Log.Println("Response status: " + strconv.Itoa(status))
 
@@ -64,12 +56,8 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, h map[string]st
 	}
 }
 
-func ZIPresponse(w http.ResponseWriter, status int, tag string, h map[string]string, paths []string, ctx model.Context) {
+func ZIPresponse(w http.ResponseWriter, status int, tag string, paths []string, ctx model.Context) {
 	ctx.Log.Println("Generating zip archive")
-
-	for header, value := range h {
-		w.Header().Set(header, value)
-	}
 
 	w.Header().Set("Content-Disposition", `attachment; filename="`+tag+`.zip"`)
 

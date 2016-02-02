@@ -33,18 +33,16 @@
             </div>
 
             {{ range $index, $value := .Data.Files }}
-                {{ if eq (.Links | len) 4 }}
-                    {{ $image := index .Links 3 }}
-                    {{ $link := index .Links 0 }}
-                    {{ if $image }}
-                        <figure class="figure">
-                            <img src="{{ $image.Href }}" class="figure-img img-fluid" alt="File {{ .Filename }} in tag {{ .Tag }}.">
-                            <figcaption class="figure-caption">
-                                 {{ .Filename }}
-                                 (<a href="{{ $link.Href }}">Full size</a>).
-                            </figcaption>
-                        </figure>
-                    {{ end }}
+                {{ $image := .GetLink "album" }}
+                {{ $file := .GetLink "file" }}
+                {{ if $image }}
+                    <figure class="figure">
+                        <img src="{{ $image }}" class="figure-img img-fluid" alt="File {{ .Filename }} in tag {{ .Tag }}.">
+                        <figcaption class="figure-caption">
+                             {{ .Filename }}
+                             (<a href="{{ $file }}">Full size</a>).
+                        </figcaption>
+                    </figure>
                 {{ end }}
             {{ end }}
 

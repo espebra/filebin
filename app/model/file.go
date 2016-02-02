@@ -132,6 +132,11 @@ func (f *File) GenerateLinks(baseurl string) {
 	tagLink.Href = baseurl + "/" + f.Tag
 	f.Links = append(f.Links, tagLink)
 
+	archiveLink := Link{}
+	archiveLink.Rel = "archive"
+	archiveLink.Href = baseurl + "/" + f.Tag + "?o=zip"
+	f.Links = append(f.Links, archiveLink)
+
 	if f.ImageExists(75, 75) {
 		thumbLink := Link{}
 		thumbLink.Rel = "thumbnail"
@@ -385,6 +390,17 @@ func (f *File) Purge() error {
 	return nil
 }
 
+// Return the full URL from the links struct. Useful in templates.
+func (f *File) GetLink(s string) string {
+	link := ""
+	for _, l := range f.Links {
+		// Search for the Rel value s
+		if l.Rel == s {
+			link = l.Href
+		}
+	}
+	return link
+}
 func purge(url string) error {
 	timeout := time.Duration(2 * time.Second)
 	client := &http.Client{
