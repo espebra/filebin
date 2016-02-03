@@ -37,14 +37,6 @@
                 </div>
             </div>
 
-            <p class="lead">
-                {{ if eq (.Data.Files | len) 1 }}
-                This album contains {{ .Data.Files|len }} image.
-                {{ else }}
-                This album contains {{ .Data.Files|len }} images.
-                {{ end }}
-            </p>
-
             {{ range $index, $value := .Data.Files }}
                 {{ $image := .GetLink "albumitem" }}
                 {{ $file := .GetLink "file" }}
