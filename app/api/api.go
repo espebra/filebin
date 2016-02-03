@@ -345,7 +345,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	}
 
 	w.Header().Set("Vary", "Content-Type")
-	w.Header().Set("Cache-Control", "max-age=3600")
+	w.Header().Set("Cache-Control", "s-maxage=3600")
 	http.ServeFile(w, r, path)
 }
 
@@ -521,7 +521,7 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		}
 	}
 
-	w.Header().Set("Cache-Control", "max-age=3600")
+	w.Header().Set("Cache-Control", "s-maxage=3600")
 
 	var status = 200
 	output.HTMLresponse(w, "viewalbum", status, t, ctx)
@@ -569,7 +569,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	}
 
 	w.Header().Set("Vary", "Content-Type")
-	w.Header().Set("Cache-Control", "max-age=3600")
+	w.Header().Set("Cache-Control", "s-maxage=3600")
 
 	var status = 200
 
@@ -644,7 +644,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 		}
 	}
 
-	w.Header().Set("Cache-Control", "max-age=3600")
+	w.Header().Set("Cache-Control", "s-maxage=3600")
 
 	var status = 200
 	w.Header().Set("Content-Type", "application/zip")
@@ -670,7 +670,7 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	}
 	ctx.Log.Println("Tag generated: " + t.Tag)
 
-	w.Header().Set("Cache-Control", "max-age=3600")
+	w.Header().Set("Cache-Control", "s-maxage=3600")
 	w.Header().Set("Location", ctx.Baseurl + "/" + t.Tag)
 	var status = 302
 	output.JSONresponse(w, status, t, ctx)
@@ -685,7 +685,7 @@ func PurgeHandler(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 //func ViewAPI(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 //	t := model.Tag {}
 //	headers := make(map[string]string)
-//	headers["Cache-Control"] = "max-age=1"
+//	headers["Cache-Control"] = "s-maxage=1"
 //	var status = 200
 //	output.HTMLresponse(w, "api", status, headers, t, ctx)
 //}
@@ -693,7 +693,7 @@ func PurgeHandler(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 //func ViewDoc(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 //	t := model.Tag {}
 //	headers := make(map[string]string)
-//	headers["Cache-Control"] = "max-age=1"
+//	headers["Cache-Control"] = "s-maxage=1"
 //	var status = 200
 //	output.HTMLresponse(w, "doc", status, headers, t, ctx)
 //}
