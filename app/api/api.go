@@ -481,6 +481,53 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	return
 }
 
+func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	t := model.Tag{}
+	params := mux.Vars(r)
+	err := t.SetTag(params["tag"])
+	if err != nil {
+		ctx.Log.Println(err)
+		http.Error(w, "Invalid tag", 400)
+		return
+	}
+
+	t.SetTagDir(cfg.Filedir)
+	t.CalculateExpiration(cfg.Expiration)
+	if t.TagDirExists() {
+		expired, err := t.IsExpired(cfg.Expiration)
+		if err != nil {
+			ctx.Log.Println(err)
+			http.Error(w, "Internal server error", 500)
+			return
+		}
+		if expired {
+			ctx.Log.Println("Expired: " + t.ExpirationReadable)
+			http.Error(w, "This tag has expired.", 410)
+			return
+		}
+
+		err = t.StatInfo()
+		if err != nil {
+			ctx.Log.Println(err)
+			http.Error(w, "Internal Server Error", 500)
+			return
+		}
+
+		err = t.List(cfg.Baseurl)
+		if err != nil {
+			ctx.Log.Println(err)
+			http.Error(w, "Error reading the tag contents.", 404)
+			return
+		}
+	}
+
+	w.Header().Set("Cache-Control", "max-age=3600")
+
+	var status = 200
+	output.HTMLresponse(w, "viewalbum", status, t, ctx)
+	return
+}
+
 func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	params := mux.Vars(r)
 	t := model.Tag{}
@@ -557,6 +604,61 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	}
 }
 
+func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	params := mux.Vars(r)
+	t := model.Tag{}
+	err := t.SetTag(params["tag"])
+	if err != nil {
+		ctx.Log.Println(err)
+		http.Error(w, "Invalid tag", 400)
+		return
+	}
+
+	t.SetTagDir(cfg.Filedir)
+	t.CalculateExpiration(cfg.Expiration)
+	if t.TagDirExists() {
+		expired, err := t.IsExpired(cfg.Expiration)
+		if err != nil {
+			ctx.Log.Println(err)
+			http.Error(w, "Internal server error", 500)
+			return
+		}
+		if expired {
+			ctx.Log.Println("Expired: " + t.ExpirationReadable)
+			http.Error(w, "This tag has expired.", 410)
+			return
+		}
+
+		err = t.StatInfo()
+		if err != nil {
+			ctx.Log.Println(err)
+			http.Error(w, "Internal Server Error", 500)
+			return
+		}
+
+		err = t.List(cfg.Baseurl)
+		if err != nil {
+			ctx.Log.Println(err)
+			http.Error(w, "Error reading the tag contents.", 404)
+			return
+		}
+	}
+
+	w.Header().Set("Cache-Control", "max-age=3600")
+
+	var status = 200
+	w.Header().Set("Content-Type", "application/zip")
+
+	// Generate a map of paths to add to the zip response
+	var paths []string
+	for _, f := range t.Files {
+		path := filepath.Join(f.TagDir, f.Filename)
+		paths = append(paths, path)
+	}
+	output.ZIPresponse(w, status, t.Tag, paths, ctx)
+	return
+}
+
 func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	t := model.Tag{}
 	tag := randomString(cfg.DefaultTagLength)
@@ -572,6 +674,12 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	w.Header().Set("Location", ctx.Baseurl + "/" + t.Tag)
 	var status = 302
 	output.JSONresponse(w, status, t, ctx)
+}
+
+func PurgeHandler(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	ctx.Log.Println("Unexpected PURGE request received")
+	http.Error(w, "Not implemented", 501)
+	return
 }
 
 //func ViewAPI(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {

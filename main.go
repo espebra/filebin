@@ -230,10 +230,13 @@ func main() {
 	//router.HandleFunc("/doc", reqHandler(api.ViewDoc)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.ViewIndex)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.Upload)).Methods("POST")
+	router.HandleFunc("/archive/{tag:[A-Za-z0-9_-]+}", reqHandler(api.FetchArchive)).Methods("GET", "HEAD")
+	router.HandleFunc("/album/{tag:[A-Za-z0-9_-]+}", reqHandler(api.FetchAlbum)).Methods("GET", "HEAD")
 	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}", reqHandler(api.FetchTag)).Methods("GET", "HEAD")
 	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}", reqHandler(api.DeleteTag)).Methods("DELETE")
 	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.FetchFile)).Methods("GET", "HEAD")
 	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.DeleteFile)).Methods("DELETE")
+	router.HandleFunc("/{path:.*}", reqHandler(api.PurgeHandler)).Methods("PURGE")
 
 	//router.HandleFunc("/dashboard{_:/?}", ViewDashboard).Methods("GET", "HEAD")
 
@@ -274,6 +277,9 @@ func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration
 		ctx.Log = log.New(os.Stdout, reqId+" ", log.LstdFlags)
 
 		ctx.Log.Println(r.Method + " " + r.RequestURI)
+		if r.Host != "" {
+			ctx.Log.Println("Host: " + r.Host)
+		}
 		ctx.Log.Println("Remote address: " + r.RemoteAddr)
 
 		// Print X-Forwarded-For since we might be behind some TLS

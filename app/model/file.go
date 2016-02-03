@@ -127,16 +127,6 @@ func (f *File) GenerateLinks(baseurl string) {
 	fileLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename
 	f.Links = append(f.Links, fileLink)
 
-	tagLink := Link{}
-	tagLink.Rel = "tag"
-	tagLink.Href = baseurl + "/" + f.Tag
-	f.Links = append(f.Links, tagLink)
-
-	archiveLink := Link{}
-	archiveLink.Rel = "archive"
-	archiveLink.Href = baseurl + "/" + f.Tag + "?o=zip"
-	f.Links = append(f.Links, archiveLink)
-
 	if f.ImageExists(75, 75) {
 		thumbLink := Link{}
 		thumbLink.Rel = "thumbnail"
@@ -145,11 +135,26 @@ func (f *File) GenerateLinks(baseurl string) {
 	}
 
 	if f.ImageExists(1140, 0) {
-		albumLink := Link{}
-		albumLink.Rel = "album"
-		albumLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?width=1140"
-		f.Links = append(f.Links, albumLink)
+		albumItemLink := Link{}
+		albumItemLink.Rel = "albumitem"
+		albumItemLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?width=1140"
+		f.Links = append(f.Links, albumItemLink)
 	}
+
+	tagLink := Link{}
+	tagLink.Rel = "tag"
+	tagLink.Href = baseurl + "/" + f.Tag
+	f.Links = append(f.Links, tagLink)
+
+	albumLink := Link{}
+	albumLink.Rel = "album"
+	albumLink.Href = baseurl + "/album/" + f.Tag
+	f.Links = append(f.Links, albumLink)
+
+	archiveLink := Link{}
+	archiveLink.Rel = "archive"
+	archiveLink.Href = baseurl + "/archive/" + f.Tag
+	f.Links = append(f.Links, archiveLink)
 }
 
 func (f *File) EnsureTagDirectoryExists() error {
@@ -401,6 +406,7 @@ func (f *File) GetLink(s string) string {
 	}
 	return link
 }
+
 func purge(url string) error {
 	timeout := time.Duration(2 * time.Second)
 	client := &http.Client{
@@ -418,8 +424,6 @@ func purge(url string) error {
 		return err
 	}
 	// Should probably log the URL and response code
-	//fmt.Println("PURGE " + url + ": ", resp.StatusCode)
-
 	return nil
 }
 
