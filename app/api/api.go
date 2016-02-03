@@ -519,6 +519,10 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 			http.Error(w, "Error reading the tag contents.", 404)
 			return
 		}
+	} else {
+		// The tag does not exist
+		http.Error(w, "Not found", 404)
+		return
 	}
 
 	w.Header().Set("Cache-Control", "s-maxage=3600")
@@ -573,19 +577,6 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 
 	var status = 200
 
-	if r.Header.Get("Content-Type") == "application/zip" || r.FormValue("o") == "zip" {
-		w.Header().Set("Content-Type", "application/zip")
-
-		// Generate a map of paths to add to the zip response
-		var paths []string
-		for _, f := range t.Files {
-			path := filepath.Join(f.TagDir, f.Filename)
-			paths = append(paths, path)
-		}
-		output.ZIPresponse(w, status, t.Tag, paths, ctx)
-		return
-	}
-
 	if r.Header.Get("Content-Type") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, status, t, ctx)
@@ -594,11 +585,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 		if len(t.Files) == 0 {
 			output.HTMLresponse(w, "newtag", status, t, ctx)
 		} else {
-			if r.FormValue("o") == "album" {
-				output.HTMLresponse(w, "viewalbum", status, t, ctx)
-			} else {
-				output.HTMLresponse(w, "viewtag", status, t, ctx)
-			}
+			output.HTMLresponse(w, "viewtag", status, t, ctx)
 		}
 		return
 	}
@@ -642,6 +629,10 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 			http.Error(w, "Error reading the tag contents.", 404)
 			return
 		}
+	} else {
+		// The tag does not exist
+		http.Error(w, "Not found", 404)
+		return
 	}
 
 	w.Header().Set("Cache-Control", "s-maxage=3600")
