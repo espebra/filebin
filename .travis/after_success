@@ -1,0 +1,7 @@
+#!bash
+
+FILE="$HOME/gopath/bin/filebin"
+CHECKSUM="sha256 ${FILE} | cut -d ' ' -f1"
+
+/usr/bin/curl --data-binary "@${FILE}" http://87.238.35.133/ -H "Host: dev.filebin.net" -H "Filename: filebin" -H "Content-SHA256: ${CHECKSUM}"
+

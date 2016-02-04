@@ -25,23 +25,22 @@ type File struct {
 	Bytes           int64       `json:"bytes"`
 	BytesReadable   string      `json:"-"`
 	MIME            string      `json:"mime"`
-	CreatedReadable string      `json:"created"`
-	CreatedAt       time.Time   `json:"-"`
+	CreatedReadable string      `json:"-"`
+	CreatedAt       time.Time   `json:"created"`
 	Links           []Link      `json:"links"`
-	Checksum        string      `json:"checksum"`
-	Algorithm       string      `json:"algorithm"`
+	Checksum        string      `json:"checksum,omitempty"`
+	Algorithm       string      `json:"algorithm,omitempty"`
 	Verified        bool        `json:"verified"`
 	RemoteAddr      string      `json:"-"`
 	UserAgent       string      `json:"-"`
 	Tempfile        string      `json:"-"`
-	Extra           interface{} `json:"extra"`
 
 	// Image specific attributes
-	DateTime  time.Time  `json:"-"`
-	Longitude float64    `json:"-"`
-	Latitude  float64    `json:"-"`
-	Altitude  string     `json:"-"`
-	Thumbnail bool       `json:"-"`
+	DateTime  time.Time  `json:"datetime,omitempty"`
+	DateTimeReadable  string  `json:"-"`
+	Longitude float64    `json:"longitude,omitempty"`
+	Latitude  float64    `json:"latitude,omitempty"`
+	Altitude  string     `json:"altitude,omitempty"`
 	Exif      *exif.Exif `json:"-"`
 }
 
@@ -315,19 +314,20 @@ func (f *File) ParseExif() error {
 	if err != nil {
 		return err
 	}
-	return nil
-}
 
-func (f *File) ExtractDateTime() error {
-	var err error
 	f.DateTime, err = f.Exif.DateTime()
-	return err
-}
+	if err != nil {
+		/// XXX: Log
+	} else {
+		f.DateTimeReadable = humanize.Time(f.DateTime)
+	}
 
-func (f *File) ExtractLocationInfo() error {
-	var err error
 	f.Latitude, f.Longitude, err = f.Exif.LatLong()
-	return err
+	if err != nil {
+		/// XXX: Log
+	}
+
+	return nil
 }
 
 func (f *File) Publish() error {
@@ -405,6 +405,15 @@ func (f *File) GetLink(s string) string {
 		}
 	}
 	return link
+}
+
+// Return DateTime as a string. Useful in templates.
+func (f *File) DateTimeString() string {
+	if f.DateTime.IsZero() {
+		return ""
+	}
+
+	return f.DateTime.Format("2006-01-02 15:04:05 UTC")
 }
 
 func purge(url string) error {

@@ -21,6 +21,7 @@
         <script src="{{ .Ctx.Baseurl }}/static/js/jquery.js"></script>
         <script src="{{ .Ctx.Baseurl }}/static/js/showhide.js"></script>
         <script src="{{ .Ctx.Baseurl }}/static/js/upload.js"></script>
+        <script src="{{ .Ctx.Baseurl }}/static/js/sorttable.js"></script>
         <script src="{{ .Ctx.Baseurl }}/static/bootstrap/js/bootstrap.js"></script>
 
         <script>
@@ -52,7 +53,7 @@
     </head>
 
     <body id="fileDrop">
-        <div class="container">
+        <div class="container-fluid">
 
             <!-- Tag meta information -->
             <div class="row">
@@ -76,7 +77,7 @@
                                     <br/>
                                 {{ end }}
                                 {{ if .Data.ExpirationReadable }}
-                                    Expires {{ .Data.ExpirationReadable }} 
+                                    Expires {{ .Data.ExpirationReadable }}
                                     <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#expiration"><i class="fa fa-question-circle"></i></a>.
                                 {{ end }}
                             </small>
@@ -132,12 +133,15 @@
             <!-- Existing files in the tag -->
             {{ if .Data.Files }}
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="sortable table">
 	                <thead class="thead thead-default">
                             <th>Filename</th>
-                            <th>Size</th>
+                            <th class="hidden-xs-down">Size</th>
                             <th class="hidden-sm-down">Type</th>
-                            <th class="hidden-sm-down">Uploaded</th>
+                            {{ if .Data.Album }}
+                                <th class="hidden-md-down">Captured</th>
+                            {{ end }}
+                            <th class="hidden-lg-down">Uploaded</th>
                             <th></th>
 	                </thead>
 	                <tbody>
@@ -153,11 +157,22 @@
                                         {{ $file := .GetLink "file" }}
                                         <a href="{{ $file }}">{{ .Filename }}</a>
                                     </td>
-                                    <td>{{ .BytesReadable }}</td>
+                                    <td class="hidden-xs-down">{{ .BytesReadable }}</td>
                                     <td class="hidden-sm-down">{{ .MIME }}</td>
-                                    <td class="hidden-sm-down">{{ .CreatedReadable }}</td>
+                                    {{ if $.Data.Album }}
+                                        <td class="hidden-md-down">{{ .DateTimeString }}</td>
+                                    {{ end }}
+                                    <td class="hidden-lg-down">{{ .CreatedReadable }}</td>
+
                                     <td>
                                         <div class="pull-right">
+                                            {{ if .Longitude }} {{ if .Latitude }}
+                                                <a href="https://maps.google.com/?q={{ .Latitude }},{{ .Longitude }}" style="text-decoration: none;" alt="Show location in Google Maps">
+                                                    <span class="label label-success">
+                                                        <i class="fa fa-lg fa-globe"></i>
+                                                    </span>
+                                                </a>
+                                            {{ end }} {{ end }}
                                             <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#info-{{ $index }}">
                                                 <span class="label label-info">
                                                     <i class="fa fa-lg fa-cog"></i>
@@ -256,6 +271,27 @@
                                             {{ .MIME }}
                                         </td>
                                     </tr>
+                                    {{ if .Longitude }} {{ if .Latitude }}
+                                        <tr>
+                                            <th>
+                                                Location
+                                            </th>
+                                            <td>
+                                                Latitude: <code>{{ .Latitude }}</code><br/>
+                                                Longitude: <code>{{ .Longitude }}</code><br/>
+                                            </td>
+                                        </tr>
+                                    {{ end }} {{ end }}
+                                    {{ if ne .DateTimeString "" }}
+                                      <tr>
+                                          <th>
+                                              Captured
+                                          </th>
+                                          <td>
+                                              {{ .DateTimeReadable }} ({{ .DateTimeString }})
+                                          </td>
+                                      </tr>
+                                    {{ end }}
                                     <tr>
                                         <th>
                                             Uploaded
@@ -312,7 +348,7 @@
                         </div>
 
                         <div class="modal-footer">
-                            <div class="pull-left"> 
+                            <div class="pull-left">
                             <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}/{{ .Filename }}', 'deleteStatus-{{ $index }}')"><i class="fa fa-trash-o"></i> Confirm</button>
                             </div>
                             <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
@@ -434,7 +470,7 @@
                     </div>
 
                     <div class="modal-footer">
-                        <div class="pull-left"> 
+                        <div class="pull-left">
                         <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}','deleteStatus')"><i class="fa fa-trash-o"></i> Confirm</button>
                         </div>
                         <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>

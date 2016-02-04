@@ -107,12 +107,22 @@ func init() {
 
 	flag.StringVar(&cfg.TriggerNewTag, "trigger-new-tag",
 		cfg.TriggerNewTag,
-		"Command to execute when a new tag is created.")
+		"Command to execute when a tag is created.")
 
-	flag.StringVar(&cfg.TriggerUploadedFile,
-		"trigger-uploaded-file",
-		cfg.TriggerUploadedFile,
+	flag.StringVar(&cfg.TriggerUploadFile,
+		"trigger-upload-file",
+		cfg.TriggerUploadFile,
 		"Command to execute when a file is uploaded.")
+
+	flag.StringVar(&cfg.TriggerDeleteTag,
+		"trigger-delete-tag",
+		cfg.TriggerDeleteTag,
+		"Command to execute when a tag is deleted.")
+
+	flag.StringVar(&cfg.TriggerDeleteFile,
+		"trigger-delete-file",
+		cfg.TriggerDeleteFile,
+		"Command to execute when a file is deleted.")
 
 	//	flag.StringVar(&cfg.TriggerExpiredTag, "trigger-expired-tag",
 	//		cfg.TriggerExpiredTag,
@@ -204,11 +214,23 @@ func main() {
 	}
 	log.Println("Trigger - New tag: " + trigger)
 
-	trigger = cfg.TriggerUploadedFile
+	trigger = cfg.TriggerUploadFile
 	if trigger == "" {
 		trigger = "Not set"
 	}
-	log.Println("Trigger - Uploaded file: " + trigger)
+	log.Println("Trigger - Upload file: " + trigger)
+
+	trigger = cfg.TriggerDeleteTag
+	if trigger == "" {
+		trigger = "Not set"
+	}
+	log.Println("Trigger - Delete tag: " + trigger)
+
+	trigger = cfg.TriggerDeleteFile
+	if trigger == "" {
+		trigger = "Not set"
+	}
+	log.Println("Trigger - Delete file: " + trigger)
 
 	//fmt.Println("Trigger Expired tag: " + cfg.TriggerExpiredTag)
 

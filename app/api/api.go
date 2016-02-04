@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/rwcarlsen/goexif/exif"
 
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/model"
@@ -33,7 +32,19 @@ func triggerNewTagHandler(c string, tag string) error {
 	return err
 }
 
-func triggerUploadedFileHandler(c string, tag string, filename string) error {
+func triggerUploadFileHandler(c string, tag string, filename string) error {
+	cmd := exec.Command(c, tag, filename)
+	err := cmdHandler(cmd)
+	return err
+}
+
+func triggerDeleteTagHandler(c string, tag string) error {
+	cmd := exec.Command(c, tag)
+	err := cmdHandler(cmd)
+	return err
+}
+
+func triggerDeleteFileHandler(c string, tag string, filename string) error {
 	cmd := exec.Command(c, tag, filename)
 	err := cmdHandler(cmd)
 	return err
@@ -188,13 +199,6 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 			ctx.Log.Println(err)
 		}
 
-		if exif.IsCriticalError(err) == false {
-			err = f.ExtractDateTime()
-			if err != nil {
-				ctx.Log.Println(err)
-			}
-		}
-
 		// iOS devices provide only one filename even when uploading
 		// multiple images. Providing some workaround for this below.
 		// XXX: Refactoring needed.
@@ -228,11 +232,11 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		//	ctx.Log.Println(err)
 		//}
 
-		extra := make(map[string]string)
-		if !f.DateTime.IsZero() {
-			extra["DateTime"] = f.DateTime.String()
-		}
-		f.Extra = extra
+		//extra := make(map[string]string)
+		//if !f.DateTime.IsZero() {
+		//	extra["DateTime"] = f.DateTime.String()
+		//}
+		//f.Extra = extra
 	}
 
 	// Promote file from tempdir to the published tagdir
@@ -252,9 +256,9 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	f.CreatedAt = time.Now().UTC()
 	//f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
 
-	if cfg.TriggerUploadedFile != "" {
+	if cfg.TriggerUploadFile != "" {
 		ctx.Log.Println("Executing trigger: Uploaded file")
-		triggerUploadedFileHandler(cfg.TriggerUploadedFile, f.Tag, f.Filename)
+		triggerUploadFileHandler(cfg.TriggerUploadFile, f.Tag, f.Filename)
 	}
 
 	// Purging any old content
@@ -376,6 +380,11 @@ func DeleteTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
+	if cfg.TriggerDeleteTag != "" {
+		ctx.Log.Println("Executing trigger: Delete tag")
+		triggerDeleteTagHandler(cfg.TriggerDeleteTag, t.Tag)
+	}
+
 	// Tag exists, so let's remove it.
 	err = t.Remove()
 	if err != nil {
@@ -458,6 +467,11 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		ctx.Log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
+	}
+
+	if cfg.TriggerDeleteFile != "" {
+		ctx.Log.Println("Executing trigger: Delete file")
+		triggerDeleteFileHandler(cfg.TriggerDeleteFile, f.Tag, f.Filename)
 	}
 
 	err = f.Remove()

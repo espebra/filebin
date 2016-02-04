@@ -25,9 +25,10 @@ Filebin is a web application that facilitates convenient file sharing over the w
 * Files expire automatically after a configurable period of time.
 * Files and entire tags can be deleted manually.
 * Thumbnails are displayed for image files.
-* Album view is available in tags with images.
+* Album view is available in tags with images. Images are sorted based on the Exif DateTime timestamps.
 * Triggers are capable of calling external scripts on certain events. One potential use case is to notify virus/malware scanners on file upload.
 * No external dependencies once built.
+* Cache invalidation support.
 
 ## Requirements
 
@@ -133,11 +134,23 @@ The parameter ``--trigger-new-tag <command>`` makes sure ``<command> <tag>`` is 
 
 ``--trigger-new-tag /usr/local/bin/new-tag`` will execute ``/usr/local/bin/new-tag <tagid>``.
 
-##### Uploaded file
+##### Upload file
 
-The parameter ``--trigger-uploaded-file <command>`` makes sure ``<command> <tag> <filename>`` is executed whenever a new file is uploaded. The execution is non-blocking. Example:
+The parameter ``--trigger-upload-file <command>`` makes sure ``<command> <tag> <filename>`` is executed whenever a new file is uploaded. The execution is non-blocking. Example:
 
-``--trigger-uploaded-file /usr/local/bin/uploaded-file`` will execute ``/usr/local/bin/uploaded-file <tagid> <filename>``.
+``--trigger-upload-file /usr/local/bin/upload-file`` will execute ``/usr/local/bin/upload-file <tagid> <filename>``.
+
+##### Deleted tag
+
+The parameter ``--trigger-delete-tag <command>`` makes sure ``<command> <tag>`` is executed whenever a tag is deleted. The execution is non-blocking. Example:
+
+``--trigger-delete-tag /usr/local/bin/delete-tag`` will execute ``/usr/local/bin/delete-tag <tagid>``.
+
+##### Deleted file
+
+The parameter ``--trigger-delete-file <command>`` makes sure ``<command> <tag> <filename>`` is executed whenever a file is deleted. The execution is non-blocking. Example:
+
+``--trigger-delete-file /usr/local/bin/delete-file`` will execute ``/usr/local/bin/delete-file <tagid> <filename>``.
 
 ## Web interface
 
@@ -286,6 +299,5 @@ $ ln -s tools/git/pre-commit .git/hooks/pre-commit
 
 * Automatically clean up expired tags.
 * Avoid reuse of expired tags.
-* Image meta data (EXIF) extraction.
 * Administrator dashboard.
 * Trigger cache invalidation on tag expiration.

@@ -11,8 +11,10 @@ type Configuration struct {
 	Tempdir             string
 	Expiration          int64
 	TriggerNewTag       string
-	TriggerUploadedFile string
-	TriggerExpiredTag   string
+	TriggerUploadFile   string
+	TriggerDeleteTag    string
+	TriggerDeleteFile   string
+	TriggerExpireTag    string
 	DefaultTagLength    int
 	Workers             int
 	Version             bool
@@ -33,9 +35,6 @@ func init() {
 		Baseurl:             "http://localhost:31337",
 		Filedir:             "/srv/filebin/files",
 		Tempdir:             "/tmp",
-		TriggerNewTag:       "",
-		TriggerUploadedFile: "",
-		TriggerExpiredTag:   "",
 		DefaultTagLength:    16,
 		Workers:             1,
 		CacheInvalidation:   false,

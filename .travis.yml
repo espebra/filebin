@@ -12,3 +12,7 @@ install:
 
 script:
   - make check
+  - make install
+
+after_success:
+  - source ./.travis/after_success

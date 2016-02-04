@@ -19,7 +19,7 @@
     </head>
 
     <body>
-        <div class="container">
+        <div class="container-fluid">
 
             <div class="row">
                 <div class="col-sm-6">
@@ -44,6 +44,9 @@
                     <figure class="figure">
                         <img src="{{ $image }}" class="figure-img img-fluid" alt="File {{ .Filename }} in tag {{ .Tag }}.">
                         <figcaption class="figure-caption">
+                             {{ if ne .DateTimeString "" }}
+                                       {{ .DateTimeString }},
+                             {{ end }}
                              {{ .Filename }}
                              (<a href="{{ $file }}">Full size</a>).
                         </figcaption>

@@ -4,12 +4,12 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"sort"
 	"path/filepath"
 	"regexp"
 	"time"
 
 	"github.com/dustin/go-humanize"
-	"github.com/rwcarlsen/goexif/exif"
 )
 
 type Tag struct {
@@ -21,6 +21,7 @@ type Tag struct {
 	LastUpdateAt       time.Time `json:"-"`
 	LastUpdateReadable string    `json:"lastupdate"`
 	Files              []File    `json:"files"`
+
 	Album              bool      `json:"-"`
 }
 
@@ -112,19 +113,6 @@ func (t *Tag) List(baseurl string) error {
 		f.SetTag(t.Tag)
 		f.TagDir = t.TagDir
 
-		f.DetectMIME()
-		if f.MediaType() == "image" {
-			// At least one image in the tag. Flip the album bit
-			// to true to make it easier for the html template to
-			// render correctly.
-			t.Album = true
-
-			if err := f.ParseExif(); err == nil {
-				f.ExtractDateTime()
-				f.ExtractLocationInfo()
-			}
-		}
-
 		if err := f.StatInfo(); err != nil {
 			return err
 		}
@@ -134,30 +122,17 @@ func (t *Tag) List(baseurl string) error {
 		}
 
 		if f.MediaType() == "image" {
+			// Set this list of files as an album
+			t.Album = true
+
 			if err := f.ParseExif(); err != nil {
 				// XXX: Log this
-				//return err
 			}
-
-			if exif.IsCriticalError(err) == false {
-				if err := f.ExtractDateTime(); err != nil {
-					// XXX: Log this
-					//return err
-				}
-			}
-
-			extra := make(map[string]string)
-			if !f.DateTime.IsZero() {
-				extra["DateTime"] = f.DateTime.String()
-			}
-			f.Extra = extra
 		}
-
-		//f.ExpirationAt = t.ExpirationAt
-		//f.ExpirationReadable = t.ExpirationReadable
 
 		f.GenerateLinks(baseurl)
 		t.Files = append(t.Files, f)
 	}
+	sort.Sort(ByDateTime(t.Files))
 	return err
 }
