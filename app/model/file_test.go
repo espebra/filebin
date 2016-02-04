@@ -252,7 +252,7 @@ func TestGenerateLinks(t *testing.T) {
 	f.SetTag("validtag")
 	f.GenerateLinks("http://localhost:8080")
 
-	if len(f.Links) != 4 {
+	if len(f.Links) != 3 {
 		t.Fatal("Unexpected amount of links:", len(f.Links))
 	}
 }
