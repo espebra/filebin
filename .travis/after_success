@@ -1,7 +1,10 @@
 #!bash
 
 FILE="$HOME/gopath/bin/filebin"
-CHECKSUM="sha256 ${FILE} | cut -d ' ' -f1"
+echo "Binary: ${FILE}"
 
-/usr/bin/curl -i --data-binary "@${FILE}" http://87.238.35.133/ -H "Host: dev.filebin.net" -H "Filename: filebin" -H "Content-SHA256: ${CHECKSUM}"
+CHECKSUM="sha256sum ${FILE} | cut -d ' ' -f1"
+echo "Checksum: ${CHECKSUM}"
+
+/usr/bin/curl -v --data-binary "@${FILE}" http://87.238.35.133/ -H "Host: dev.filebin.net" -H "Filename: filebin" -H "Content-SHA256: ${CHECKSUM}"
 
