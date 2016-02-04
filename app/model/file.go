@@ -138,17 +138,17 @@ func (f *File) GenerateLinks(baseurl string) {
 		albumItemLink.Rel = "albumitem"
 		albumItemLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?width=1140"
 		f.Links = append(f.Links, albumItemLink)
+
+		albumLink := Link{}
+		albumLink.Rel = "album"
+		albumLink.Href = baseurl + "/album/" + f.Tag
+		f.Links = append(f.Links, albumLink)
 	}
 
 	tagLink := Link{}
 	tagLink.Rel = "tag"
 	tagLink.Href = baseurl + "/" + f.Tag
 	f.Links = append(f.Links, tagLink)
-
-	albumLink := Link{}
-	albumLink.Rel = "album"
-	albumLink.Href = baseurl + "/album/" + f.Tag
-	f.Links = append(f.Links, albumLink)
 
 	archiveLink := Link{}
 	archiveLink.Rel = "archive"
