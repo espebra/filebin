@@ -13,12 +13,17 @@ func TestTriggers(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = triggerUploadedFileHandler("/bin/echo", "tag", "filename")
+	err = triggerDeleteTagHandler("/bin/echo", "tag")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = triggerExpiredTagHandler("/bin/echo", "tag")
+	err = triggerUploadFileHandler("/bin/echo", "tag", "filename")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = triggerDeleteFileHandler("/bin/echo", "tag", "filename")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,12 +33,17 @@ func TestTriggers(t *testing.T) {
 		t.Fatal("This should fail")
 	}
 
-	err = triggerUploadedFileHandler("unknowncommand", "tag", "filename")
+	err = triggerDeleteTagHandler("unknowncommand", "tag")
 	if err == nil {
 		t.Fatal("This should fail")
 	}
 
-	err = triggerExpiredTagHandler("unknowncommand", "tag")
+	err = triggerUploadFileHandler("unknowncommand", "tag", "filename")
+	if err == nil {
+		t.Fatal("This should fail")
+	}
+
+	err = triggerDeleteFileHandler("unknowncommand", "tag", "filename")
 	if err == nil {
 		t.Fatal("This should fail")
 	}
