@@ -209,110 +209,80 @@
                           </button>
                           <h4 class="modal-title">File extras</h4>
                         </div>
-<!--
-                        <div class="modal-header">
-                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                          </button>
-                          <h4 class="modal-title">Extra information</h4>
-                        </div>
--->
+
                         <div class="modal-body">
+                            {{ $thumbnail := .GetLink "thumbnail" }}
+                            {{ $file := .GetLink "file" }}
+                            {{ if $thumbnail }}
+                                <div class="pull-right">
+                                    <div class="media">
+                                        <a class="media-left" href="{{ $file }}">
+                                            <img class="media-object" src="{{ $thumbnail }}"/>
+                                        </a>
+                                    </div>
+</div>
+                            {{ end }}
+
                             <div class="media">
-                                {{ $thumbnail := .GetLink "thumbnail" }}
-                                {{ $file := .GetLink "file" }}
-                                {{ if $thumbnail }}
-                                    <p>
-                                        <div class="media">
-                                            <a class="media-left" href="{{ $file }}">
-                                                <img class="media-object" src="{{ $thumbnail }}"/>
-                                            </a>
-                                        </div>
-                                    </p>
-                                {{ end }}
-                            </div>
-                            <table class="table">
-                                <tbody>
-                                    <tr>
-                                        <th>
-                                            Filename
-                                        </th>
-                                        <td>
+                                <div class="media-body">
+                                    <ul class="dl-horizontal">
+                                        <dt class="col-sm-3">Filename</dt>
+                                        <dd class="col-sm-9">
                                             {{ $file := .GetLink "file" }}
                                             <a href="{{ $file }}">
                                                 {{ .Filename }}
                                             </a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            Tag
-                                        </th>
-                                        <td>
+                                        </dd>
+
+                                        <dt class="col-sm-3">Tag</dt>
+                                        <dd class="col-sm-9">
                                             {{ $tag := .GetLink "tag" }}
                                             <a href="{{ $tag }}">
                                                 {{ .Tag }}
                                             </a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            Size
-                                        </th>
-                                        <td>
-                                            {{ .Bytes }} bytes ({{ .BytesReadable }})
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            MIME
-                                        </th>
-                                        <td>
+                                        </dd>
+
+                                        <dt class="col-sm-3">Size</dt>
+                                        <dd class="col-sm-9">
+                                            {{ .BytesReadable }}
+                                            ({{ .Bytes }} bytes)
+                                        </dd>
+
+                                        <dt class="col-sm-3">Mime</dt>
+                                        <dd class="col-sm-9">
                                             {{ .MIME }}
-                                        </td>
-                                    </tr>
-                                    {{ if .Longitude }} {{ if .Latitude }}
-                                        <tr>
-                                            <th>
-                                                Location
-                                            </th>
-                                            <td>
+                                        </dd>
+
+                                        {{ if .Longitude }} {{ if .Latitude }}
+                                            <dt class="col-sm-3">Location</dt>
+                                            <dd class="col-sm-9">
                                                 Latitude: <code>{{ .Latitude }}</code><br/>
                                                 Longitude: <code>{{ .Longitude }}</code><br/>
-                                            </td>
-                                        </tr>
-                                    {{ end }} {{ end }}
-                                    {{ if ne .DateTimeString "" }}
-                                      <tr>
-                                          <th>
-                                              Captured
-                                          </th>
-                                          <td>
-                                              {{ .DateTimeReadable }} ({{ .DateTimeString }})
-                                          </td>
-                                      </tr>
-                                    {{ end }}
-                                    <tr>
-                                        <th>
-                                            Uploaded
-                                        </th>
-                                        <td>
-                                            {{ .CreatedReadable }} ({{ .CreatedAt.Format "2006-01-02 15:04:05 UTC" }}).
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            Expires
-                                        </th>
-                                        <td>
+                                            </dd>
+                                        {{ end }} {{ end }}
+
+                                        {{ if ne .DateTimeString "" }}
+                                            <dt class="col-sm-3">Captured</dt>
+                                            <dd class="col-sm-9">
+                                                {{ .DateTimeReadable }} ({{ .DateTimeString }})
+                                            </dd>
+                                        {{ end }}
+
+                                        <dt class="col-sm-3">Uploaded</dt>
+                                        <dd class="col-sm-9">
+                                            {{ .CreatedReadable }} ({{ .CreatedAt.Format "2006-01-02 15:04:05 UTC" }})
+                                        </dd>
+
+                                        <dt class="col-sm-3">Expires</dt>
+                                        <dd class="col-sm-9">
                                             {{ if $.Data.ExpirationReadable }}
                                                 {{ $.Data.ExpirationReadable }}
                                             {{ end }}
-                                            ({{ $.Data.ExpirationAt.Format "2006-01-02 15:04:05 UTC" }}).
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                            ({{ $.Data.ExpirationAt.Format "2006-01-02 15:04:05 UTC" }})
+                                        </dd>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="modal-footer">
@@ -385,7 +355,7 @@
             </div>
         </div>
         <!-- Expiration modal end -->
-        <!-- File info modal start -->
+        <!-- Tag info modal start -->
         <div class="modal fade" id="info" tabindex="-1" role="dialog" aria-labelledby="info-label" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -396,47 +366,33 @@
                       <h4 class="modal-title">Tag extras</h4>
                     </div>
                     <div class="modal-body">
-                        <table class="table">
-                            <tbody>
-                                <tr>
-                                    <th>
-                                        Tag
-                                    </th>
-                                    <td>
-                                        <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}">
-                                            {{ $.Data.Tag }}
-                                        </a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        Files
-                                    </th>
-                                    <td>
-                                        {{ $.Data.Files | len }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        Last updated
-                                    </th>
-                                    <td>
-                                        {{ $.Data.LastUpdateReadable }} ({{ $.Data.LastUpdateAt.Format "2006-01-02 15:04:05 UTC" }}).
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        Expires
-                                    </th>
-                                    <td>
-                                        {{ if $.Data.ExpirationReadable }}
-                                            {{ $.Data.ExpirationReadable }}
-                                        {{ end }}
-                                        ({{ $.Data.ExpirationAt.Format "2006-01-02 15:04:05 UTC" }}).
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <ul class="dl-horizontal">
+                            <dt class="col-sm-3">Tag</dt>
+                            <dd class="col-sm-9">
+                                <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}">
+                                    {{ $.Data.Tag }}
+                                </a>
+                            </dd>
+
+                            <dt class="col-sm-3">Files</dt>
+                            <dd class="col-sm-9">
+                                {{ $.Data.Files | len }}
+                            </dd>
+
+                            <dt class="col-sm-3">Last updated</dt>
+                            <dd class="col-sm-9">
+                                {{ $.Data.LastUpdateReadable }}
+                                ({{ $.Data.LastUpdateAt.Format "2006-01-02 15:04:05 UTC" }})
+                            </dd>
+
+                            <dt class="col-sm-3">Expires</dt>
+                            <dd class="col-sm-9">
+                                {{ if $.Data.ExpirationReadable }}
+                                    {{ $.Data.ExpirationReadable }}
+                                {{ end }}
+                                ({{ $.Data.ExpirationAt.Format "2006-01-02 15:04:05 UTC" }})
+                            </dd>
+                        </ul>
                     </div>
                     <div class="modal-footer">
                         <div class="pull-left">
