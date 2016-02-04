@@ -676,7 +676,7 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	ctx.Log.Println("Tag generated: " + t.Tag)
 
 	w.Header().Set("Cache-Control", "s-maxage=3600")
-	w.Header().Set("Location", ctx.Baseurl + "/" + t.Tag)
+	w.Header().Set("Location", ctx.Baseurl+"/"+t.Tag)
 	var status = 302
 	output.JSONresponse(w, status, t, ctx)
 }

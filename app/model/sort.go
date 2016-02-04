@@ -14,4 +14,3 @@ func (a ByDateTime) Swap(i, j int) {
 func (a ByDateTime) Less(i, j int) bool {
 	return a[i].DateTime.Before(a[j].DateTime)
 }
-

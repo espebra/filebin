@@ -4,9 +4,9 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
-	"sort"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -22,7 +22,7 @@ type Tag struct {
 	LastUpdateReadable string    `json:"lastupdate"`
 	Files              []File    `json:"files"`
 
-	Album              bool      `json:"-"`
+	Album bool `json:"-"`
 }
 
 //func (t *Tag) GenerateTag() error {

@@ -19,29 +19,29 @@ import (
 )
 
 type File struct {
-	Filename        string      `json:"filename"`
-	Tag             string      `json:"tag"`
-	TagDir          string      `json:"-"`
-	Bytes           int64       `json:"bytes"`
-	BytesReadable   string      `json:"-"`
-	MIME            string      `json:"mime"`
-	CreatedReadable string      `json:"-"`
-	CreatedAt       time.Time   `json:"created"`
-	Links           []Link      `json:"links"`
-	Checksum        string      `json:"checksum,omitempty"`
-	Algorithm       string      `json:"algorithm,omitempty"`
-	Verified        bool        `json:"verified"`
-	RemoteAddr      string      `json:"-"`
-	UserAgent       string      `json:"-"`
-	Tempfile        string      `json:"-"`
+	Filename        string    `json:"filename"`
+	Tag             string    `json:"tag"`
+	TagDir          string    `json:"-"`
+	Bytes           int64     `json:"bytes"`
+	BytesReadable   string    `json:"-"`
+	MIME            string    `json:"mime"`
+	CreatedReadable string    `json:"-"`
+	CreatedAt       time.Time `json:"created"`
+	Links           []Link    `json:"links"`
+	Checksum        string    `json:"checksum,omitempty"`
+	Algorithm       string    `json:"algorithm,omitempty"`
+	Verified        bool      `json:"verified"`
+	RemoteAddr      string    `json:"-"`
+	UserAgent       string    `json:"-"`
+	Tempfile        string    `json:"-"`
 
 	// Image specific attributes
-	DateTime  time.Time  `json:"datetime,omitempty"`
-	DateTimeReadable  string  `json:"-"`
-	Longitude float64    `json:"longitude,omitempty"`
-	Latitude  float64    `json:"latitude,omitempty"`
-	Altitude  string     `json:"altitude,omitempty"`
-	Exif      *exif.Exif `json:"-"`
+	DateTime         time.Time  `json:"datetime,omitempty"`
+	DateTimeReadable string     `json:"-"`
+	Longitude        float64    `json:"longitude,omitempty"`
+	Latitude         float64    `json:"latitude,omitempty"`
+	Altitude         string     `json:"altitude,omitempty"`
+	Exif             *exif.Exif `json:"-"`
 }
 
 func (f *File) SetTag(s string) error {
