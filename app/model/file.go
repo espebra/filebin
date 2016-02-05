@@ -413,7 +413,7 @@ func (f *File) DateTimeString() string {
 		return ""
 	}
 
-	return f.DateTime.Format("2006-01-02 15:04:05 UTC")
+	return f.DateTime.Format("2006-01-02 15:04:05")
 }
 
 func purge(url string) error {
