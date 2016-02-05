@@ -220,69 +220,65 @@
                                             <img class="media-object" src="{{ $thumbnail }}"/>
                                         </a>
                                     </div>
-</div>
+                                </div>
                             {{ end }}
 
-                            <div class="media">
-                                <div class="media-body">
-                                    <ul class="dl-horizontal">
-                                        <dt class="col-sm-3">Filename</dt>
-                                        <dd class="col-sm-9">
-                                            {{ $file := .GetLink "file" }}
-                                            <a href="{{ $file }}">
-                                                {{ .Filename }}
-                                            </a>
-                                        </dd>
+                            <ul class="dl-horizontal">
+                                <dt class="col-sm-3">Filename</dt>
+                                <dd class="col-sm-9">
+                                    {{ $file := .GetLink "file" }}
+                                    <a href="{{ $file }}">
+                                        {{ .Filename }}
+                                    </a>
+                                </dd>
 
-                                        <dt class="col-sm-3">Tag</dt>
-                                        <dd class="col-sm-9">
-                                            {{ $tag := .GetLink "tag" }}
-                                            <a href="{{ $tag }}">
-                                                {{ .Tag }}
-                                            </a>
-                                        </dd>
+                                <dt class="col-sm-3">Tag</dt>
+                                <dd class="col-sm-9">
+                                    {{ $tag := .GetLink "tag" }}
+                                    <a href="{{ $tag }}">
+                                        {{ .Tag }}
+                                    </a>
+                                </dd>
 
-                                        <dt class="col-sm-3">Size</dt>
-                                        <dd class="col-sm-9">
-                                            {{ .BytesReadable }}
-                                            ({{ .Bytes }} bytes)
-                                        </dd>
+                                <dt class="col-sm-3">Size</dt>
+                                <dd class="col-sm-9">
+                                    {{ .BytesReadable }}
+                                    ({{ .Bytes }} bytes)
+                                </dd>
 
-                                        <dt class="col-sm-3">Mime</dt>
-                                        <dd class="col-sm-9">
-                                            {{ .MIME }}
-                                        </dd>
+                                <dt class="col-sm-3">Mime</dt>
+                                <dd class="col-sm-9">
+                                    {{ .MIME }}
+                                </dd>
 
-                                        {{ if .Longitude }} {{ if .Latitude }}
-                                            <dt class="col-sm-3">Location</dt>
-                                            <dd class="col-sm-9">
-                                                Latitude: <code>{{ .Latitude }}</code><br/>
-                                                Longitude: <code>{{ .Longitude }}</code><br/>
-                                            </dd>
-                                        {{ end }} {{ end }}
+                                {{ if .Longitude }} {{ if .Latitude }}
+                                    <dt class="col-sm-3">Location</dt>
+                                    <dd class="col-sm-9">
+                                        Latitude: <code>{{ .Latitude }}</code><br/>
+                                        Longitude: <code>{{ .Longitude }}</code><br/>
+                                    </dd>
+                                {{ end }} {{ end }}
 
-                                        {{ if ne .DateTimeString "" }}
-                                            <dt class="col-sm-3">Captured</dt>
-                                            <dd class="col-sm-9">
-                                                {{ .DateTimeReadable }} ({{ .DateTimeString }})
-                                            </dd>
-                                        {{ end }}
+                                {{ if ne .DateTimeString "" }}
+                                    <dt class="col-sm-3">Captured</dt>
+                                    <dd class="col-sm-9">
+                                        {{ .DateTimeReadable }} ({{ .DateTimeString }})
+                                    </dd>
+                                {{ end }}
 
-                                        <dt class="col-sm-3">Uploaded</dt>
-                                        <dd class="col-sm-9">
-                                            {{ .CreatedReadable }} ({{ .CreatedAt.Format "2006-01-02 15:04:05 UTC" }})
-                                        </dd>
+                                <dt class="col-sm-3">Uploaded</dt>
+                                <dd class="col-sm-9">
+                                    {{ .CreatedReadable }} ({{ .CreatedAt.Format "2006-01-02 15:04:05 UTC" }})
+                                </dd>
 
-                                        <dt class="col-sm-3">Expires</dt>
-                                        <dd class="col-sm-9">
-                                            {{ if $.Data.ExpirationReadable }}
-                                                {{ $.Data.ExpirationReadable }}
-                                            {{ end }}
-                                            ({{ $.Data.ExpirationAt.Format "2006-01-02 15:04:05 UTC" }})
-                                        </dd>
-                                    </ul>
-                                </div>
-                            </div>
+                                <dt class="col-sm-3">Expires</dt>
+                                <dd class="col-sm-9">
+                                    {{ if $.Data.ExpirationReadable }}
+                                        {{ $.Data.ExpirationReadable }}
+                                    {{ end }}
+                                    ({{ $.Data.ExpirationAt.Format "2006-01-02 15:04:05 UTC" }})
+                                </dd>
+                            </ul>
                         </div>
 
                         <div class="modal-footer">
