@@ -61,33 +61,40 @@
             </div>
 
             <!-- Only show the howto if there are no files in the tag -->
-            <p class="lead">
-                Convenient file sharing on the web, without
-                registration. Simply upload files and share
-                the URL. The files will expire automatically
-                {{ .Data.ExpirationReadable }}.
-            </p>
-            <p class="lead">
-                <strong>1.</strong>
-                Click <em>Upload files</em> below, or drag and drop the files
-                into this browser window.
-            </p>
-            <p class="lead">
-                <strong>2.</strong>
-                Wait until the file uploads complete, and the page is refreshed.
-            </p>
-            <p class="lead">
-                <strong>3.</strong>
-                Distribute the <a href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}">URL</a> to share access to the files.
-            </p>
+            <div class="row table-active">
+                <div class="col-sm-12">
+                    <br/>
+                    <p class="lead">
+                        Convenient file sharing on the web, without
+                        registration. Simply upload files and share
+                        the URL. The files will expire automatically
+                        {{ .Data.ExpirationReadable }}.
+                    </p>
+                    <p class="lead">
+                        <strong>1.</strong>
+                        Click <em>Upload files</em> below, or drag and drop the files
+                        into this browser window.
+                    </p>
+                    <p class="lead">
+                        <strong>2.</strong>
+                        Wait until the file uploads complete, and the page is refreshed.
+                    </p>
+                    <p class="lead">
+                        <strong>3.</strong>
+                        Distribute the <a href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}">URL</a> to share access to the files.
+                    </p>
 
-            <!-- Menu -->
-            <p>
-                <div class="fileUpload btn btn-primary">
-                    <span><i class="fa fa-cloud-upload"></i> Upload files</span>
-                    <input type="file" class="upload" id="fileField"/ multiple>
+                    <!-- Menu -->
+                    <p>
+                        <div class="fileUpload btn btn-primary">
+                            <span><i class="fa fa-cloud-upload"></i> Upload files</span>
+                            <input type="file" class="upload" id="fileField"/ multiple>
+                        </div>
+                    </p>
+                    <br/>
                 </div>
-            </p>
+            </div>
+            <br/>
 
             <!-- Upload queue -->
             <span id="fileList"></span>
