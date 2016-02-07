@@ -12,6 +12,8 @@ type Configuration struct {
 	Expiration        int64
 	TriggerNewTag     string
 	TriggerUploadFile string
+	TriggerDownloadTag string
+	TriggerDownloadFile string
 	TriggerDeleteTag  string
 	TriggerDeleteFile string
 	TriggerExpireTag  string

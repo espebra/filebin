@@ -140,13 +140,25 @@ The parameter ``--trigger-upload-file <command>`` makes sure ``<command> <tag> <
 
 ``--trigger-upload-file /usr/local/bin/upload-file`` will execute ``/usr/local/bin/upload-file <tagid> <filename>``.
 
-##### Deleted tag
+##### Download tag
+
+The parameter ``--trigger-download-tag <command>`` makes sure ``<command> <tag>`` is executed whenever a tag is downloaded as an archive. The execution is non-blocking. Example:
+
+``--trigger-download-tag /usr/local/bin/download-tag`` will execute ``/usr/local/bin/download-tag <tagid>``.
+
+##### Download file
+
+The parameter ``--trigger-download-file <command>`` makes sure ``<command> <tag> <filename>`` is executed whenever a file is downloaded. The execution is non-blocking. Example:
+
+``--trigger-download-file /usr/local/bin/download-file`` will execute ``/usr/local/bin/download-file <tagid> <filename>``.
+
+##### Delete tag
 
 The parameter ``--trigger-delete-tag <command>`` makes sure ``<command> <tag>`` is executed whenever a tag is deleted. The execution is non-blocking. Example:
 
 ``--trigger-delete-tag /usr/local/bin/delete-tag`` will execute ``/usr/local/bin/delete-tag <tagid>``.
 
-##### Deleted file
+##### Delete file
 
 The parameter ``--trigger-delete-file <command>`` makes sure ``<command> <tag> <filename>`` is executed whenever a file is deleted. The execution is non-blocking. Example:
 

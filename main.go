@@ -114,6 +114,16 @@ func init() {
 		cfg.TriggerUploadFile,
 		"Command to execute when a file is uploaded.")
 
+	flag.StringVar(&cfg.TriggerDownloadTag,
+		"trigger-download-tag",
+		cfg.TriggerDownloadTag,
+		"Command to execute when a tag archive is downloaded.")
+
+	flag.StringVar(&cfg.TriggerDownloadFile,
+		"trigger-download-file",
+		cfg.TriggerDownloadFile,
+		"Command to execute when a file is downloaded.")
+
 	flag.StringVar(&cfg.TriggerDeleteTag,
 		"trigger-delete-tag",
 		cfg.TriggerDeleteTag,
@@ -220,6 +230,18 @@ func main() {
 	}
 	log.Println("Trigger - Upload file: " + trigger)
 
+	trigger = cfg.TriggerDownloadTag
+	if trigger == "" {
+		trigger = "Not set"
+	}
+	log.Println("Trigger - Download tag: " + trigger)
+
+	trigger = cfg.TriggerDownloadFile
+	if trigger == "" {
+		trigger = "Not set"
+	}
+	log.Println("Trigger - Download file: " + trigger)
+
 	trigger = cfg.TriggerDeleteTag
 	if trigger == "" {
 		trigger = "Not set"
@@ -248,6 +270,7 @@ func main() {
 	// instead of globally.
 	//router.StrictSlash(true)
 
+	//router.HandleFunc("/admin", reqHandler(api.Admin)).Methods("GET", "HEAD")
 	//router.HandleFunc("/api", reqHandler(api.ViewAPI)).Methods("GET", "HEAD")
 	//router.HandleFunc("/doc", reqHandler(api.ViewDoc)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.ViewIndex)).Methods("GET", "HEAD")

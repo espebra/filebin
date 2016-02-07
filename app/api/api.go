@@ -38,6 +38,18 @@ func triggerUploadFileHandler(c string, tag string, filename string) error {
 	return err
 }
 
+func triggerDownloadTagHandler(c string, tag string) error {
+	cmd := exec.Command(c, tag)
+	err := cmdHandler(cmd)
+	return err
+}
+
+func triggerDownloadFileHandler(c string, tag string, filename string) error {
+	cmd := exec.Command(c, tag, filename)
+	err := cmdHandler(cmd)
+	return err
+}
+
 func triggerDeleteTagHandler(c string, tag string) error {
 	cmd := exec.Command(c, tag)
 	err := cmdHandler(cmd)
@@ -348,6 +360,11 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		}
 	}
 
+	if cfg.TriggerDownloadFile != "" {
+		ctx.Log.Println("Executing trigger: Download file")
+		triggerDownloadFileHandler(cfg.TriggerDownloadFile, f.Tag, f.Filename)
+	}
+
 	w.Header().Set("Vary", "Content-Type")
 	w.Header().Set("Cache-Control", "s-maxage=3600")
 	http.ServeFile(w, r, path)
@@ -649,6 +666,11 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 		return
 	}
 
+	if cfg.TriggerDownloadTag != "" {
+		ctx.Log.Println("Executing trigger: Download tag")
+		triggerDownloadTagHandler(cfg.TriggerDownloadTag, t.Tag)
+	}
+
 	w.Header().Set("Cache-Control", "s-maxage=3600")
 
 	var status = 200
@@ -681,6 +703,11 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	output.JSONresponse(w, status, t, ctx)
 }
 
+//func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+//	http.Error(w, "Admin", 200)
+//	return
+//}
+
 func PurgeHandler(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	ctx.Log.Println("Unexpected PURGE request received")
 	http.Error(w, "Not implemented", 501)
@@ -688,13 +715,14 @@ func PurgeHandler(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 }
 
 //func ViewAPI(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-//	t := model.Tag {}
-//	headers := make(map[string]string)
-//	headers["Cache-Control"] = "s-maxage=1"
-//	var status = 200
-//	output.HTMLresponse(w, "api", status, headers, t, ctx)
-//}
+//	t := model.Tag{}
 //
+//	w.Header().Set("Cache-Control", "s-maxage=3600")
+//
+//	var status = 200
+//	output.HTMLresponse(w, "api", status, t, ctx)
+//}
+
 //func ViewDoc(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 //	t := model.Tag {}
 //	headers := make(map[string]string)
