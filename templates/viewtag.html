@@ -86,28 +86,25 @@
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <span class="fileUpload btn btn-primary btn-sm">
-                        <span><i class="fa fa-cloud-upload"></i> Upload files</span>
-                        <input type="file" class="upload" id="fileField"/ multiple>
-                    </span>
-                    <a class="btn btn-primary btn-sm" href="{{ .Ctx.Baseurl }}/archive/{{ .Data.Tag }}"><i class="fa fa-cloud-download"></i> Save files</a>
+            <nav class="navbar navbar-light">
+                <span class="fileUpload btn btn-primary btn-sm">
+                    <span><i class="fa fa-cloud-upload"></i> Upload files</span>
+                    <input type="file" class="upload" id="fileField"/ multiple>
+                </span>
 
-                    <!--
-                        Only show the album link if there are images in the tag.
-                    -->
-                    {{ if .Data.Album }}
-                    <a class="btn btn-success btn-sm" href="{{ .Ctx.Baseurl }}/album/{{ .Data.Tag }}"><i class="fa fa-image"></i> Album</a>
-                    {{ end }}
+                <a class="btn btn-secondary btn-sm" href="{{ .Ctx.Baseurl }}/archive/{{ .Data.Tag }}">
+                    <i class="fa fa-cloud-download"></i> Save files
+                </a>
 
-                </div>
-                <div class="col-md-6">
-                    <div class="pull-right">
-                        <a class="btn btn-primary-outline btn-sm" href="{{ .Ctx.Baseurl }}"><i class="fa fa-plus"></i> New tag</a>
-                    </div>
-                </div>
-            </div>
+                <!--
+                    Only show the album link if there are images in the tag.
+                -->
+                {{ if .Data.Album }}
+                <a class="btn btn-secondary btn-sm" href="{{ .Ctx.Baseurl }}/album/{{ .Data.Tag }}">
+                    <i class="fa fa-image"></i> Album
+                </a>
+                {{ end }}
+            </nav>
 
             <!-- Upload queue -->
             <span id="fileList"></span>
@@ -142,7 +139,7 @@
                                 <th class="hidden-md-down">Captured</th>
                             {{ end }}
                             <th class="hidden-lg-down">Uploaded</th>
-                            <th></th>
+                            <th class="sorttable_nosort"></th>
 	                </thead>
 	                <tbody>
                             {{ range $index, $value := .Data.Files }}
@@ -167,16 +164,17 @@
                                     <td>
                                         <div class="pull-right">
                                             {{ if .Longitude }} {{ if .Latitude }}
-                                                <a href="https://maps.google.com/?q={{ .Latitude }},{{ .Longitude }}" style="text-decoration: none;" alt="Show location in Google Maps">
-                                                    <span class="label label-success">
-                                                        <i class="fa fa-lg fa-globe"></i>
-                                                    </span>
+                                                <a class="label label-success" href="https://maps.google.com/?q={{ .Latitude }},{{ .Longitude }}" style="text-decoration: none;" alt="Show location in Google Maps">
+                                                    <i class="fa fa-lg fa-globe"></i>
                                                 </a>
                                             {{ end }} {{ end }}
-                                            <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#info-{{ $index }}">
-                                                <span class="label label-info">
-                                                    <i class="fa fa-lg fa-cog"></i>
-                                                </span>
+
+                                            <a class="label label-info" href="" style="text-decoration: none;" data-toggle="modal" data-target="#info-{{ $index }}">
+                                                <i class="fa fa-lg fa-info-circle"></i>
+                                            </a>
+                                        
+                                            <a class="label label-danger" href="" style="text-decoration: none;" data-toggle="modal" data-target="#delete-{{ $index }}">
+                                                <i class="fa fa-lg fa-trash"></i>
                                             </a>
                                         </div>
                                     </td>
@@ -186,15 +184,18 @@
                     </table>
                 </div>
             {{ end }}
-            <div class="row">
-                <div class="col-md-12">
-                    <p class="pull-right">
-                        <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#info" class="btn btn-info btn-sm">
-                            <i class="fa fa-lg fa-cogs"></i>
-                        </a>
-                    </p>
+
+            <nav class="navbar navbar-light">
+                <div class="pull-right">
+                    <a href="{{ .Ctx.Baseurl }}" class="btn btn-secondary btn-sm">
+                        <i class="fa fa-plus"></i> New tag
+                    </a>
+
+                    <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#delete" class="btn btn-danger btn-sm">
+                        <i class="fa fa-lg fa-trash"></i>
+                    </a>
                 </div>
-            </div>
+            </nav>
         </div>
 
         <!-- Modals start -->
@@ -207,20 +208,18 @@
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                           </button>
-                          <h4 class="modal-title">File extras</h4>
+                          <h4 class="modal-title">File information</h4>
                         </div>
 
                         <div class="modal-body">
                             {{ $thumbnail := .GetLink "thumbnail" }}
                             {{ $file := .GetLink "file" }}
                             {{ if $thumbnail }}
-                                <div class="pull-right">
-                                    <div class="media">
-                                        <a class="media-left" href="{{ $file }}">
-                                            <img class="media-object" src="{{ $thumbnail }}"/>
-                                        </a>
-                                    </div>
-                                </div>
+                            <div class="pull-right">
+                                <a href="{{ $file }}">
+                                    <img src="{{ $thumbnail }}"/>
+                                </a>
+                            </div>
                             {{ end }}
 
                             <ul class="dl-horizontal">
@@ -282,10 +281,6 @@
                         </div>
 
                         <div class="modal-footer">
-                            <div class="pull-left">
-                            <button type="button" class="btn btn-danger" data-toggle="modal" data-dismiss="modal" data-target="#delete-{{ $index }}"><i class="fa fa-trash"></i> Delete file</button>
-                            </div>
-
                             <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Close</button>
                         </div>
                     </div>
@@ -304,7 +299,7 @@
                         </div>
                         <div class="modal-body">
 
-                            <p>You are encouraged to use this feature only if you shared the wrong file or if some other person shared a file with obvious malicious or illegal content. This action is not reversible.</li>
+                            <p>You are free to delete any file in this tag. However you are encouraged to delete the files that you have uploaded only, or files with obvious malicious or illegal content. This action is not reversible.</li>
 
                             {{ $file := .GetLink "file" }}
                             <p class="lead">Delete the file <a href="{{ $file }}">{{ .Filename }}</a>?</p>
@@ -359,7 +354,7 @@
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                       </button>
-                      <h4 class="modal-title">Tag extras</h4>
+                      <h4 class="modal-title">Tag information</h4>
                     </div>
                     <div class="modal-body">
                         <ul class="dl-horizontal">
@@ -391,10 +386,6 @@
                         </ul>
                     </div>
                     <div class="modal-footer">
-                        <div class="pull-left">
-                        <button type="button" class="btn btn-danger" data-toggle="modal" data-dismiss="modal" data-target="#delete"><i class="fa fa-trash"></i> Delete tag</button>
-                        </div>
-
                         <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Close</button>
                     </div>
                 </div>
@@ -413,7 +404,7 @@
                     </div>
                     <div class="modal-body">
 
-                        <p>You are encouraged to use this feature only if you shared the wrong files or if some other person shared files with obvious malicious or illegal content. This action is not reversible.</li>
+                        <p>You are free to delete this tag. However you are encouraged to delete your own tags only, or tags that are being used to share obvious malicious or illegal content. This action is not reversible.</li>
 
                         <p class="lead">Delete all the files in tag <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}">{{ $.Data.Tag }}</a>?</p>
 </ul>
