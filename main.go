@@ -159,11 +159,11 @@ func init() {
 		log.Fatalln("Invalid port number, aborting.")
 	}
 
-	if cfg.Readtimeout < 1 || cfg.Readtimeout > 3600 {
+	if cfg.Readtimeout < 1 || cfg.Readtimeout > 86400 {
 		log.Fatalln("Invalid read timeout, aborting.")
 	}
 
-	if cfg.Writetimeout < 1 || cfg.Writetimeout > 3600 {
+	if cfg.Writetimeout < 1 || cfg.Writetimeout > 86400 {
 		log.Fatalln("Invalid write timeout, aborting.")
 	}
 
