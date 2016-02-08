@@ -104,6 +104,27 @@
                     <i class="fa fa-image"></i> Album
                 </a>
                 {{ end }}
+
+                <div class="pull-right">
+                    <div class="dropdown">
+                        <a href="" class="dropdown-toggle" id="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="text-decoration: none;">Tag</a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown">
+                            <a class="dropdown-item" href="{{ .Ctx.Baseurl }}">
+                                <i class="fa fa-fw fa-plus"></i> New tag
+                            </a>
+
+                            <a class="dropdown-item" href="" data-toggle="modal" data-target="#info">
+                                <i class="fa fa-fw fa-info-circle"></i> Tag properties
+                            </a>
+
+                            <div class="dropdown-divider"></div>
+
+                            <a class="dropdown-item" href="" data-toggle="modal" data-target="#delete">
+                                <i class="fa fa-fw fa-trash"></i> Delete tag
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </nav>
 
             <!-- Upload queue -->
@@ -129,16 +150,23 @@
 
             <!-- Existing files in the tag -->
             {{ if .Data.Files }}
-                <div class="table-responsive">
+                <div class="table">
                     <table class="sortable table">
 	                <thead class="thead thead-default">
-                            <th>Filename</th>
-                            <th class="hidden-xs-down">Size</th>
-                            <th class="hidden-sm-down">Type</th>
+                            <th>
+                                <i class="fa fa-tags"></i> Filename
+                            </th>
+                            <th class="hidden-xs-down">
+                                <i class="fa fa-database"></i> Size
+                            </th>
+                            <th class="hidden-sm-down">
+                                <i class="fa fa-clock-o"></i> Uploaded
+                            </th>
                             {{ if .Data.Album }}
-                                <th class="hidden-md-down">Captured</th>
+                                <th class="hidden-md-down">
+                                    <i class="fa fa-clock-o"></i> Captured
+                                </th>
                             {{ end }}
-                            <th class="hidden-lg-down">Uploaded</th>
                             <th class="sorttable_nosort"></th>
 	                </thead>
 	                <tbody>
@@ -155,27 +183,33 @@
                                         <a href="{{ $file }}">{{ .Filename }}</a>
                                     </td>
                                     <td class="hidden-xs-down">{{ .BytesReadable }}</td>
-                                    <td class="hidden-sm-down">{{ .MIME }}</td>
+                                    <td class="hidden-sm-down">{{ .CreatedReadable }}</td>
                                     {{ if $.Data.Album }}
                                         <td class="hidden-md-down">{{ .DateTimeString }}</td>
                                     {{ end }}
-                                    <td class="hidden-lg-down">{{ .CreatedReadable }}</td>
 
                                     <td>
                                         <div class="pull-right">
-                                            {{ if .Longitude }} {{ if .Latitude }}
-                                                <a class="label label-success" href="https://maps.google.com/?q={{ .Latitude }},{{ .Longitude }}" style="text-decoration: none;" alt="Show location in Google Maps">
-                                                    <i class="fa fa-lg fa-globe"></i>
-                                                </a>
-                                            {{ end }} {{ end }}
+                                            <div class="dropdown">
+                                                <a href="" class="dropdown-toggle" id="dropdown-{{ $index }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="text-decoration: none;">More</a>
+                                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-{{ $index }}">
+                                                    {{ if .Longitude }} {{ if .Latitude }}
+                                                        <a class="dropdown-item" href="https://maps.google.com/?q={{ .Latitude }},{{ .Longitude }}"  alt="Show location in Google Maps">
+                                                            <i class="fa fa-fw fa-globe"></i> Google Maps
+                                                        </a>
+                                                    {{ end }} {{ end }}
 
-                                            <a class="label label-info" href="" style="text-decoration: none;" data-toggle="modal" data-target="#info-{{ $index }}">
-                                                <i class="fa fa-lg fa-info-circle"></i>
-                                            </a>
+                                                    <a class="dropdown-item" href="" data-toggle="modal" data-target="#info-{{ $index }}">
+                                                        <i class="fa fa-fw fa-info-circle"></i> File properties
+                                                    </a>
+
+                                                    <div class="dropdown-divider"></div>
                                         
-                                            <a class="label label-danger" href="" style="text-decoration: none;" data-toggle="modal" data-target="#delete-{{ $index }}">
-                                                <i class="fa fa-lg fa-trash"></i>
-                                            </a>
+                                                    <a class="dropdown-item" href="" data-toggle="modal" data-target="#delete-{{ $index }}">
+                                                        <i class="fa fa-fw fa-trash"></i> Delete file
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -184,18 +218,6 @@
                     </table>
                 </div>
             {{ end }}
-
-            <nav class="navbar navbar-light">
-                <div class="pull-right">
-                    <a href="{{ .Ctx.Baseurl }}" class="btn btn-secondary btn-sm">
-                        <i class="fa fa-plus"></i> New tag
-                    </a>
-
-                    <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#delete" class="btn btn-danger btn-sm">
-                        <i class="fa fa-lg fa-trash"></i>
-                    </a>
-                </div>
-            </nav>
         </div>
 
         <!-- Modals start -->
@@ -208,7 +230,7 @@
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                           </button>
-                          <h4 class="modal-title">File information</h4>
+                          <h4 class="modal-title">File properties</h4>
                         </div>
 
                         <div class="modal-body">
@@ -245,7 +267,7 @@
                                     ({{ .Bytes }} bytes)
                                 </dd>
 
-                                <dt class="col-sm-3">Mime</dt>
+                                <dt class="col-sm-3">MIME</dt>
                                 <dd class="col-sm-9">
                                     {{ .MIME }}
                                 </dd>
@@ -354,7 +376,7 @@
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                       </button>
-                      <h4 class="modal-title">Tag information</h4>
+                      <h4 class="modal-title">Tag properties</h4>
                     </div>
                     <div class="modal-body">
                         <ul class="dl-horizontal">
