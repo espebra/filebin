@@ -87,44 +87,53 @@
             </div>
 
             <nav class="navbar navbar-light">
-                <span class="fileUpload btn btn-primary btn-sm">
-                    <span><i class="fa fa-cloud-upload"></i> Upload files</span>
-                    <input type="file" class="upload" id="fileField"/ multiple>
-                </span>
+                <ul class="nav navbar-nav">
+                    <li class="nav-item">
+                        <span class="fileUpload btn btn-primary btn-sm">
+                            <span><i class="fa fa-cloud-upload"></i> Upload files</span>
+                            <input type="file" class="upload" id="fileField"/ multiple>
+                        </span>
+                    </li>
 
-                <a class="btn btn-secondary btn-sm" href="{{ .Ctx.Baseurl }}/archive/{{ .Data.Tag }}">
-                    <i class="fa fa-cloud-download"></i> Save files
-                </a>
+                    <li class="nav-item">
+                        <a class="btn btn-secondary btn-sm" href="{{ .Ctx.Baseurl }}/archive/{{ .Data.Tag }}">
+                            <i class="fa fa-cloud-download"></i> Save files
+                        </a>
+                    </li>
 
-                <!--
-                    Only show the album link if there are images in the tag.
-                -->
-                {{ if .Data.Album }}
-                <a class="btn btn-secondary btn-sm" href="{{ .Ctx.Baseurl }}/album/{{ .Data.Tag }}">
-                    <i class="fa fa-image"></i> Album
-                </a>
-                {{ end }}
+                    <!--
+                        Only show the album link if there are images in the tag.
+                    -->
+                    {{ if .Data.Album }}
+                    <li class="nav-item">
+                        <a class="btn btn-secondary btn-sm" href="{{ .Ctx.Baseurl }}/album/{{ .Data.Tag }}">
+                            <i class="fa fa-image"></i> Album
+                        </a>
+                    </li>
+                    {{ end }}
 
-                <div class="pull-right">
-                    <div class="dropdown">
-                        <a href="" class="dropdown-toggle" id="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="text-decoration: none;">Tag</a>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown">
-                            <a class="dropdown-item" href="{{ .Ctx.Baseurl }}">
-                                <i class="fa fa-fw fa-plus"></i> New tag
-                            </a>
+                    <li class="nav-item">
+                        <div class="dropdown">
+                            <a class="btn btn-link btn-sm" href="" class="dropdown-toggle" id="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="text-decoration: none;">More <i class="fa fa-caret-down"></i></a>
 
-                            <a class="dropdown-item" href="" data-toggle="modal" data-target="#info">
-                                <i class="fa fa-fw fa-info-circle"></i> Tag properties
-                            </a>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown">
+                                <a class="dropdown-item" href="{{ .Ctx.Baseurl }}">
+                                    <i class="fa fa-fw fa-plus"></i> New tag
+                                </a>
 
-                            <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="" data-toggle="modal" data-target="#info">
+                                    <i class="fa fa-fw fa-info-circle"></i> Tag properties
+                                </a>
 
-                            <a class="dropdown-item" href="" data-toggle="modal" data-target="#delete">
-                                <i class="fa fa-fw fa-trash"></i> Delete tag
-                            </a>
+                                <div class="dropdown-divider"></div>
+
+                                <a class="dropdown-item" href="" data-toggle="modal" data-target="#delete">
+                                    <i class="fa fa-fw fa-trash"></i> Delete tag
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </li>
+                </ul>
             </nav>
 
             <!-- Upload queue -->
@@ -191,7 +200,7 @@
                                     <td>
                                         <div class="pull-right">
                                             <div class="dropdown">
-                                                <a href="" class="dropdown-toggle" id="dropdown-{{ $index }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="text-decoration: none;">More</a>
+                                                <a href="" class="small" id="dropdown-{{ $index }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="text-decoration: none;">More <i class="fa fa-caret-down"></i></a>
                                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-{{ $index }}">
                                                     {{ if .Longitude }} {{ if .Latitude }}
                                                         <a class="dropdown-item" href="https://maps.google.com/?q={{ .Latitude }},{{ .Longitude }}"  alt="Show location in Google Maps">
