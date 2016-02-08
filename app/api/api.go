@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"syscall"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -105,6 +106,27 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	}
 	f.SetTagDir(cfg.Filedir)
 	ctx.Log.Println("Tag directory: " + f.TagDir)
+
+	contentLength, err := strconv.ParseUint(r.Header.Get("Content-Length"), 10, 64)
+	if err != nil {
+		ctx.Log.Println(err)
+	}
+	ctx.Log.Printf("Specified content length: %d bytes", contentLength)
+
+	// Read the amounts of bytes free in the filedir directory
+	var stat syscall.Statfs_t
+	syscall.Statfs(cfg.Filedir, &stat)
+	freeBytes := stat.Bavail * uint64(stat.Bsize)
+	ctx.Log.Printf("Free storage: %d bytes", freeBytes)
+
+	if contentLength >= freeBytes {
+		ctx.Log.Println("Not enough free disk space for the specified content-length. Trying to abort here.")
+
+		// This will not work as expected since clients (usually) don't care about
+		// the response until the request delivery is complete.
+		http.Error(w, "Request Entity Too Large", 413)
+		return
+	}
 
 	// Write the request body to a temporary file
 	err = f.WriteTempfile(r.Body, cfg.Tempdir)
