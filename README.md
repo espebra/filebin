@@ -21,7 +21,7 @@ Filebin is a web application that facilitates convenient file sharing over the w
 * All functionality available through an [HTTP API](#web-service).
 * Upload files using drag and drop, select files from a dialog box or use cURL ([examples below](#web-service))
 * Large file support. 10 GB file upload has been tested, but it should work fine with larger files as well.
-* Archive (zip) download to make it easy to download multiple files in one go.
+* Archive (tar) download to make it easy to download multiple files in one go.
 * Files expire automatically after a configurable period of time.
 * Files and entire tags can be deleted manually.
 * Thumbnails are displayed for image files.
@@ -225,24 +225,21 @@ The following command will print a JSON structure showing which files that avail
 $ curl https://filebin.example.com/customtag
 ```
 
-### Fetch tag as a zip archive
+### Fetch tag as a tar archive
 
 |			| Value						|
 | --------------------- | --------------------------------------------- |
 | **Method**		| ``GET``					|
-| **Request headers**	| ``content-type: application/zip``		|
-| **URL**		| /:tag						|
-| **URL parameters**	| o=zip						|
+| **URL**		| /:archive/:tag				|
 | **Success response**	| ``200``					|
 | **Error response**	| ``404``					|
 
 ###### Examples
 
-The following commands will download the files in ``customtag`` as a zip archive:
+The following commands will download the files in ``customtag`` as a tar archive:
 
 ```bash
-$ curl https://filebin.example.com/customtag?o=zip
-$ curl -H "content-type: application/zip" https://filebin.example.com/customtag
+$ curl -o customtag.tar https://filebin.example.com/archive/customtag
 ```
 
 ### Download file
