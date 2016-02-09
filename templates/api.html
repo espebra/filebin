@@ -5,33 +5,25 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+        <meta name="description" content="Upload files and make them available for your friends. Think of it as Pastebin for files. Registration is not required.">
+        <meta name="author" content="Espen Braastad">
+        <link rel="icon" href="{{ .Ctx.Baseurl }}/static/img/favicon.png">
+
         <title>Filebin</title>
 
         <!-- Bootstrap -->
-        <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/custom.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/font-awesome.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/highlightjs/default.min.css"/>
+
+        <script src="{{ .Ctx.Baseurl }}/static/highlightjs/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
     </head>
 
     <body>
         <div class="container-fluid">
-            <nav class="navbar navbar-dark bg-inverse">
-              <ul class="nav navbar-nav">
-                <li class="nav-item active">
-                  <a class="nav-link" href="/">New tag</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link disabled" href="/">Upload files</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/api">API</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/doc">Documentation</a>
-                </li>
-                <div class="nav-item nav-link pull-right">
-                    <div id="fileCount"></div>
-                </div>
-              </ul>
-            </nav>
 
             <div class="row">
                 <div class="col-sm-6">
@@ -39,7 +31,100 @@
                         Filebin
                     </h1>
                 </div>
+                <div class="col-sm-6">
+                    <div align="right">
+                        <p>
+                            <br/>
+                            <a class="btn btn-secondary" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}"><i class="fa fa-angle-left"></i> Back</a>
+                        </p>
+                    </div>
+                </div>
             </div>
+
+            <h2>
+                Upload file
+            </h2>
+
+            <h5>Specific filename and tag</h5>
+
+            <p>The following command will upload <code>/var/tmp/some file</code> to the tag <code>exampletag</code>. The target filename will be set to <code>myfile</code>.
+
+            <pre>
+                <code class="bash">
+$ curl -H "tag: exampletag" -H "filename: myfile" --data-binary "@/var/tmp/some file" {{ .Ctx.Baseurl }}
+                </code>
+            </pre>
+
+            <h5>Auto-generated tag and target filename</h5>
+
+            <p>The following command will upload <code>/var/tmp/some file</code>, and the tag will be automatically generated. The target filename is not specified, so it will become the SHA256 checksum of the content.</p>
+
+            <pre>
+                <code class="bash">
+$ curl --data-binary "@/var/tmp/some file" {{ .Ctx.Baseurl }}
+                </code>
+            </pre>
+
+            <h2>
+                Show tag meta data
+            </h2>
+
+            <p>The following command will show the metadata of the tag <code>exampletag</code>.</p>
+
+            <pre>
+                <code>
+$ curl -H "content-type: application/json" {{ .Ctx.Baseurl }}/exampletag
+                </code>
+            </pre>
+
+            <h2>
+                Download file
+            </h2>
+
+            <p>The following command will download <code>somefile</code> from the tag <code>exampletag</code>. The file will be stored as <code>myfile</code>.</p>
+
+            <pre>
+                <code>
+$ curl -o myfile {{ .Ctx.Baseurl }}/exampletag/somefile
+                </code>
+            </pre>
+
+            <h2>
+                Download tag
+            </h2>
+
+            <p>The following command will download all files in the tag <code>exampletag</code>. The file will be stored as the zip archive <code>mytag.zip</code>.</p>
+
+            <pre>
+                <code>
+$ curl -o mytag.zip {{ .Ctx.Baseurl }}/archive/exampletag
+$ unzip mytag.zip
+                </code>
+            </pre>
+
+            <h2>
+                Delete file
+            </h2>
+
+            <p>The following command will delete <code>somefile</code> from the tag <code>exampletag</code>. The file will no longer be available at <code>{{ .Ctx.Baseurl }}/exampletag/somefile</code>.</p>
+
+            <pre>
+                <code class="bash">
+$ curl -X DELETE {{ .Ctx.Baseurl }}/exampletag/somefile
+                </code>
+            </pre>
+
+            <h2>
+                Delete tag
+            </h2>
+
+            <p>The following command will delete the tag <code>exampletag</code>, including all the files in it. The tag will no longer be available at <code>{{ .Ctx.Baseurl }}/exampletag</code>.</p>
+
+            <pre>
+                <code class="bash">
+$ curl -X DELETE {{ .Ctx.Baseurl }}/exampletag
+                </code>
+            </pre>
         </div>
     </body>
 </html>
