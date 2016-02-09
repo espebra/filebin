@@ -110,13 +110,10 @@
                             <a class="btn btn-link btn-sm" href="" class="dropdown-toggle" id="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="text-decoration: none;">More <i class="fa fa-caret-down"></i></a>
 
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown">
-                                <a class="dropdown-item" href="{{ .Ctx.Baseurl }}">
-                                    <i class="fa fa-fw fa-plus"></i> New tag
-                                </a>
 
                                 <span class="dropdown-item fileUpload">
                                     <span>
-                                        <i class="fa fa-fw fa-cloud-upload"></i> Upload more files
+                                        <i class="fa fa-fw fa-cloud-upload"></i> Upload files
                                     </span>
                                     <input type="file" class="upload" id="fileField"/ multiple>
                                 </span>
@@ -130,6 +127,13 @@
                                 <a class="dropdown-item" href="" data-toggle="modal" data-target="#delete">
                                     <i class="fa fa-fw fa-trash"></i> Delete tag
                                 </a>
+
+                                <div class="dropdown-divider"></div>
+
+                                <a class="dropdown-item" href="{{ .Ctx.Baseurl }}">
+                                    <i class="fa fa-fw fa-plus"></i> New tag
+                                </a>
+
                             </div>
                         </div>
                     </li>
@@ -399,6 +403,12 @@
                             <dt class="col-sm-3">Files</dt>
                             <dd class="col-sm-9">
                                 {{ $.Data.Files | len }}
+                            </dd>
+
+                            <dt class="col-sm-3">Size</dt>
+                            <dd class="col-sm-9">
+                                {{ $.Data.BytesReadable }}
+                                ({{ $.Data.Bytes }} bytes)
                             </dd>
 
                             <dt class="col-sm-3">Last updated</dt>

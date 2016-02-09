@@ -15,6 +15,8 @@ import (
 type Tag struct {
 	Tag                string    `json:"tag"`
 	TagDir             string    `json:"-"`
+	Bytes              int64     `json:"bytes"`
+	BytesReadable      string    `json:"-"`
 	ExpirationAt       time.Time `json:"-"`
 	ExpirationReadable string    `json:"expiration"`
 	Expired            bool      `json:"-"`
@@ -131,8 +133,13 @@ func (t *Tag) List(baseurl string) error {
 		}
 
 		f.GenerateLinks(baseurl)
+
+		// Calculate the total amount of bytes in the tag
+		t.Bytes = t.Bytes + f.Bytes
+
 		t.Files = append(t.Files, f)
 	}
+	t.BytesReadable = humanize.Bytes(uint64(t.Bytes))
 	sort.Sort(ByDateTime(t.Files))
 	return err
 }
