@@ -191,10 +191,16 @@
                                         {{ $file := .GetLink "file" }}
                                         <a href="{{ $file }}">{{ .Filename }}</a>
                                     </td>
-                                    <td class="hidden-xs-down">{{ .BytesReadable }}</td>
-                                    <td class="hidden-sm-down">{{ .CreatedReadable }}</td>
+                                    <td class="hidden-xs-down" sorttable_customkey="{{ .Bytes }}">
+                                        {{ .BytesReadable }}
+                                    </td>
+                                    <td class="hidden-sm-down" sorttable_customkey="{{ .CreatedAt }}">
+                                        {{ .CreatedReadable }}
+                                    </td>
                                     {{ if $.Data.Album }}
-                                        <td class="hidden-md-down">{{ .DateTimeString }}</td>
+                                        <td class="hidden-md-down" sorttable_customkey="{{ .DateTime }}">
+                                            {{ .DateTimeString }}
+                                        </td>
                                     {{ end }}
 
                                     <td>
