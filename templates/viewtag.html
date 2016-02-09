@@ -89,8 +89,8 @@
             <nav class="navbar navbar-light">
                 <ul class="nav navbar-nav">
                     <li class="nav-item">
-                        <a class="btn btn-secondary btn-sm" href="{{ .Ctx.Baseurl }}/archive/{{ .Data.Tag }}">
-                            <i class="fa fa-cloud-download"></i> Save files
+                        <a class="btn btn-secondary btn-sm" href="" data-toggle="modal" data-target="#archive">
+                            <i class="fa fa-cloud-download"></i> Download files
                         </a>
                     </li>
 
@@ -451,7 +451,7 @@
                     </div>
                     <div class="modal-body">
 
-                        <p>You are free to delete this tag. However you are encouraged to delete your own tags only, or tags that are being used to share obvious malicious or illegal content. This action is not reversible.</li>
+                        <p>You are free to delete this tag. However you are encouraged to delete your own tags only, or tags that are being used to share obvious malicious or illegal content. This action is not reversible.</p>
 
                         <p class="lead">Delete all the files in tag <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}">{{ $.Data.Tag }}</a>?</p>
 </ul>
@@ -469,6 +469,37 @@
             </div>
         </div>
         <!-- Tag delete modal end -->
+        <!-- Tag archive modal start -->
+        <div class="modal fade" id="archive" tabindex="-1" role="dialog" aria-labelledby="archive-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                      <h4 class="modal-title">Download files</h4>
+                    </div>
+                    <div class="modal-body">
+
+                    <p>
+                        The files in this tag can be saved as a single tar archive. This makes multi file downloads convenient.
+                    </p>
+                    <p>
+                        The default filename is <code>{{ .Data.Tag }}.tar</code>. The estimated size is {{ .Data.BytesReadable }}. 
+                    </p>
+
+                    <p class="lead">Download this archive?</p>
+
+                    <div class="modal-footer">
+                        <div class="pull-left">
+                            <a class="btn btn-success" href="{{ .Ctx.Baseurl }}/archive/{{ $.Data.Tag }}"><i class="fa fa-cloud-download"></i> Confirm</a>
+                        </div>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Tag archive modal end -->
         <!-- Modals end -->
     </body>
 </html>

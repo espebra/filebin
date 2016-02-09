@@ -696,15 +696,15 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 	w.Header().Set("Cache-Control", "s-maxage=3600")
 
 	var status = 200
-	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Type", "application/x-tar")
 
-	// Generate a map of paths to add to the zip response
+	// Generate a map of paths to add to the tar response
 	var paths []string
 	for _, f := range t.Files {
 		path := filepath.Join(f.TagDir, f.Filename)
 		paths = append(paths, path)
 	}
-	output.ZIPresponse(w, status, t.Tag, paths, ctx)
+	output.TARresponse(w, status, t.Tag, paths, ctx)
 	return
 }
 

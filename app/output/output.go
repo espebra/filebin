@@ -1,7 +1,7 @@
 package output
 
 import (
-	"archive/zip"
+	"archive/tar"
 	"encoding/json"
 	"html/template"
 	"io"
@@ -56,17 +56,17 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, d interface{}, 
 	}
 }
 
-func ZIPresponse(w http.ResponseWriter, status int, tag string, paths []string, ctx model.Context) {
-	ctx.Log.Println("Generating zip archive")
+func TARresponse(w http.ResponseWriter, status int, tag string, paths []string, ctx model.Context) {
+	ctx.Log.Println("Generating tar archive")
 
-	w.Header().Set("Content-Disposition", `attachment; filename="`+tag+`.zip"`)
+	w.Header().Set("Content-Disposition", `attachment; filename="`+tag+`.tar"`)
 
-	zw := zip.NewWriter(w)
+	tw := tar.NewWriter(w)
 
 	for _, path := range paths {
 		// Extract the filename from the absolute path
 		fname := filepath.Base(path)
-		ctx.Log.Println("Adding to zip archive: " + fname)
+		ctx.Log.Println("Adding to tar archive: " + fname)
 
 		// Get stat info for modtime etc
 		info, err := os.Stat(path)
@@ -75,15 +75,14 @@ func ZIPresponse(w http.ResponseWriter, status int, tag string, paths []string, 
 			return
 		}
 
-		// Generate the Zip info header for this file based on the stat info
-		header, err := zip.FileInfoHeader(info)
+		// Generate the tar header for this file based on the stat info
+		header, err := tar.FileInfoHeader(info, info.Name())
 		if err != nil {
 			ctx.Log.Println(err)
 			return
 		}
 
-		ze, err := zw.CreateHeader(header)
-		if err != nil {
+		if err := tw.WriteHeader(header); err != nil {
 			ctx.Log.Println(err)
 			return
 		}
@@ -94,15 +93,14 @@ func ZIPresponse(w http.ResponseWriter, status int, tag string, paths []string, 
 			return
 		}
 		defer file.Close()
-		io.Copy(ze, file)
+		io.Copy(tw, file)
 	}
 
-	err := zw.Close()
-	if err != nil {
+	if err := tw.Close() ; err != nil {
 		ctx.Log.Println(err)
 		return
 	}
 
-	ctx.Log.Println("Zip archive successfully generated")
+	ctx.Log.Println("Tar archive successfully generated")
 	return
 }
