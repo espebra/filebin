@@ -126,10 +126,10 @@ func (f *File) GenerateLinks(baseurl string) {
 	fileLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename
 	f.Links = append(f.Links, fileLink)
 
-	if f.ImageExists(75, 75) {
+	if f.ImageExists(115, 115) {
 		thumbLink := Link{}
 		thumbLink.Rel = "thumbnail"
-		thumbLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?width=75&height=75"
+		thumbLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?width=115&height=115"
 		f.Links = append(f.Links, thumbLink)
 	}
 
