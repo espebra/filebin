@@ -107,7 +107,7 @@
 
                     <li class="nav-item">
                         <div class="dropdown">
-                            <a class="btn btn-link btn-sm" href="" class="dropdown-toggle" id="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="text-decoration: none;">More <i class="fa fa-caret-down"></i></a>
+                            <a class="btn btn-link btn-sm" href="" id="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="text-decoration: none;">More <i class="fa fa-caret-down"></i></a>
 
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown">
 
@@ -115,7 +115,7 @@
                                     <span>
                                         <i class="fa fa-fw fa-cloud-upload"></i> Upload files
                                     </span>
-                                    <input type="file" class="upload" id="fileField"/ multiple>
+                                    <input type="file" class="upload" id="fileField" multiple>
                                 </span>
 
                                 <a class="dropdown-item" href="" data-toggle="modal" data-target="#info">
@@ -147,18 +147,16 @@
             <div id="fileCount"></div>
 
             <!-- Thumbnails -->
-            <p>
-                <div class="media">
-                    {{ range $index, $value := .Data.Files }}
-                        {{ $thumbnail := .GetLink "thumbnail" }}
-                        {{ $file := .GetLink "file" }}
-                        {{ if $thumbnail }}
-                            <a href="{{ $file }}">
-                                 <img class="media-object" style="float: left;" src="{{ $thumbnail }}"/>
-                            </a>
-                        {{ end }}
+            <p class="media">
+                {{ range $index, $value := .Data.Files }}
+                    {{ $thumbnail := .GetLink "thumbnail" }}
+                    {{ $file := .GetLink "file" }}
+                    {{ if $thumbnail }}
+                        <a href="{{ $file }}">
+                             <img class="media-object" style="float: left;" src="{{ $thumbnail }}"/>
+                        </a>
                     {{ end }}
-                </div>
+                {{ end }}
             </p>
 
             <!-- Existing files in the tag -->
@@ -166,21 +164,23 @@
                 <div class="table">
                     <table class="sortable table">
 	                <thead class="thead thead-default">
-                            <th>
-                                <i class="fa fa-tags"></i> Filename
-                            </th>
-                            <th class="hidden-xs-down">
-                                <i class="fa fa-database"></i> Size
-                            </th>
-                            <th class="hidden-sm-down">
-                                <i class="fa fa-clock-o"></i> Uploaded
-                            </th>
-                            {{ if .Data.Album }}
+                            <tr>
+                                <th>
+                                    <i class="fa fa-tags"></i> Filename
+                                </th>
+                                <th class="hidden-xs-down">
+                                    <i class="fa fa-database"></i> Size
+                                </th>
+                                <th class="hidden-sm-down">
+                                    <i class="fa fa-clock-o"></i> Uploaded
+                                </th>
+                                {{ if .Data.Album }}
                                 <th class="hidden-md-down">
                                     <i class="fa fa-clock-o"></i> Captured
                                 </th>
-                            {{ end }}
-                            <th class="sorttable_nosort"></th>
+                                {{ end }}
+                                <th class="sorttable_nosort"></th>
+                            </tr>
 	                </thead>
 	                <tbody>
                             {{ range $index, $value := .Data.Files }}
@@ -340,11 +340,10 @@
                         </div>
                         <div class="modal-body">
 
-                            <p>You are free to delete any file in this tag. However you are encouraged to delete the files that you have uploaded only, or files with obvious malicious or illegal content. This action is not reversible.</li>
+                            <p>You are free to delete any file in this tag. However you are encouraged to delete the files that you have uploaded only, or files with obvious malicious or illegal content. This action is not reversible.</p>
 
                             {{ $file := .GetLink "file" }}
                             <p class="lead">Delete the file <a href="{{ $file }}">{{ .Filename }}</a>?</p>
-</ul>
 
                             <div id="deleteStatus-{{ $index }}"></div>
                         </div>
@@ -454,7 +453,6 @@
                         <p>You are free to delete this tag. However you are encouraged to delete your own tags only, or tags that are being used to share obvious malicious or illegal content. This action is not reversible.</p>
 
                         <p class="lead">Delete all the files in tag <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}">{{ $.Data.Tag }}</a>?</p>
-</ul>
 
                         <div id="deleteStatus"></div>
                     </div>
