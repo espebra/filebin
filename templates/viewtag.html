@@ -292,10 +292,13 @@
                                 </dd>
 
                                 {{ if .Longitude }} {{ if .Latitude }}
-                                    <dt class="col-sm-3">Location</dt>
+                                    <dt class="col-sm-3">Longitude</dt>
                                     <dd class="col-sm-9">
-                                        Latitude: <code>{{ .Latitude }}</code><br/>
-                                        Longitude: <code>{{ .Longitude }}</code><br/>
+                                        <code>{{ .Longitude }}</code>
+                                    </dd>
+                                    <dt class="col-sm-3">Latitude</dt>
+                                    <dd class="col-sm-9">
+                                        <code>{{ .Latitude }}</code>
                                     </dd>
                                 {{ end }} {{ end }}
 
