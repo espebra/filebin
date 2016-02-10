@@ -63,7 +63,7 @@
                     </h1>
                 </div>
                 <div class="col-sm-6">
-                    <div align="right">
+                    <div class="pull-right">
                         <p>
                             <small class="text-muted pull-right">
                                 {{ if eq (.Data.Files | len) 1 }}
@@ -153,7 +153,7 @@
                     {{ $file := .GetLink "file" }}
                     {{ if $thumbnail }}
                         <a href="{{ $file }}">
-                             <img class="media-object" style="float: left;" src="{{ $thumbnail }}"/>
+                             <img class="media-object pull-left" alt="{{ .Filename }} thumbnail" src="{{ $thumbnail }}"/>
                         </a>
                     {{ end }}
                 {{ end }}
@@ -242,7 +242,7 @@
         <!-- Modals start -->
         {{ range $index, $value := .Data.Files }}
             <!-- File info modal start -->
-            <div class="modal fade" id="info-{{ $index }}" tabindex="-1" role="dialog" aria-labelledby="info-label-{{ $index }}" aria-hidden="true">
+            <div class="modal fade" id="info-{{ $index }}" tabindex="-1" role="dialog" aria-labelledby="info-{{ $index }}" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -258,7 +258,7 @@
                             {{ if $thumbnail }}
                             <div class="pull-right">
                                 <a href="{{ $file }}">
-                                    <img src="{{ $thumbnail }}"/>
+                                    <img alt="{{ .Filename }} thumbnail" src="{{ $thumbnail }}"/>
                                 </a>
                             </div>
                             {{ end }}
@@ -329,7 +329,7 @@
             </div>
             <!-- File info modal end -->
             <!-- File delete modal start -->
-            <div class="modal fade" id="delete-{{ $index }}" tabindex="-1" role="dialog" aria-labelledby="delete-label-{{ $index }}" aria-hidden="true">
+            <div class="modal fade" id="delete-{{ $index }}" tabindex="-1" role="dialog" aria-labelledby="delete-{{ $index }}" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -350,7 +350,7 @@
 
                         <div class="modal-footer">
                             <div class="pull-left">
-                            <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}/{{ .Filename }}', 'deleteStatus-{{ $index }}')"><i class="fa fa-trash-o"></i> Confirm</button>
+                            <button type="button" class="btn btn-danger" id="deleteButton-{{ $index }}" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}/{{ .Filename }}', 'deleteStatus-{{ $index }}')"><i class="fa fa-trash-o"></i> Confirm</button>
                             </div>
                             <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
                         </div>
@@ -361,7 +361,7 @@
         {{ end }}
 
         <!-- Expiration modal start -->
-        <div class="modal fade" id="expiration" tabindex="-1" role="dialog" aria-labelledby="expiration-label" aria-hidden="true">
+        <div class="modal fade" id="expiration" tabindex="-1" role="dialog" aria-labelledby="expiration" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -387,7 +387,7 @@
         </div>
         <!-- Expiration modal end -->
         <!-- Tag info modal start -->
-        <div class="modal fade" id="info" tabindex="-1" role="dialog" aria-labelledby="info-label" aria-hidden="true">
+        <div class="modal fade" id="info" tabindex="-1" role="dialog" aria-labelledby="info" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -439,7 +439,7 @@
         </div>
         <!-- Tag info modal end -->
         <!-- Tag delete modal start -->
-        <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="delete-label" aria-hidden="true">
+        <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="delete" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -468,7 +468,7 @@
         </div>
         <!-- Tag delete modal end -->
         <!-- Tag archive modal start -->
-        <div class="modal fade" id="archive" tabindex="-1" role="dialog" aria-labelledby="archive-label" aria-hidden="true">
+        <div class="modal fade" id="archive" tabindex="-1" role="dialog" aria-labelledby="archive" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
