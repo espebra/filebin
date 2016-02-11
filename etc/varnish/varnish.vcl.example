@@ -12,11 +12,33 @@ acl acceptable_on_http {
     "127.0.0.1";
 }
 
+acl purgers {
+    "127.0.0.1";
+}
 
 sub vcl_recv {
     if (client.ip !~ acceptable_on_http) {
         # Force https
         return (synth(750, "https://" + req.http.host + req.url));
+    }
+
+    if (req.method == "PURGE") {
+        if (!client.ip ~ purgers) {
+            return (synth(405));
+        }
+        return (purge);
+    }
+
+    # Workaround below since Varnish doesn't handle larger response
+    # bodies that are larger than cache size well.
+
+    # File downloads
+    if (req.url ~ "^/[^/]+/[^\?]+$") {
+        return(pipe);
+    }
+    # Archive downloads
+    if (req.url ~ "^/archive/.*") {
+        return(pipe);
     }
 }
 
