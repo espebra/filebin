@@ -166,7 +166,17 @@ The parameter ``--trigger-delete-file <command>`` makes sure ``<command> <bin> <
 
 ## Web interface
 
+### Create new bin / empty bin
+
+![New bin](doc/screenshot-web-interface-new-bin.png)
+
+### File uploads in progress
+
 ![File uploads in progress](doc/screenshot-web-interface-uploading.png)
+
+### View bin with files
+
+![View bin with files](doc/screenshot-web-interface-bin.png)
 
 ## Web service
 
