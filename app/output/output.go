@@ -52,7 +52,7 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, d interface{}, 
 		"Ctx":  ctx,
 	})
 	if err != nil {
-		ctx.Log.Fatalln(err)
+		ctx.Log.Panicln(err)
 	}
 }
 

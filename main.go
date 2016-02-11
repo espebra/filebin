@@ -302,7 +302,7 @@ func main() {
 
 	err := http.ListenAndServe(cfg.Host+":"+strconv.Itoa(cfg.Port), nil)
 	if err != nil {
-		log.Fatalln(err.Error())
+		log.Panicln(err.Error())
 	}
 }
 
