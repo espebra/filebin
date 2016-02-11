@@ -100,43 +100,43 @@ func init() {
 	//	cfg.GeoIP2, "Path to the GeoIP2 database file.")
 
 	flag.Int64Var(&cfg.Expiration, "expiration",
-		cfg.Expiration, "Tag expiration time in seconds after the last modification.")
+		cfg.Expiration, "Bin expiration time in seconds after the last modification.")
 
 	//flag.BoolVar(&cfg.Verbose, "verbose",
 	//	cfg.Verbose, "Verbose output.")
 
-	flag.StringVar(&cfg.TriggerNewTag, "trigger-new-tag",
-		cfg.TriggerNewTag,
-		"Command to execute when a tag is created.")
+	flag.StringVar(&cfg.TriggerNewBin, "trigger-new-bin",
+		cfg.TriggerNewBin,
+		"Command to execute when a bin is created.")
 
 	flag.StringVar(&cfg.TriggerUploadFile,
 		"trigger-upload-file",
 		cfg.TriggerUploadFile,
 		"Command to execute when a file is uploaded.")
 
-	flag.StringVar(&cfg.TriggerDownloadTag,
-		"trigger-download-tag",
-		cfg.TriggerDownloadTag,
-		"Command to execute when a tag archive is downloaded.")
+	flag.StringVar(&cfg.TriggerDownloadBin,
+		"trigger-download-bin",
+		cfg.TriggerDownloadBin,
+		"Command to execute when a bin archive is downloaded.")
 
 	flag.StringVar(&cfg.TriggerDownloadFile,
 		"trigger-download-file",
 		cfg.TriggerDownloadFile,
 		"Command to execute when a file is downloaded.")
 
-	flag.StringVar(&cfg.TriggerDeleteTag,
-		"trigger-delete-tag",
-		cfg.TriggerDeleteTag,
-		"Command to execute when a tag is deleted.")
+	flag.StringVar(&cfg.TriggerDeleteBin,
+		"trigger-delete-bin",
+		cfg.TriggerDeleteBin,
+		"Command to execute when a bin is deleted.")
 
 	flag.StringVar(&cfg.TriggerDeleteFile,
 		"trigger-delete-file",
 		cfg.TriggerDeleteFile,
 		"Command to execute when a file is deleted.")
 
-	//	flag.StringVar(&cfg.TriggerExpiredTag, "trigger-expired-tag",
-	//		cfg.TriggerExpiredTag,
-	//		"Trigger to execute when a tag expires.")
+	//	flag.StringVar(&cfg.TriggerExpiredBin, "trigger-expired-bin",
+	//		cfg.TriggerExpiredBin,
+	//		"Trigger to execute when a bin expires.")
 
 	flag.BoolVar(&cfg.Version, "version",
 		cfg.Version, "Show the version information.")
@@ -218,11 +218,11 @@ func main() {
 	//log.Println("Log directory: " + cfg.Logdir)
 	log.Println("Baseurl: " + cfg.Baseurl)
 
-	var trigger = cfg.TriggerNewTag
+	var trigger = cfg.TriggerNewBin
 	if trigger == "" {
 		trigger = "Not set"
 	}
-	log.Println("Trigger - New tag: " + trigger)
+	log.Println("Trigger - New bin: " + trigger)
 
 	trigger = cfg.TriggerUploadFile
 	if trigger == "" {
@@ -230,11 +230,11 @@ func main() {
 	}
 	log.Println("Trigger - Upload file: " + trigger)
 
-	trigger = cfg.TriggerDownloadTag
+	trigger = cfg.TriggerDownloadBin
 	if trigger == "" {
 		trigger = "Not set"
 	}
-	log.Println("Trigger - Download tag: " + trigger)
+	log.Println("Trigger - Download bin: " + trigger)
 
 	trigger = cfg.TriggerDownloadFile
 	if trigger == "" {
@@ -242,11 +242,11 @@ func main() {
 	}
 	log.Println("Trigger - Download file: " + trigger)
 
-	trigger = cfg.TriggerDeleteTag
+	trigger = cfg.TriggerDeleteBin
 	if trigger == "" {
 		trigger = "Not set"
 	}
-	log.Println("Trigger - Delete tag: " + trigger)
+	log.Println("Trigger - Delete bin: " + trigger)
 
 	trigger = cfg.TriggerDeleteFile
 	if trigger == "" {
@@ -254,7 +254,7 @@ func main() {
 	}
 	log.Println("Trigger - Delete file: " + trigger)
 
-	//fmt.Println("Trigger Expired tag: " + cfg.TriggerExpiredTag)
+	//fmt.Println("Trigger Expired bin: " + cfg.TriggerExpiredBin)
 
 	log.Println("Filebin server starting...")
 
@@ -275,23 +275,23 @@ func main() {
 	//router.HandleFunc("/doc", reqHandler(api.ViewDoc)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.ViewIndex)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.Upload)).Methods("POST")
-	router.HandleFunc("/archive/{tag:[A-Za-z0-9_-]+}", reqHandler(api.FetchArchive)).Methods("GET", "HEAD")
-	router.HandleFunc("/album/{tag:[A-Za-z0-9_-]+}", reqHandler(api.FetchAlbum)).Methods("GET", "HEAD")
-	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}", reqHandler(api.FetchTag)).Methods("GET", "HEAD")
-	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}", reqHandler(api.DeleteTag)).Methods("DELETE")
-	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.FetchFile)).Methods("GET", "HEAD")
-	router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.DeleteFile)).Methods("DELETE")
+	router.HandleFunc("/archive/{bin:[A-Za-z0-9_-]+}", reqHandler(api.FetchArchive)).Methods("GET", "HEAD")
+	router.HandleFunc("/album/{bin:[A-Za-z0-9_-]+}", reqHandler(api.FetchAlbum)).Methods("GET", "HEAD")
+	router.HandleFunc("/{bin:[A-Za-z0-9_-]+}", reqHandler(api.FetchBin)).Methods("GET", "HEAD")
+	router.HandleFunc("/{bin:[A-Za-z0-9_-]+}", reqHandler(api.DeleteBin)).Methods("DELETE")
+	router.HandleFunc("/{bin:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.FetchFile)).Methods("GET", "HEAD")
+	router.HandleFunc("/{bin:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.DeleteFile)).Methods("DELETE")
 	router.HandleFunc("/{path:.*}", reqHandler(api.PurgeHandler)).Methods("PURGE")
 
 	//router.HandleFunc("/dashboard{_:/?}", ViewDashboard).Methods("GET", "HEAD")
 
 	//router.HandleFunc("/", ViewIndex).Methods("GET", "HEAD")
-	//router.HandleFunc("/upload{_:/?}", RedirectToNewTag).Methods("GET", "HEAD")
-	//router.HandleFunc("/upload/{tag:[A-Za-z0-9_-]+}", RedirectOldTag)
+	//router.HandleFunc("/upload{_:/?}", RedirectToNewBin).Methods("GET", "HEAD")
+	//router.HandleFunc("/upload/{bin:[A-Za-z0-9_-]+}", RedirectOldBin)
 
-	//router.HandleFunc("/{tag:[A-Za-z0-9_-]+}/page/{page:[0-9]+}{_:/?}",
-	//    ViewTag).Methods("GET", "HEAD")
-	//router.HandleFunc("/{tag:[A-Za-z0-9_-]+}{_:/?}", ViewTag).Methods("GET", "HEAD")
+	//router.HandleFunc("/{bin:[A-Za-z0-9_-]+}/page/{page:[0-9]+}{_:/?}",
+	//    ViewBin).Methods("GET", "HEAD")
+	//router.HandleFunc("/{bin:[A-Za-z0-9_-]+}{_:/?}", ViewBin).Methods("GET", "HEAD")
 
 	//router.HandleFunc("/user{_:/?}", user.GetHomePage).Methods("GET")
 	//router.HandleFunc("/user/view/{id:[0-9]+}", user.GetViewPage).Methods("GET")

@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <!-- The above 3 meta bins *must* come first in the head; any other head content must come *after* these bins -->
 
         <meta name="description" content="Upload files and make them available for your friends. Think of it as Pastebin for files. Registration is not required.">
         <meta name="author" content="Espen Braastad">
@@ -35,7 +35,7 @@
                     <div align="right">
                         <p>
                             <br/>
-                            <a class="btn btn-secondary" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}"><i class="fa fa-angle-left"></i> Back</a>
+                            <a class="btn btn-secondary" href="{{ .Ctx.Baseurl }}/{{ .Data.Bin }}"><i class="fa fa-angle-left"></i> Back</a>
                         </p>
                     </div>
                 </div>
@@ -45,19 +45,19 @@
                 Upload file
             </h2>
 
-            <h5>Specific filename and tag</h5>
+            <h5>Specific filename and bin</h5>
 
-            <p>The following command will upload <code>/var/tmp/some file</code> to the tag <code>exampletag</code>. The target filename will be set to <code>myfile</code>.
+            <p>The following command will upload <code>/var/tmp/some file</code> to the bin <code>examplebin</code>. The target filename will be set to <code>myfile</code>.
 
             <pre>
                 <code class="bash">
-$ curl -H "tag: exampletag" -H "filename: myfile" --data-binary "@/var/tmp/some file" {{ .Ctx.Baseurl }}
+$ curl -H "bin: examplebin" -H "filename: myfile" --data-binary "@/var/tmp/some file" {{ .Ctx.Baseurl }}
                 </code>
             </pre>
 
-            <h5>Auto-generated tag and target filename</h5>
+            <h5>Auto-generated bin and target filename</h5>
 
-            <p>The following command will upload <code>/var/tmp/some file</code>, and the tag will be automatically generated. The target filename is not specified, so it will become the SHA256 checksum of the content.</p>
+            <p>The following command will upload <code>/var/tmp/some file</code>, and the bin will be automatically generated. The target filename is not specified, so it will become the SHA256 checksum of the content.</p>
 
             <pre>
                 <code class="bash">
@@ -66,14 +66,14 @@ $ curl --data-binary "@/var/tmp/some file" {{ .Ctx.Baseurl }}
             </pre>
 
             <h2>
-                Show tag meta data
+                Show bin meta data
             </h2>
 
-            <p>The following command will show the metadata of the tag <code>exampletag</code>.</p>
+            <p>The following command will show the metadata of the bin <code>examplebin</code>.</p>
 
             <pre>
                 <code>
-$ curl -H "content-type: application/json" {{ .Ctx.Baseurl }}/exampletag
+$ curl -H "content-type: application/json" {{ .Ctx.Baseurl }}/examplebin
                 </code>
             </pre>
 
@@ -81,24 +81,24 @@ $ curl -H "content-type: application/json" {{ .Ctx.Baseurl }}/exampletag
                 Download file
             </h2>
 
-            <p>The following command will download <code>somefile</code> from the tag <code>exampletag</code>. The file will be stored as <code>myfile</code>.</p>
+            <p>The following command will download <code>somefile</code> from the bin <code>examplebin</code>. The file will be stored as <code>myfile</code>.</p>
 
             <pre>
                 <code>
-$ curl -o myfile {{ .Ctx.Baseurl }}/exampletag/somefile
+$ curl -o myfile {{ .Ctx.Baseurl }}/examplebin/somefile
                 </code>
             </pre>
 
             <h2>
-                Download tag
+                Download bin
             </h2>
 
-            <p>The following command will download all files in the tag <code>exampletag</code>. The file will be stored as the zip archive <code>mytag.zip</code>.</p>
+            <p>The following command will download all files in the bin <code>examplebin</code>. The file will be stored as the zip archive <code>mybin.zip</code>.</p>
 
             <pre>
                 <code>
-$ curl -o mytag.zip {{ .Ctx.Baseurl }}/archive/exampletag
-$ unzip mytag.zip
+$ curl -o mybin.zip {{ .Ctx.Baseurl }}/archive/examplebin
+$ unzip mybin.zip
                 </code>
             </pre>
 
@@ -106,23 +106,23 @@ $ unzip mytag.zip
                 Delete file
             </h2>
 
-            <p>The following command will delete <code>somefile</code> from the tag <code>exampletag</code>. The file will no longer be available at <code>{{ .Ctx.Baseurl }}/exampletag/somefile</code>.</p>
+            <p>The following command will delete <code>somefile</code> from the bin <code>examplebin</code>. The file will no longer be available at <code>{{ .Ctx.Baseurl }}/examplebin/somefile</code>.</p>
 
             <pre>
                 <code class="bash">
-$ curl -X DELETE {{ .Ctx.Baseurl }}/exampletag/somefile
+$ curl -X DELETE {{ .Ctx.Baseurl }}/examplebin/somefile
                 </code>
             </pre>
 
             <h2>
-                Delete tag
+                Delete bin
             </h2>
 
-            <p>The following command will delete the tag <code>exampletag</code>, including all the files in it. The tag will no longer be available at <code>{{ .Ctx.Baseurl }}/exampletag</code>.</p>
+            <p>The following command will delete the bin <code>examplebin</code>, including all the files in it. The bin will no longer be available at <code>{{ .Ctx.Baseurl }}/examplebin</code>.</p>
 
             <pre>
                 <code class="bash">
-$ curl -X DELETE {{ .Ctx.Baseurl }}/exampletag
+$ curl -X DELETE {{ .Ctx.Baseurl }}/examplebin
                 </code>
             </pre>
         </div>

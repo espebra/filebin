@@ -20,8 +20,8 @@ import (
 
 type File struct {
 	Filename        string    `json:"filename"`
-	Tag             string    `json:"tag"`
-	TagDir          string    `json:"-"`
+	Bin             string    `json:"bin"`
+	BinDir          string    `json:"-"`
 	Bytes           int64     `json:"bytes"`
 	BytesReadable   string    `json:"-"`
 	MIME            string    `json:"mime"`
@@ -44,21 +44,21 @@ type File struct {
 	Exif             *exif.Exif `json:"-"`
 }
 
-func (f *File) SetTag(s string) error {
-	validTag := regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
-	if validTag.MatchString(s) == false {
-		return errors.New("Invalid tag specified. It contains " +
+func (f *File) SetBin(s string) error {
+	validBin := regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
+	if validBin.MatchString(s) == false {
+		return errors.New("Invalid bin specified. It contains " +
 			"illegal characters or is too short")
 	}
-	f.Tag = s
+	f.Bin = s
 	return nil
 }
 
-func (f *File) SetTagDir(filedir string) error {
-	if f.Tag == "" {
-		return errors.New("Tag not set.")
+func (f *File) SetBinDir(filedir string) error {
+	if f.Bin == "" {
+		return errors.New("Bin not set.")
 	}
-	f.TagDir = filepath.Join(filedir, f.Tag)
+	f.BinDir = filepath.Join(filedir, f.Bin)
 	return nil
 }
 
@@ -85,11 +85,11 @@ func (f *File) SetFilename(s string) error {
 
 func (f *File) DetectMIME() error {
 	var err error
-	if f.TagDir == "" {
-		return errors.New("TagDir not set.")
+	if f.BinDir == "" {
+		return errors.New("BinDir not set.")
 	}
 
-	fpath := filepath.Join(f.TagDir, f.Filename)
+	fpath := filepath.Join(f.BinDir, f.Filename)
 	if f.Tempfile != "" {
 		fpath = filepath.Join(f.Tempfile)
 	}
@@ -123,52 +123,52 @@ func (f *File) MediaType() string {
 func (f *File) GenerateLinks(baseurl string) {
 	fileLink := Link{}
 	fileLink.Rel = "file"
-	fileLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename
+	fileLink.Href = baseurl + "/" + f.Bin + "/" + f.Filename
 	f.Links = append(f.Links, fileLink)
 
 	if f.ImageExists(115, 115) {
 		thumbLink := Link{}
 		thumbLink.Rel = "thumbnail"
-		thumbLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?width=115&height=115"
+		thumbLink.Href = baseurl + "/" + f.Bin + "/" + f.Filename + "?width=115&height=115"
 		f.Links = append(f.Links, thumbLink)
 	}
 
 	if f.ImageExists(1140, 0) {
 		albumItemLink := Link{}
 		albumItemLink.Rel = "albumitem"
-		albumItemLink.Href = baseurl + "/" + f.Tag + "/" + f.Filename + "?width=1140"
+		albumItemLink.Href = baseurl + "/" + f.Bin + "/" + f.Filename + "?width=1140"
 		f.Links = append(f.Links, albumItemLink)
 
 		albumLink := Link{}
 		albumLink.Rel = "album"
-		albumLink.Href = baseurl + "/album/" + f.Tag
+		albumLink.Href = baseurl + "/album/" + f.Bin
 		f.Links = append(f.Links, albumLink)
 	}
 
-	tagLink := Link{}
-	tagLink.Rel = "tag"
-	tagLink.Href = baseurl + "/" + f.Tag
-	f.Links = append(f.Links, tagLink)
+	binLink := Link{}
+	binLink.Rel = "bin"
+	binLink.Href = baseurl + "/" + f.Bin
+	f.Links = append(f.Links, binLink)
 
 	archiveLink := Link{}
 	archiveLink.Rel = "archive"
-	archiveLink.Href = baseurl + "/archive/" + f.Tag
+	archiveLink.Href = baseurl + "/archive/" + f.Bin
 	f.Links = append(f.Links, archiveLink)
 }
 
-func (f *File) EnsureTagDirectoryExists() error {
+func (f *File) EnsureBinDirectoryExists() error {
 	var err error
 
-	// Tag directory
-	if !isDir(f.TagDir) {
-		err = os.Mkdir(f.TagDir, 0700)
+	// Bin directory
+	if !isDir(f.BinDir) {
+		err = os.Mkdir(f.BinDir, 0700)
 		if err != nil {
 			return err
 		}
 	}
 
-	// Tag specific cache directory
-	cpath := filepath.Join(f.TagDir, ".cache")
+	// Bin specific cache directory
+	cpath := filepath.Join(f.BinDir, ".cache")
 	if !isDir(cpath) {
 		err = os.Mkdir(cpath, 0700)
 		if err != nil {
@@ -179,7 +179,7 @@ func (f *File) EnsureTagDirectoryExists() error {
 }
 
 func (f *File) Exists() bool {
-	if f.TagDir == "" {
+	if f.BinDir == "" {
 		return false
 	}
 
@@ -187,7 +187,7 @@ func (f *File) Exists() bool {
 		return false
 	}
 
-	path := filepath.Join(f.TagDir, f.Filename)
+	path := filepath.Join(f.BinDir, f.Filename)
 	if isFile(path) {
 		return true
 	}
@@ -203,11 +203,11 @@ func (f *File) ImageExists(width int, height int) bool {
 }
 
 func (f *File) StatInfo() error {
-	if isDir(f.TagDir) == false {
-		return errors.New("Tag does not exist.")
+	if isDir(f.BinDir) == false {
+		return errors.New("Bin does not exist.")
 	}
 
-	path := filepath.Join(f.TagDir, f.Filename)
+	path := filepath.Join(f.BinDir, f.Filename)
 	i, err := os.Lstat(path)
 	if err != nil {
 		return err
@@ -217,7 +217,7 @@ func (f *File) StatInfo() error {
 	f.Bytes = i.Size()
 	f.BytesReadable = humanize.Bytes(uint64(f.Bytes))
 
-	//i, err = os.Lstat(f.TagDir)
+	//i, err = os.Lstat(f.BinDir)
 	//if err != nil {
 	//	return err
 	//}
@@ -227,15 +227,15 @@ func (f *File) StatInfo() error {
 }
 
 func (f *File) Remove() error {
-	if f.TagDir == "" {
-		return errors.New("Tag dir is not set")
+	if f.BinDir == "" {
+		return errors.New("Bin dir is not set")
 	}
 
-	if !isDir(f.TagDir) {
-		return errors.New("Tag dir does not exist")
+	if !isDir(f.BinDir) {
+		return errors.New("Bin dir does not exist")
 	}
 
-	path := filepath.Join(f.TagDir, f.Filename)
+	path := filepath.Join(f.BinDir, f.Filename)
 
 	err := os.Remove(path)
 	return err
@@ -300,7 +300,7 @@ func (f *File) VerifySHA256(s string) error {
 }
 
 func (f *File) ParseExif() error {
-	fpath := filepath.Join(f.TagDir, f.Filename)
+	fpath := filepath.Join(f.BinDir, f.Filename)
 	if f.Tempfile != "" {
 		fpath = f.Tempfile
 	}
@@ -331,7 +331,7 @@ func (f *File) ParseExif() error {
 }
 
 func (f *File) Publish() error {
-	err := CopyFile(f.Tempfile, filepath.Join(f.TagDir, f.Filename))
+	err := CopyFile(f.Tempfile, filepath.Join(f.BinDir, f.Filename))
 	return err
 }
 
@@ -341,13 +341,13 @@ func (f *File) ClearTemp() error {
 }
 
 func (f *File) ImagePath(width int, height int) string {
-	return filepath.Join(f.TagDir, ".cache",
+	return filepath.Join(f.BinDir, ".cache",
 		strconv.Itoa(width)+"x"+strconv.Itoa(height)+"-"+
 			f.Filename)
 }
 
 func (f *File) GenerateImage(width int, height int, crop bool) error {
-	fpath := filepath.Join(f.TagDir, f.Filename)
+	fpath := filepath.Join(f.BinDir, f.Filename)
 
 	s, err := imaging.Open(fpath)
 	if err != nil {
@@ -366,7 +366,7 @@ func (f *File) GenerateImage(width int, height int, crop bool) error {
 }
 
 //func (f *File) ResizeImage(width int, height width, crop bool) error {
-//	fpath := filepath.Join(f.TagDir, f.Filename)
+//	fpath := filepath.Join(f.BinDir, f.Filename)
 //
 //	s, err := imaging.Open(fpath)
 //	if err != nil {
@@ -379,9 +379,9 @@ func (f *File) GenerateImage(width int, height int, crop bool) error {
 //	return err
 //}
 
-//func (f *File) GenerateTag() error {
-//        var tag = randomString(16)
-//        err := f.SetTag(tag)
+//func (f *File) GenerateBin() error {
+//        var bin = randomString(16)
+//        err := f.SetBin(bin)
 //        return err
 //}
 

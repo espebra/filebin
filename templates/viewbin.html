@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <!-- The above 3 meta bins *must* come first in the head; any other head content must come *after* these bins -->
 
         <meta name="description" content="Upload files and make them available for your friends. Think of it as Pastebin for files. Registration is not required.">
         <meta name="author" content="Espen Braastad">
@@ -33,14 +33,14 @@
                 var fileList = document.getElementById("fileList");
                 var fileDrop = document.body;
                 var fileField = document.getElementById("fileField");
-                var tag = "{{ .Data.Tag }}";
+                var bin = "{{ .Data.Bin }}";
                 var url = "{{ .Ctx.Baseurl }}/";
                 FileAPI = new FileAPI(
                     fileCount,
                     fileList,
                     fileDrop,
                     fileField,
-                    tag,
+                    bin,
                     url
                 );
                 FileAPI.init();
@@ -55,7 +55,7 @@
     <body id="fileDrop">
         <div class="container-fluid">
 
-            <!-- Tag meta information -->
+            <!-- Bin meta information -->
             <div class="row">
                 <div class="col-sm-6">
                     <h1 class="display-4">
@@ -67,9 +67,9 @@
                         <p>
                             <small class="text-muted pull-right">
                                 {{ if eq (.Data.Files | len) 1 }}
-                                    This tag contains {{ .Data.Files | len }} file.
+                                    This bin contains {{ .Data.Files | len }} file.
                                 {{ else }}
-                                    This tag contains {{ .Data.Files | len }} files.
+                                    This bin contains {{ .Data.Files | len }} files.
                                 {{ end }}
                                 <br/>
                                 {{ if .Data.LastUpdateReadable }}
@@ -95,11 +95,11 @@
                     </li>
 
                     <!--
-                        Only show the album link if there are images in the tag.
+                        Only show the album link if there are images in the bin.
                     -->
                     {{ if .Data.Album }}
                     <li class="nav-item">
-                        <a class="btn btn-secondary btn-sm" href="{{ .Ctx.Baseurl }}/album/{{ .Data.Tag }}">
+                        <a class="btn btn-secondary btn-sm" href="{{ .Ctx.Baseurl }}/album/{{ .Data.Bin }}">
                             <i class="fa fa-image"></i> Album
                         </a>
                     </li>
@@ -119,19 +119,19 @@
                                 </span>
 
                                 <a class="dropdown-item" href="" data-toggle="modal" data-target="#info">
-                                    <i class="fa fa-fw fa-info-circle text-primary"></i> Tag properties
+                                    <i class="fa fa-fw fa-info-circle text-primary"></i> Bin properties
                                 </a>
 
                                 <div class="dropdown-divider"></div>
 
                                 <a class="dropdown-item" href="" data-toggle="modal" data-target="#delete">
-                                    <i class="fa fa-fw fa-trash text-danger"></i> Delete tag
+                                    <i class="fa fa-fw fa-trash text-danger"></i> Delete bin
                                 </a>
 
                                 <div class="dropdown-divider"></div>
 
                                 <a class="dropdown-item" href="{{ .Ctx.Baseurl }}">
-                                    <i class="fa fa-fw fa-plus text-success"></i> New tag
+                                    <i class="fa fa-fw fa-plus text-success"></i> New bin
                                 </a>
 
                             </div>
@@ -159,14 +159,14 @@
                 {{ end }}
             </p>
 
-            <!-- Existing files in the tag -->
+            <!-- Existing files in the bin -->
             {{ if .Data.Files }}
                 <div class="table">
                     <table class="sortable table">
 	                <thead class="thead thead-default">
                             <tr>
                                 <th>
-                                    <i class="fa fa-tag"></i> Filename
+                                    <i class="fa fa-bin"></i> Filename
                                 </th>
                                 <th class="hidden-xs-down">
                                     <i class="fa fa-database"></i> Size
@@ -272,11 +272,11 @@
                                     </a>
                                 </dd>
 
-                                <dt class="col-sm-3">Tag</dt>
+                                <dt class="col-sm-3">Bin</dt>
                                 <dd class="col-sm-9">
-                                    {{ $tag := .GetLink "tag" }}
-                                    <a href="{{ $tag }}">
-                                        {{ .Tag }}
+                                    {{ $bin := .GetLink "bin" }}
+                                    <a href="{{ $bin }}">
+                                        {{ .Bin }}
                                     </a>
                                 </dd>
 
@@ -343,7 +343,7 @@
                         </div>
                         <div class="modal-body">
 
-                            <p>You are free to delete any file in this tag. However you are encouraged to delete the files that you have uploaded only, or files with obvious malicious or illegal content. This action is not reversible.</p>
+                            <p>You are free to delete any file in this bin. However you are encouraged to delete the files that you have uploaded only, or files with obvious malicious or illegal content. This action is not reversible.</p>
 
                             {{ $file := .GetLink "file" }}
                             <p class="lead">Delete the file <a href="{{ $file }}">{{ .Filename }}</a>?</p>
@@ -353,9 +353,9 @@
 
                         <div class="modal-footer">
                             <div class="pull-left">
-                            <button type="button" class="btn btn-danger" id="deleteButton-{{ $index }}" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}/{{ .Filename }}', 'deleteStatus-{{ $index }}')"><i class="fa fa-trash-o"></i> Confirm</button>
+                            <button type="button" class="btn btn-danger" id="deleteButton-{{ $index }}" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Bin }}/{{ .Filename }}', 'deleteStatus-{{ $index }}')"><i class="fa fa-trash-o"></i> Confirm</button>
                             </div>
-                            <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
+                            <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Bin }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
                         </div>
                     </div>
                 </div>
@@ -375,11 +375,11 @@
                     </div>
                     <div class="modal-body">
 
-                        <p>Tags are automatically expired after a period of time. Files inherit the expiration time from their tags.</p>
+                        <p>Bins are automatically expired after a period of time. Files inherit the expiration time from their bins.</p>
 
-                        <p>Expired files are deleted and are no longer accessible. It is not possible to view or upload files to expired tags.</p>
+                        <p>Expired files are deleted and are no longer accessible. It is not possible to view or upload files to expired bins.</p>
 
-                        <p>The expiration time of a tag is renewed whenever a file is uploaded, which means that tags can potentially be long lived if files are uploaded in intervals.</p>
+                        <p>The expiration time of a bin is renewed whenever a file is uploaded, which means that bins can potentially be long lived if files are uploaded in intervals.</p>
 
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Close</button>
@@ -389,7 +389,7 @@
             </div>
         </div>
         <!-- Expiration modal end -->
-        <!-- Tag info modal start -->
+        <!-- Bin info modal start -->
         <div class="modal fade" id="info" tabindex="-1" role="dialog" aria-labelledby="info" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -397,14 +397,14 @@
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                       </button>
-                      <h4 class="modal-title">Tag properties</h4>
+                      <h4 class="modal-title">Bin properties</h4>
                     </div>
                     <div class="modal-body">
                         <ul class="dl-horizontal">
-                            <dt class="col-sm-3">Tag</dt>
+                            <dt class="col-sm-3">Bin</dt>
                             <dd class="col-sm-9">
-                                <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}">
-                                    {{ $.Data.Tag }}
+                                <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Bin }}">
+                                    {{ $.Data.Bin }}
                                 </a>
                             </dd>
 
@@ -440,8 +440,8 @@
                 </div>
             </div>
         </div>
-        <!-- Tag info modal end -->
-        <!-- Tag delete modal start -->
+        <!-- Bin info modal end -->
+        <!-- Bin delete modal start -->
         <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="delete" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -449,28 +449,28 @@
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                       </button>
-                      <h4 class="modal-title">Delete tag</h4>
+                      <h4 class="modal-title">Delete bin</h4>
                     </div>
                     <div class="modal-body">
 
-                        <p>You are free to delete this tag. However you are encouraged to delete your own tags only, or tags that are being used to share obvious malicious or illegal content. This action is not reversible.</p>
+                        <p>You are free to delete this bin. However you are encouraged to delete your own bins only, or bins that are being used to share obvious malicious or illegal content. This action is not reversible.</p>
 
-                        <p class="lead">Delete all the files in tag <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}">{{ $.Data.Tag }}</a>?</p>
+                        <p class="lead">Delete all the files in bin <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Bin }}">{{ $.Data.Bin }}</a>?</p>
 
                         <div id="deleteStatus"></div>
                     </div>
 
                     <div class="modal-footer">
                         <div class="pull-left">
-                        <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}','deleteStatus')"><i class="fa fa-trash-o"></i> Confirm</button>
+                        <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteURL('{{ $.Ctx.Baseurl }}/{{ $.Data.Bin }}','deleteStatus')"><i class="fa fa-trash-o"></i> Confirm</button>
                         </div>
-                        <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Tag }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
+                        <a href="{{ $.Ctx.Baseurl }}/{{ $.Data.Bin }}" class="btn btn-secondary"><i class="fa fa-close"></i> Close</a>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Tag delete modal end -->
-        <!-- Tag archive modal start -->
+        <!-- Bin delete modal end -->
+        <!-- Bin archive modal start -->
         <div class="modal fade" id="archive" tabindex="-1" role="dialog" aria-labelledby="archive" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -483,21 +483,21 @@
                     <div class="modal-body">
 
                     <p>
-                        The files in this tag can be downloaded as a single tar archive. The default filename of the archive is <code>{{ .Data.Tag }}.tar</code> and the estimated size is {{ .Data.BytesReadable }}. 
+                        The files in this bin can be downloaded as a single tar archive. The default filename of the archive is <code>{{ .Data.Bin }}.tar</code> and the estimated size is {{ .Data.BytesReadable }}. 
                     </p>
 
                     <p class="lead">Download as archive?</p>
 
                     <div class="modal-footer">
                         <div class="pull-left">
-                            <a class="btn btn-success" href="{{ .Ctx.Baseurl }}/archive/{{ $.Data.Tag }}"><i class="fa fa-cloud-download"></i> Confirm</a>
+                            <a class="btn btn-success" href="{{ .Ctx.Baseurl }}/archive/{{ $.Data.Bin }}"><i class="fa fa-cloud-download"></i> Confirm</a>
                         </div>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Close</button>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Tag archive modal end -->
+        <!-- Bin archive modal end -->
         <!-- Modals end -->
     </body>
 </html>

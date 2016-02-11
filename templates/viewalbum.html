@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <!-- The above 3 meta bins *must* come first in the head; any other head content must come *after* these bins -->
 
         <meta name="description" content="Upload files and make them available for your friends. Think of it as Pastebin for files. Registration is not required.">
         <meta name="author" content="Espen Braastad">
@@ -31,7 +31,7 @@
                     <div align="right">
                         <p>
                             <br/>
-                            <a class="btn btn-sm btn-secondary" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}"><i class="fa fa-angle-left"></i> Back</a>
+                            <a class="btn btn-sm btn-secondary" href="{{ .Ctx.Baseurl }}/{{ .Data.Bin }}"><i class="fa fa-angle-left"></i> Back</a>
                         </p>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
                 {{ $file := .GetLink "file" }}
                 {{ if $image }}
                     <figure class="figure">
-                        <img src="{{ $image }}" class="figure-img img-fluid" alt="File {{ .Filename }} in tag {{ .Tag }}.">
+                        <img src="{{ $image }}" class="figure-img img-fluid" alt="File {{ .Filename }} in bin {{ .Bin }}.">
                         <figcaption class="figure-caption">
                              <div class="pull-left">
                                  {{ .Filename }}
@@ -65,7 +65,7 @@
                     <div class="col-sm-6">
                         <div align="right">
                             <p>
-                                <a class="btn btn-sm btn-secondary" href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}"><i class="fa fa-angle-left"></i> Back</a>
+                                <a class="btn btn-sm btn-secondary" href="{{ .Ctx.Baseurl }}/{{ .Data.Bin }}"><i class="fa fa-angle-left"></i> Back</a>
                             </p>
                         </div>
                     </div>

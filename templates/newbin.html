@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <!-- The above 3 meta bins *must* come first in the head; any other head content must come *after* these bins -->
 
         <meta name="description" content="Upload files and make them available for your friends. Think of it as Pastebin for files. Registration is not required.">
         <meta name="author" content="Espen Braastad">
@@ -29,14 +29,14 @@
                 var fileList = document.getElementById("fileList");
                 var fileDrop = document.body;
                 var fileField = document.getElementById("fileField");
-                var tag = "{{ .Data.Tag }}";
+                var bin = "{{ .Data.Bin }}";
                 var url = "{{ .Ctx.Baseurl }}/";
                 FileAPI = new FileAPI(
                     fileCount,
                     fileList,
                     fileDrop,
                     fileField,
-                    tag,
+                    bin,
                     url
                 );
                 FileAPI.init();
@@ -51,7 +51,7 @@
     <body id="fileDrop">
         <div class="container-fluid">
 
-            <!-- Tag meta information -->
+            <!-- Bin meta information -->
             <div class="row">
                 <div class="col-sm-12">
                     <h1 class="display-4">
@@ -60,7 +60,7 @@
                 </div>
             </div>
 
-            <!-- Only show the howto if there are no files in the tag -->
+            <!-- Only show the howto if there are no files in the bin -->
             <div class="row table-active">
                 <div class="col-sm-12">
                     <br/>
@@ -81,7 +81,7 @@
                     </p>
                     <p class="lead">
                         <strong>3.</strong>
-                        Distribute the <a href="{{ .Ctx.Baseurl }}/{{ .Data.Tag }}">URL</a> to share access to the files.
+                        Distribute the <a href="{{ .Ctx.Baseurl }}/{{ .Data.Bin }}">URL</a> to share access to the files.
                     </p>
 
                     <!-- Menu -->

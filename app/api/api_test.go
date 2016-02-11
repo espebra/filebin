@@ -8,42 +8,42 @@ import (
 func TestTriggers(t *testing.T) {
 	var err error
 
-	err = triggerNewTagHandler("/bin/echo", "tag")
+	err = triggerNewBinHandler("/bin/echo", "bin")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = triggerDeleteTagHandler("/bin/echo", "tag")
+	err = triggerDeleteBinHandler("/bin/echo", "bin")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = triggerUploadFileHandler("/bin/echo", "tag", "filename")
+	err = triggerUploadFileHandler("/bin/echo", "bin", "filename")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = triggerDeleteFileHandler("/bin/echo", "tag", "filename")
+	err = triggerDeleteFileHandler("/bin/echo", "bin", "filename")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = triggerNewTagHandler("unknowncommand", "tag")
+	err = triggerNewBinHandler("unknowncommand", "bin")
 	if err == nil {
 		t.Fatal("This should fail")
 	}
 
-	err = triggerDeleteTagHandler("unknowncommand", "tag")
+	err = triggerDeleteBinHandler("unknowncommand", "bin")
 	if err == nil {
 		t.Fatal("This should fail")
 	}
 
-	err = triggerUploadFileHandler("unknowncommand", "tag", "filename")
+	err = triggerUploadFileHandler("unknowncommand", "bin", "filename")
 	if err == nil {
 		t.Fatal("This should fail")
 	}
 
-	err = triggerDeleteFileHandler("unknowncommand", "tag", "filename")
+	err = triggerDeleteFileHandler("unknowncommand", "bin", "filename")
 	if err == nil {
 		t.Fatal("This should fail")
 	}

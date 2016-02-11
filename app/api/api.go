@@ -27,44 +27,44 @@ func isWorkaroundNeeded(useragent string) bool {
 	return matched
 }
 
-func triggerNewTagHandler(c string, tag string) error {
-	cmd := exec.Command(c, tag)
+func triggerNewBinHandler(c string, bin string) error {
+	cmd := exec.Command(c, bin)
 	err := cmdHandler(cmd)
 	return err
 }
 
-func triggerUploadFileHandler(c string, tag string, filename string) error {
-	cmd := exec.Command(c, tag, filename)
+func triggerUploadFileHandler(c string, bin string, filename string) error {
+	cmd := exec.Command(c, bin, filename)
 	err := cmdHandler(cmd)
 	return err
 }
 
-func triggerDownloadTagHandler(c string, tag string) error {
-	cmd := exec.Command(c, tag)
+func triggerDownloadBinHandler(c string, bin string) error {
+	cmd := exec.Command(c, bin)
 	err := cmdHandler(cmd)
 	return err
 }
 
-func triggerDownloadFileHandler(c string, tag string, filename string) error {
-	cmd := exec.Command(c, tag, filename)
+func triggerDownloadFileHandler(c string, bin string, filename string) error {
+	cmd := exec.Command(c, bin, filename)
 	err := cmdHandler(cmd)
 	return err
 }
 
-func triggerDeleteTagHandler(c string, tag string) error {
-	cmd := exec.Command(c, tag)
+func triggerDeleteBinHandler(c string, bin string) error {
+	cmd := exec.Command(c, bin)
 	err := cmdHandler(cmd)
 	return err
 }
 
-func triggerDeleteFileHandler(c string, tag string, filename string) error {
-	cmd := exec.Command(c, tag, filename)
+func triggerDeleteFileHandler(c string, bin string, filename string) error {
+	cmd := exec.Command(c, bin, filename)
 	err := cmdHandler(cmd)
 	return err
 }
 
-func triggerExpiredTagHandler(c string, tag string) error {
-	cmd := exec.Command(c, tag)
+func triggerExpiredBinHandler(c string, bin string) error {
+	cmd := exec.Command(c, bin)
 	err := cmdHandler(cmd)
 	return err
 }
@@ -89,23 +89,28 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	f.RemoteAddr = r.RemoteAddr
 	f.UserAgent = r.Header.Get("User-Agent")
 
-	// Extract the tag from the request
-	if r.Header.Get("tag") == "" {
-		tag := randomString(cfg.DefaultTagLength)
-		err = f.SetTag(tag)
-		ctx.Log.Println("Tag generated: " + f.Tag)
+	// Extract the bin from the request
+	bin := r.Header.Get("bin")
+	if bin == "" {
+		// To ensure backwards compatibility for uploads
+		bin = r.Header.Get("tag")
+	}
+
+	if bin == "" {
+		bin := randomString(cfg.DefaultBinLength)
+		err = f.SetBin(bin)
+		ctx.Log.Println("Bin generated: " + f.Bin)
 	} else {
-		tag := r.Header.Get("tag")
-		err = f.SetTag(tag)
-		ctx.Log.Println("Tag specified: " + tag)
+		err = f.SetBin(bin)
+		ctx.Log.Println("Bin specified: " + bin)
 	}
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	f.SetTagDir(cfg.Filedir)
-	ctx.Log.Println("Tag directory: " + f.TagDir)
+	f.SetBinDir(cfg.Filedir)
+	ctx.Log.Println("Bin directory: " + f.BinDir)
 
 	contentLength, err := strconv.ParseUint(r.Header.Get("Content-Length"), 10, 64)
 	if err != nil {
@@ -167,21 +172,21 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		return
 	}
 
-	// Trigger new tag
-	t := model.Tag{}
-	t.SetTag(f.Tag)
-	t.SetTagDir(cfg.Filedir)
-	if !t.TagDirExists() {
-		if cfg.TriggerNewTag != "" {
-			ctx.Log.Println("Executing trigger: New tag")
-			triggerNewTagHandler(cfg.TriggerNewTag, f.Tag)
+	// Trigger new bin
+	t := model.Bin{}
+	t.SetBin(f.Bin)
+	t.SetBinDir(cfg.Filedir)
+	if !t.BinDirExists() {
+		if cfg.TriggerNewBin != "" {
+			ctx.Log.Println("Executing trigger: New bin")
+			triggerNewBinHandler(cfg.TriggerNewBin, f.Bin)
 		}
 	}
 
-	// Create the tag directory if it does not exist
-	err = f.EnsureTagDirectoryExists()
+	// Create the bin directory if it does not exist
+	err = f.EnsureBinDirectoryExists()
 	if err != nil {
-		ctx.Log.Println("Unable to create tag directory: ", f.TagDir)
+		ctx.Log.Println("Unable to create bin directory: ", f.BinDir)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -194,8 +199,8 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		return
 	}
 	if expired {
-		ctx.Log.Println("The tag has expired. Aborting.")
-		http.Error(w, "This tag has expired.", 410)
+		ctx.Log.Println("The bin has expired. Aborting.")
+		http.Error(w, "This bin has expired.", 410)
 		return
 	}
 
@@ -273,7 +278,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		//f.Extra = extra
 	}
 
-	// Promote file from tempdir to the published tagdir
+	// Promote file from tempdir to the published bindir
 	f.Publish()
 
 	// Clean up by removing the tempfile
@@ -292,7 +297,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 
 	if cfg.TriggerUploadFile != "" {
 		ctx.Log.Println("Executing trigger: Uploaded file")
-		triggerUploadFileHandler(cfg.TriggerUploadFile, f.Tag, f.Filename)
+		triggerUploadFileHandler(cfg.TriggerUploadFile, f.Bin, f.Filename)
 	}
 
 	// Purging any old content
@@ -332,17 +337,17 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		http.Error(w, "Invalid filename specified. It contains illegal characters or is too short.", 400)
 		return
 	}
-	err = f.SetTag(params["tag"])
+	err = f.SetBin(params["bin"])
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w, "Invalid tag specified. It contains illegal characters or is too short.", 400)
+		http.Error(w, "Invalid bin specified. It contains illegal characters or is too short.", 400)
 		return
 	}
-	f.SetTagDir(cfg.Filedir)
+	f.SetBinDir(cfg.Filedir)
 
-	t := model.Tag{}
-	t.SetTag(f.Tag)
-	t.SetTagDir(cfg.Filedir)
+	t := model.Bin{}
+	t.SetBin(f.Bin)
+	t.SetBinDir(cfg.Filedir)
 	t.CalculateExpiration(cfg.Expiration)
 	expired, err := t.IsExpired(cfg.Expiration)
 	if err != nil {
@@ -352,12 +357,12 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	}
 	if expired {
 		ctx.Log.Println("Expired: " + t.ExpirationReadable)
-		http.Error(w, "This tag has expired.", 410)
+		http.Error(w, "This bin has expired.", 410)
 		return
 	}
 
 	// Default path
-	path := filepath.Join(f.TagDir, f.Filename)
+	path := filepath.Join(f.BinDir, f.Filename)
 
 	err = f.DetectMIME()
 	if err != nil {
@@ -384,7 +389,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 
 	if cfg.TriggerDownloadFile != "" {
 		ctx.Log.Println("Executing trigger: Download file")
-		triggerDownloadFileHandler(cfg.TriggerDownloadFile, f.Tag, f.Filename)
+		triggerDownloadFileHandler(cfg.TriggerDownloadFile, f.Bin, f.Filename)
 	}
 
 	w.Header().Set("Vary", "Content-Type")
@@ -392,23 +397,23 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	http.ServeFile(w, r, path)
 }
 
-func DeleteTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var err error
 	params := mux.Vars(r)
 
-	t := model.Tag{}
+	t := model.Bin{}
 
-	err = t.SetTag(params["tag"])
+	err = t.SetBin(params["bin"])
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w, "Invalid tag", 400)
+		http.Error(w, "Invalid bin", 400)
 		return
 	}
-	t.SetTagDir(cfg.Filedir)
+	t.SetBinDir(cfg.Filedir)
 
-	// Tag does not exist
-	if t.TagDirExists() == false {
-		http.Error(w, "Tag Not Found", 404)
+	// Bin does not exist
+	if t.BinDirExists() == false {
+		http.Error(w, "Bin Not Found", 404)
 		return
 	}
 
@@ -419,12 +424,12 @@ func DeleteTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
-	if cfg.TriggerDeleteTag != "" {
-		ctx.Log.Println("Executing trigger: Delete tag")
-		triggerDeleteTagHandler(cfg.TriggerDeleteTag, t.Tag)
+	if cfg.TriggerDeleteBin != "" {
+		ctx.Log.Println("Executing trigger: Delete bin")
+		triggerDeleteBinHandler(cfg.TriggerDeleteBin, t.Bin)
 	}
 
-	// Tag exists, so let's remove it.
+	// Bin exists, so let's remove it.
 	err = t.Remove()
 	if err != nil {
 		ctx.Log.Println(err)
@@ -432,10 +437,10 @@ func DeleteTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
-	// Verify that the tag directory is removed before sending the response.
-	if t.TagDirExists() == true {
+	// Verify that the bin directory is removed before sending the response.
+	if t.BinDirExists() == true {
 		// Failsafe. This should not happen.
-		ctx.Log.Println("Failed to delete the tag. The tag dir still exists.")
+		ctx.Log.Println("Failed to delete the bin. The bin dir still exists.")
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
@@ -449,8 +454,8 @@ func DeleteTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		}
 	}
 
-	ctx.Log.Println("Tag deleted successfully.")
-	http.Error(w, "Tag Deleted Successfully", 200)
+	ctx.Log.Println("Bin deleted successfully.")
+	http.Error(w, "Bin Deleted Successfully", 200)
 	return
 
 }
@@ -465,13 +470,13 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		http.Error(w, "Invalid filename specified. It contains illegal characters or is too short.", 400)
 		return
 	}
-	err = f.SetTag(params["tag"])
+	err = f.SetBin(params["bin"])
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w, "Invalid tag specified. It contains illegal characters or is too short.", 400)
+		http.Error(w, "Invalid bin specified. It contains illegal characters or is too short.", 400)
 		return
 	}
-	f.SetTagDir(cfg.Filedir)
+	f.SetBinDir(cfg.Filedir)
 
 	if f.Exists() == false {
 		ctx.Log.Println("The file does not exist.")
@@ -479,9 +484,9 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		return
 	}
 
-	t := model.Tag{}
-	t.SetTag(f.Tag)
-	t.SetTagDir(cfg.Filedir)
+	t := model.Bin{}
+	t.SetBin(f.Bin)
+	t.SetBinDir(cfg.Filedir)
 	t.CalculateExpiration(cfg.Expiration)
 	expired, err := t.IsExpired(cfg.Expiration)
 	if err != nil {
@@ -491,7 +496,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	}
 	if expired {
 		ctx.Log.Println("Expired: " + t.ExpirationReadable)
-		http.Error(w, "This tag has expired.", 410)
+		http.Error(w, "This bin has expired.", 410)
 		return
 	}
 
@@ -510,7 +515,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 
 	if cfg.TriggerDeleteFile != "" {
 		ctx.Log.Println("Executing trigger: Delete file")
-		triggerDeleteFileHandler(cfg.TriggerDeleteFile, f.Tag, f.Filename)
+		triggerDeleteFileHandler(cfg.TriggerDeleteFile, f.Bin, f.Filename)
 	}
 
 	err = f.Remove()
@@ -535,18 +540,18 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 }
 
 func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	t := model.Tag{}
+	t := model.Bin{}
 	params := mux.Vars(r)
-	err := t.SetTag(params["tag"])
+	err := t.SetBin(params["bin"])
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w, "Invalid tag", 400)
+		http.Error(w, "Invalid bin", 400)
 		return
 	}
 
-	t.SetTagDir(cfg.Filedir)
+	t.SetBinDir(cfg.Filedir)
 	t.CalculateExpiration(cfg.Expiration)
-	if t.TagDirExists() {
+	if t.BinDirExists() {
 		expired, err := t.IsExpired(cfg.Expiration)
 		if err != nil {
 			ctx.Log.Println(err)
@@ -555,7 +560,7 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		}
 		if expired {
 			ctx.Log.Println("Expired: " + t.ExpirationReadable)
-			http.Error(w, "This tag has expired.", 410)
+			http.Error(w, "This bin has expired.", 410)
 			return
 		}
 
@@ -569,11 +574,11 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		err = t.List(cfg.Baseurl)
 		if err != nil {
 			ctx.Log.Println(err)
-			http.Error(w, "Error reading the tag contents.", 404)
+			http.Error(w, "Error reading the bin contents.", 404)
 			return
 		}
 	} else {
-		// The tag does not exist
+		// The bin does not exist
 		http.Error(w, "Not found", 404)
 		return
 	}
@@ -585,19 +590,19 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	return
 }
 
-func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	params := mux.Vars(r)
-	t := model.Tag{}
-	err := t.SetTag(params["tag"])
+	t := model.Bin{}
+	err := t.SetBin(params["bin"])
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w, "Invalid tag", 400)
+		http.Error(w, "Invalid bin", 400)
 		return
 	}
 
-	t.SetTagDir(cfg.Filedir)
+	t.SetBinDir(cfg.Filedir)
 	t.CalculateExpiration(cfg.Expiration)
-	if t.TagDirExists() {
+	if t.BinDirExists() {
 		expired, err := t.IsExpired(cfg.Expiration)
 		if err != nil {
 			ctx.Log.Println(err)
@@ -606,7 +611,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 		}
 		if expired {
 			ctx.Log.Println("Expired: " + t.ExpirationReadable)
-			http.Error(w, "This tag has expired.", 410)
+			http.Error(w, "This bin has expired.", 410)
 			return
 		}
 
@@ -620,7 +625,7 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 		err = t.List(cfg.Baseurl)
 		if err != nil {
 			ctx.Log.Println(err)
-			http.Error(w, "Error reading the tag contents.", 404)
+			http.Error(w, "Error reading the bin contents.", 404)
 			return
 		}
 	}
@@ -636,9 +641,9 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 		return
 	} else {
 		if len(t.Files) == 0 {
-			output.HTMLresponse(w, "newtag", status, t, ctx)
+			output.HTMLresponse(w, "newbin", status, t, ctx)
 		} else {
-			output.HTMLresponse(w, "viewtag", status, t, ctx)
+			output.HTMLresponse(w, "viewbin", status, t, ctx)
 		}
 		return
 	}
@@ -646,17 +651,17 @@ func FetchTag(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 
 func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	params := mux.Vars(r)
-	t := model.Tag{}
-	err := t.SetTag(params["tag"])
+	t := model.Bin{}
+	err := t.SetBin(params["bin"])
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w, "Invalid tag", 400)
+		http.Error(w, "Invalid bin", 400)
 		return
 	}
 
-	t.SetTagDir(cfg.Filedir)
+	t.SetBinDir(cfg.Filedir)
 	t.CalculateExpiration(cfg.Expiration)
-	if t.TagDirExists() {
+	if t.BinDirExists() {
 		expired, err := t.IsExpired(cfg.Expiration)
 		if err != nil {
 			ctx.Log.Println(err)
@@ -665,7 +670,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 		}
 		if expired {
 			ctx.Log.Println("Expired: " + t.ExpirationReadable)
-			http.Error(w, "This tag has expired.", 410)
+			http.Error(w, "This bin has expired.", 410)
 			return
 		}
 
@@ -679,18 +684,18 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 		err = t.List(cfg.Baseurl)
 		if err != nil {
 			ctx.Log.Println(err)
-			http.Error(w, "Error reading the tag contents.", 404)
+			http.Error(w, "Error reading the bin contents.", 404)
 			return
 		}
 	} else {
-		// The tag does not exist
+		// The bin does not exist
 		http.Error(w, "Not found", 404)
 		return
 	}
 
-	if cfg.TriggerDownloadTag != "" {
-		ctx.Log.Println("Executing trigger: Download tag")
-		triggerDownloadTagHandler(cfg.TriggerDownloadTag, t.Tag)
+	if cfg.TriggerDownloadBin != "" {
+		ctx.Log.Println("Executing trigger: Download bin")
+		triggerDownloadBinHandler(cfg.TriggerDownloadBin, t.Bin)
 	}
 
 	w.Header().Set("Cache-Control", "s-maxage=3600")
@@ -701,26 +706,26 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 	// Generate a map of paths to add to the tar response
 	var paths []string
 	for _, f := range t.Files {
-		path := filepath.Join(f.TagDir, f.Filename)
+		path := filepath.Join(f.BinDir, f.Filename)
 		paths = append(paths, path)
 	}
-	output.TARresponse(w, status, t.Tag, paths, ctx)
+	output.TARresponse(w, status, t.Bin, paths, ctx)
 	return
 }
 
 func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	t := model.Tag{}
-	tag := randomString(cfg.DefaultTagLength)
-	err := t.SetTag(tag)
+	t := model.Bin{}
+	bin := randomString(cfg.DefaultBinLength)
+	err := t.SetBin(bin)
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	ctx.Log.Println("Tag generated: " + t.Tag)
+	ctx.Log.Println("Bin generated: " + t.Bin)
 
 	w.Header().Set("Cache-Control", "s-maxage=3600")
-	w.Header().Set("Location", ctx.Baseurl+"/"+t.Tag)
+	w.Header().Set("Location", ctx.Baseurl+"/"+t.Bin)
 	var status = 302
 	output.JSONresponse(w, status, t, ctx)
 }
@@ -737,7 +742,7 @@ func PurgeHandler(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 }
 
 //func ViewAPI(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-//	t := model.Tag{}
+//	t := model.Bin{}
 //
 //	w.Header().Set("Cache-Control", "s-maxage=3600")
 //
@@ -746,7 +751,7 @@ func PurgeHandler(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 //}
 
 //func ViewDoc(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-//	t := model.Tag {}
+//	t := model.Bin {}
 //	headers := make(map[string]string)
 //	headers["Cache-Control"] = "s-maxage=1"
 //	var status = 200

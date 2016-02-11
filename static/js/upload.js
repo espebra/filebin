@@ -257,7 +257,7 @@ function FileAPI (c, t, d, f, tag, url) {
             xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
             xhr.setRequestHeader("Filename", file.name);
             xhr.setRequestHeader("Size", file.size);
-            xhr.setRequestHeader("Tag", tag);
+            xhr.setRequestHeader("Bin", tag);
             xhr.send(file);
         }
     }

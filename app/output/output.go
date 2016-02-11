@@ -56,10 +56,10 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, d interface{}, 
 	}
 }
 
-func TARresponse(w http.ResponseWriter, status int, tag string, paths []string, ctx model.Context) {
+func TARresponse(w http.ResponseWriter, status int, bin string, paths []string, ctx model.Context) {
 	ctx.Log.Println("Generating tar archive")
 
-	w.Header().Set("Content-Disposition", `attachment; filename="`+tag+`.tar"`)
+	w.Header().Set("Content-Disposition", `attachment; filename="`+bin+`.tar"`)
 
 	tw := tar.NewWriter(w)
 

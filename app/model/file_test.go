@@ -58,31 +58,31 @@ func TestSetFilename(t *testing.T) {
 
 }
 
-func TestSetTag(t *testing.T) {
+func TestSetBin(t *testing.T) {
 	var err error
 
 	f := File{}
-	err = f.SetTag("s")
+	err = f.SetBin("s")
 	if err == nil {
-		t.Fatal("Invalid tag specified.")
+		t.Fatal("Invalid bin specified.")
 	}
 
-	err = f.SetTag(" s ")
+	err = f.SetBin(" s ")
 	if err == nil {
-		t.Fatal("Invalid tag specified.")
+		t.Fatal("Invalid bin specified.")
 	}
 
-	err = f.SetTag("/foo/bar")
+	err = f.SetBin("/foo/bar")
 	if err == nil {
-		t.Fatal("Invalid tag specified.")
+		t.Fatal("Invalid bin specified.")
 	}
 
-	err = f.SetTag("../foo")
+	err = f.SetBin("../foo")
 	if err == nil {
-		t.Fatal("Invalid tag specified.")
+		t.Fatal("Invalid bin specified.")
 	}
 
-	err = f.SetTag("abcdefghijklmnop")
+	err = f.SetBin("abcdefghijklmnop")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +92,7 @@ func TestDetectMIME(t *testing.T) {
 	var err error
 
 	f := File{}
-	f.TagDir = "testdata"
+	f.BinDir = "testdata"
 
 	f.Filename = "image.png"
 	err = f.DetectMIME()
@@ -139,21 +139,21 @@ func TestEnsureDirectoryExists(t *testing.T) {
 	}
 
 	f := File{}
-	f.SetTag("foofoofoo")
-	f.TagDir = filepath.Join(dir, f.Tag)
+	f.SetBin("foofoofoo")
+	f.BinDir = filepath.Join(dir, f.Bin)
 
-	err = f.EnsureTagDirectoryExists()
+	err = f.EnsureBinDirectoryExists()
 	if err != nil {
 		t.Fatal("This directory cannot be created:", err)
 	}
 
 	// Ensure that the directory is created
-	err = f.EnsureTagDirectoryExists()
+	err = f.EnsureBinDirectoryExists()
 	if err != nil {
 		t.Fatal("This directory wasn't created:", err)
 	}
 
-	os.Remove(f.TagDir)
+	os.Remove(f.BinDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -207,10 +207,10 @@ func TestWriteTempfile(t *testing.T) {
 	from_file.Seek(0, 0)
 
 	f := File{}
-	f.SetTag("foo")
+	f.SetBin("foo")
 	f.SetFilename("bar")
-	f.TagDir = filepath.Join(dir, f.Tag)
-	err = f.EnsureTagDirectoryExists()
+	f.BinDir = filepath.Join(dir, f.Bin)
+	err = f.EnsureBinDirectoryExists()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -232,9 +232,9 @@ func TestPublish(t *testing.T) {
 	defer os.Remove(dir)
 
 	f := File{}
-	f.SetTag("foo")
+	f.SetBin("foo")
 	f.SetFilename("bar")
-	f.TagDir = filepath.Join(dir, f.Tag)
+	f.BinDir = filepath.Join(dir, f.Bin)
 
 	f.Tempfile = "testdata/image.png"
 
@@ -249,7 +249,7 @@ func TestPublish(t *testing.T) {
 func TestGenerateLinks(t *testing.T) {
 	f := File{}
 	f.SetFilename("foo")
-	f.SetTag("validtag")
+	f.SetBin("validbin")
 	f.GenerateLinks("http://localhost:8080")
 
 	if len(f.Links) != 3 {
@@ -275,10 +275,10 @@ func TestGenerateLinks(t *testing.T) {
 //	from_file.Seek(0, 0)
 //
 //	f := File {}
-//	f.SetTag("foo")
+//	f.SetBin("foo")
 //	f.SetFilename("bar")
-//	f.TagDir = filepath.Join(dir, f.Tag)
-//	err = f.EnsureTagDirectoryExists()
+//	f.BinDir = filepath.Join(dir, f.Bin)
+//	err = f.EnsureBinDirectoryExists()
 //	if err != nil {
 //		t.Fatal(err)
 //	}

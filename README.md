@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/espebra/filebin.svg)](https://travis-ci.org/espebra/filebin)
 
-![Viewing a tag](doc/screenshot-web-interface-tag.png)
+![Viewing a bin](doc/screenshot-web-interface-bin.png)
 
 Filebin is a web application that facilitates convenient file sharing over the web. This is the development branch of the next release that in the future will power [http://filebin.net](http://filebin.net).
 
@@ -23,9 +23,9 @@ Filebin is a web application that facilitates convenient file sharing over the w
 * Large file support. 10 GB file upload has been tested, but it should work fine with larger files as well.
 * Archive (tar) download to make it easy to download multiple files in one go.
 * Files expire automatically after a configurable period of time.
-* Files and entire tags can be deleted manually.
+* Files and entire bins can be deleted manually.
 * Thumbnails are displayed for image files.
-* Album view is available in tags with images. Images are sorted based on the Exif DateTime timestamps.
+* Album view is available in bins with images. Images are sorted based on the Exif DateTime timestamps.
 * Triggers are capable of calling external scripts on certain events. One potential use case is to notify virus/malware scanners on file upload.
 * No external dependencies once built.
 * Cache invalidation support.
@@ -116,9 +116,9 @@ A trailing slash is not needed.
 
 #### Expiration
 
-Tags expire after some time of inactivity. By default, tags will expire 3 months after the most recent file was uploaded. It is not possible to download files or upload more files to tags that are expired.
+Bins expire after some time of inactivity. By default, bins will expire 3 months after the most recent file was uploaded. It is not possible to download files or upload more files to bins that are expired.
 
-``--expiration 86400`` will expire tags 24 hours after the last file has been uploaded.
+``--expiration 86400`` will expire bins 24 hours after the last file has been uploaded.
 
 #### Cache invalidation
 
@@ -128,41 +128,41 @@ Enabled with the parameter ``--cache-invalidation``. When enabled, HTTP PURGE re
 
 Triggers enable external scripts to be executed at certain events.
 
-##### New tag
+##### New bin
 
-The parameter ``--trigger-new-tag <command>`` makes sure ``<command> <tag>`` is executed whenever a new tag is being created. The execution is non-blocking. Example:
+The parameter ``--trigger-new-bin <command>`` makes sure ``<command> <bin>`` is executed whenever a new bin is being created. The execution is non-blocking. Example:
 
-``--trigger-new-tag /usr/local/bin/new-tag`` will execute ``/usr/local/bin/new-tag <tagid>``.
+``--trigger-new-bin /usr/local/bin/new-bin`` will execute ``/usr/local/bin/new-bin <binid>``.
 
 ##### Upload file
 
-The parameter ``--trigger-upload-file <command>`` makes sure ``<command> <tag> <filename>`` is executed whenever a new file is uploaded. The execution is non-blocking. Example:
+The parameter ``--trigger-upload-file <command>`` makes sure ``<command> <bin> <filename>`` is executed whenever a new file is uploaded. The execution is non-blocking. Example:
 
-``--trigger-upload-file /usr/local/bin/upload-file`` will execute ``/usr/local/bin/upload-file <tagid> <filename>``.
+``--trigger-upload-file /usr/local/bin/upload-file`` will execute ``/usr/local/bin/upload-file <binid> <filename>``.
 
-##### Download tag
+##### Download bin
 
-The parameter ``--trigger-download-tag <command>`` makes sure ``<command> <tag>`` is executed whenever a tag is downloaded as an archive. The execution is non-blocking. Example:
+The parameter ``--trigger-download-bin <command>`` makes sure ``<command> <bin>`` is executed whenever a bin is downloaded as an archive. The execution is non-blocking. Example:
 
-``--trigger-download-tag /usr/local/bin/download-tag`` will execute ``/usr/local/bin/download-tag <tagid>``.
+``--trigger-download-bin /usr/local/bin/download-bin`` will execute ``/usr/local/bin/download-bin <binid>``.
 
 ##### Download file
 
-The parameter ``--trigger-download-file <command>`` makes sure ``<command> <tag> <filename>`` is executed whenever a file is downloaded. The execution is non-blocking. Example:
+The parameter ``--trigger-download-file <command>`` makes sure ``<command> <bin> <filename>`` is executed whenever a file is downloaded. The execution is non-blocking. Example:
 
-``--trigger-download-file /usr/local/bin/download-file`` will execute ``/usr/local/bin/download-file <tagid> <filename>``.
+``--trigger-download-file /usr/local/bin/download-file`` will execute ``/usr/local/bin/download-file <binid> <filename>``.
 
-##### Delete tag
+##### Delete bin
 
-The parameter ``--trigger-delete-tag <command>`` makes sure ``<command> <tag>`` is executed whenever a tag is deleted. The execution is non-blocking. Example:
+The parameter ``--trigger-delete-bin <command>`` makes sure ``<command> <bin>`` is executed whenever a bin is deleted. The execution is non-blocking. Example:
 
-``--trigger-delete-tag /usr/local/bin/delete-tag`` will execute ``/usr/local/bin/delete-tag <tagid>``.
+``--trigger-delete-bin /usr/local/bin/delete-bin`` will execute ``/usr/local/bin/delete-bin <binid>``.
 
 ##### Delete file
 
-The parameter ``--trigger-delete-file <command>`` makes sure ``<command> <tag> <filename>`` is executed whenever a file is deleted. The execution is non-blocking. Example:
+The parameter ``--trigger-delete-file <command>`` makes sure ``<command> <bin> <filename>`` is executed whenever a file is deleted. The execution is non-blocking. Example:
 
-``--trigger-delete-file /usr/local/bin/delete-file`` will execute ``/usr/local/bin/delete-file <tagid> <filename>``.
+``--trigger-delete-file /usr/local/bin/delete-file`` will execute ``/usr/local/bin/delete-file <binid> <filename>``.
 
 ## Web interface
 
@@ -185,61 +185,61 @@ The parameter ``--trigger-delete-file <command>`` makes sure ``<command> <tag> <
 
 In all examples, the local file ``/path/to/some file`` will be uploaded.
 
-Using the following command, the ``tag`` will be automatically generated and the ``filename`` will be set to the SHA256 checksum of the content. The checksum of the content will not be verified.
+Using the following command, the ``bin`` will be automatically generated and the ``filename`` will be set to the SHA256 checksum of the content. The checksum of the content will not be verified.
 
 ```bash
 $ curl --data-binary "@/path/to/some file" https://filebin.example.com/
 ```
 
-Using the following command, ``tag`` will be set to ``customtag`` and ``filename`` will be set to ``myfile``.
+Using the following command, ``bin`` will be set to ``custombin`` and ``filename`` will be set to ``myfile``.
 
 ```bash
 $ curl --data-binary "@/path/to/some file" https://filebin.example.com/ \
-  -H "tag: customtag" -H "filename: myfile"
+  -H "bin: custombin" -H "filename: myfile"
 ```
 
 Using the following command, ``filebin`` will verify the checksum of the uploaded file and discard the upload if the checksum does not match the specified checksum:
 
 ```bash
 $ curl --data-binary "@/path/to/some file" https://filebin.example.com/ \
-  -H "tag: customtag" -H "filename: myfile" \
+  -H "bin: custombin" -H "filename: myfile" \
   -H "content-sha256: 82b5f1d5d38641752d6cbb4b80f3ccae502973f8b77f1c712bd68d5324e67e33"
 ```
 
-### Fetch tag details
+### Fetch bin details
 
 |			| Value						|
 | --------------------- | --------------------------------------------- |
 | **Method**		| ``GET``					|
 | **Request headers**	| ``content-type: application/json``		|
-| **URL**		| /:tag						|
+| **URL**		| /:bin						|
 | **URL parameters**	| *None*					|
 | **Success response**	| ``200``					|
 | **Error response**	| ``404``					|
 
 ###### Examples
 
-The following command will print a JSON structure showing which files that available in the tag ``customtag``.
+The following command will print a JSON structure showing which files that available in the bin ``custombin``.
 
 ```bash
-$ curl https://filebin.example.com/customtag
+$ curl https://filebin.example.com/custombin
 ```
 
-### Fetch tag as a tar archive
+### Fetch bin as a tar archive
 
 |			| Value						|
 | --------------------- | --------------------------------------------- |
 | **Method**		| ``GET``					|
-| **URL**		| /:archive/:tag				|
+| **URL**		| /:archive/:bin				|
 | **Success response**	| ``200``					|
 | **Error response**	| ``404``					|
 
 ###### Examples
 
-The following commands will download the files in ``customtag`` as a tar archive:
+The following commands will download the files in ``custombin`` as a tar archive:
 
 ```bash
-$ curl -o customtag.tar https://filebin.example.com/archive/customtag
+$ curl -o custombin.tar https://filebin.example.com/archive/custombin
 ```
 
 ### Download file
@@ -247,17 +247,17 @@ $ curl -o customtag.tar https://filebin.example.com/archive/customtag
 |			| Value			|
 | --------------------- | ----------------------|
 | **Method**		| ``GET``		|
-| **URL**		| /:tag/:filename	|
+| **URL**		| /:bin/:filename	|
 | **URL parameters**	| *None*		|
 | **Success response**	| ``200``		|
 | **Error response**	| ``404``		|
 
 ###### Examples
 
-Downloading a file is as easy as specifying the ``tag`` and the ``filename`` in the request URI:
+Downloading a file is as easy as specifying the ``bin`` and the ``filename`` in the request URI:
 
 ```bash
-$ curl https://filebin.example.com/customtag/myfile
+$ curl https://filebin.example.com/custombin/myfile
 ```
 
 ### Delete file
@@ -265,17 +265,17 @@ $ curl https://filebin.example.com/customtag/myfile
 |			| Value			|
 | --------------------- | ----------------------|
 | **Method**		| ``DELETE``		|
-| **URL**		| /:tag/:filename	|
+| **URL**		| /:bin/:filename	|
 | **URL parameters**	| *None*		|
 | **Success response**	| ``200``		|
 | **Error response**	| ``404``		|
 
-### Delete tag
+### Delete bin
 
 |			| Value			|
 | --------------------- | ----------------------|
 | **Method**		| ``DELETE``		|
-| **URL**		| /:tag			|
+| **URL**		| /:bin			|
 | **URL parameters**	| *None*		|
 | **Success response**	| ``200``		|
 | **Error response**	| ``404``		|
@@ -283,7 +283,7 @@ $ curl https://filebin.example.com/customtag/myfile
 ###### Examples
 
 ```bash
-$ curl -X DELETE https://filebin.example.com/customtag/myfile
+$ curl -X DELETE https://filebin.example.com/custombin/myfile
 ```
 
 ## Logging
@@ -306,7 +306,7 @@ $ ln -s tools/git/pre-commit .git/hooks/pre-commit
 
 ## TODO
 
-* Automatically clean up expired tags.
-* Avoid reuse of expired tags.
+* Automatically clean up expired bins.
+* Avoid reuse of expired bins.
 * Administrator dashboard.
-* Trigger cache invalidation on tag expiration.
+* Trigger cache invalidation on bin expiration.

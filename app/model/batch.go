@@ -24,7 +24,7 @@ func StartWorker(CacheInvalidation bool, WorkQueue chan File, log *log.Logger) {
 			jobId := "b-" + randomString(5) + " "
 			log.SetPrefix(jobId)
 
-			log.Print("Batch process starting: " + f.Tag + ", " + f.Filename)
+			log.Print("Batch process starting: " + f.Bin + ", " + f.Filename)
 			// Simulate some processing time
 			if f.MediaType() == "image" {
 				err = f.GenerateImage(115, 115, true)

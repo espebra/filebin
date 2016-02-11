@@ -10,14 +10,14 @@ type Configuration struct {
 	Baseurl           string
 	Tempdir           string
 	Expiration        int64
-	TriggerNewTag     string
+	TriggerNewBin     string
 	TriggerUploadFile string
-	TriggerDownloadTag string
+	TriggerDownloadBin string
 	TriggerDownloadFile string
-	TriggerDeleteTag  string
+	TriggerDeleteBin  string
 	TriggerDeleteFile string
-	TriggerExpireTag  string
-	DefaultTagLength  int
+	TriggerExpireBin  string
+	DefaultBinLength  int
 	Workers           int
 	Version           bool
 	CacheInvalidation bool
@@ -37,7 +37,7 @@ func init() {
 		Baseurl:           "http://localhost:31337",
 		Filedir:           "/srv/filebin/files",
 		Tempdir:           "/tmp",
-		DefaultTagLength:  16,
+		DefaultBinLength:  16,
 		Workers:           1,
 		CacheInvalidation: false,
 	}

@@ -12,9 +12,9 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
-type Tag struct {
-	Tag                string    `json:"tag"`
-	TagDir             string    `json:"-"`
+type Bin struct {
+	Bin                string    `json:"bin"`
+	BinDir             string    `json:"-"`
 	Bytes              int64     `json:"bytes"`
 	BytesReadable      string    `json:"-"`
 	ExpirationAt       time.Time `json:"-"`
@@ -27,40 +27,40 @@ type Tag struct {
 	Album bool `json:"-"`
 }
 
-//func (t *Tag) GenerateTag() error {
-//	var tag = randomString(16)
-//	err := t.SetTag(tag)
+//func (t *Bin) GenerateBin() error {
+//	var bin = randomString(16)
+//	err := t.SetBin(bin)
 //	return err
 //}
 
-func (t *Tag) SetTag(s string) error {
-	validTag := regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
-	if validTag.MatchString(s) == false {
-		return errors.New("Invalid tag specified. It contains " +
+func (t *Bin) SetBin(s string) error {
+	validBin := regexp.MustCompile("^[a-zA-Z0-9-_]{8,}$")
+	if validBin.MatchString(s) == false {
+		return errors.New("Invalid bin specified. It contains " +
 			"illegal characters or is too short")
 	}
-	t.Tag = s
+	t.Bin = s
 	return nil
 }
 
-func (t *Tag) SetTagDir(filedir string) {
-	t.TagDir = filepath.Join(filedir, t.Tag)
+func (t *Bin) SetBinDir(filedir string) {
+	t.BinDir = filepath.Join(filedir, t.Bin)
 }
 
-func (t *Tag) TagDirExists() bool {
-	if isDir(t.TagDir) {
+func (t *Bin) BinDirExists() bool {
+	if isDir(t.BinDir) {
 		return true
 	} else {
 		return false
 	}
 }
 
-func (t *Tag) StatInfo() error {
-	if isDir(t.TagDir) == false {
-		return errors.New("Tag does not exist.")
+func (t *Bin) StatInfo() error {
+	if isDir(t.BinDir) == false {
+		return errors.New("Bin does not exist.")
 	}
 
-	i, err := os.Lstat(t.TagDir)
+	i, err := os.Lstat(t.BinDir)
 	if err != nil {
 		return err
 	}
@@ -69,22 +69,22 @@ func (t *Tag) StatInfo() error {
 	return nil
 }
 
-func (t *Tag) IsExpired(expiration int64) (bool, error) {
+func (t *Bin) IsExpired(expiration int64) (bool, error) {
 	now := time.Now().UTC()
 
-	// Calculate if the tag is expired or not
+	// Calculate if the bin is expired or not
 	if now.Before(t.ExpirationAt) {
-		// Tag still valid
+		// Bin still valid
 		return false, nil
 	} else {
-		// Tag expired
+		// Bin expired
 		t.Expired = true
 		return true, nil
 	}
 }
 
-func (t *Tag) CalculateExpiration(expiration int64) error {
-	i, err := os.Lstat(t.TagDir)
+func (t *Bin) CalculateExpiration(expiration int64) error {
+	i, err := os.Lstat(t.BinDir)
 	if err == nil {
 		t.ExpirationAt = i.ModTime().UTC().Add(time.Duration(expiration) * time.Second)
 	} else {
@@ -94,16 +94,16 @@ func (t *Tag) CalculateExpiration(expiration int64) error {
 	return nil
 }
 
-func (t *Tag) Remove() error {
-	if t.TagDir == "" {
-		return errors.New("Tag dir is not set")
+func (t *Bin) Remove() error {
+	if t.BinDir == "" {
+		return errors.New("Bin dir is not set")
 	}
-	err := os.RemoveAll(t.TagDir)
+	err := os.RemoveAll(t.BinDir)
 	return err
 }
 
-func (t *Tag) List(baseurl string) error {
-	files, err := ioutil.ReadDir(t.TagDir)
+func (t *Bin) List(baseurl string) error {
+	files, err := ioutil.ReadDir(t.BinDir)
 	for _, file := range files {
 		// Do not care about sub directories (such as .cache)
 		if file.IsDir() == true {
@@ -112,8 +112,8 @@ func (t *Tag) List(baseurl string) error {
 
 		var f = File{}
 		f.SetFilename(file.Name())
-		f.SetTag(t.Tag)
-		f.TagDir = t.TagDir
+		f.SetBin(t.Bin)
+		f.BinDir = t.BinDir
 
 		if err := f.StatInfo(); err != nil {
 			return err
@@ -134,7 +134,7 @@ func (t *Tag) List(baseurl string) error {
 
 		f.GenerateLinks(baseurl)
 
-		// Calculate the total amount of bytes in the tag
+		// Calculate the total amount of bytes in the bin
 		t.Bytes = t.Bytes + f.Bytes
 
 		t.Files = append(t.Files, f)
