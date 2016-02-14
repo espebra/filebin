@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"syscall"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -11,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+	"sort"
 
 	"github.com/gorilla/mux"
 
@@ -730,10 +732,61 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	output.JSONresponse(w, status, t, ctx)
 }
 
-//func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-//	http.Error(w, "Admin", 200)
-//	return
-//}
+func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	bins := []model.Bin{}
+
+	files, err := ioutil.ReadDir(cfg.Filedir)
+	if err != nil {
+		ctx.Log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	for _, f := range files {
+		b := model.Bin{}
+		err := b.SetBin(f.Name())
+		if err != nil {
+			// Not a valid bin
+			continue
+		}
+
+		b.SetBinDir(cfg.Filedir)
+		b.CalculateExpiration(cfg.Expiration)
+
+		err = b.StatInfo()
+		if err != nil {
+			ctx.Log.Println(err)
+			http.Error(w, "Internal Server Error", 500)
+			return
+		}
+
+		// Show only the bins updated the last 14 days
+		now := time.Now().UTC()
+		days := 14
+	        if b.LastUpdateAt.Before(now.AddDate(0, 0, days * -1)) {
+			continue
+		}
+
+		err = b.List(cfg.Baseurl)
+		if err != nil {
+			ctx.Log.Println(err)
+			http.Error(w, "Internal Server Error", 500)
+			return
+		}
+
+		bins = append(bins, b)
+	}
+
+	sort.Sort(model.BinsByLastUpdate(bins))
+
+	var status = 200
+	if r.Header.Get("Content-Type") == "application/json" {
+		w.Header().Set("Content-Type", "application/json")
+		output.JSONresponse(w, status, bins, ctx)
+	} else {
+		output.HTMLresponse(w, "admin", status, bins, ctx)
+	}
+	return
+}
 
 func PurgeHandler(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	ctx.Log.Println("Unexpected PURGE request received")

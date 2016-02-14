@@ -7,8 +7,10 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
+	"strconv"
+	"encoding/base64"
+	"strings"
 
 	"github.com/GeertJohan/go.rice"
 	"github.com/gorilla/mux"
@@ -133,6 +135,16 @@ func init() {
 		"trigger-delete-file",
 		cfg.TriggerDeleteFile,
 		"Command to execute when a file is deleted.")
+
+	flag.StringVar(&cfg.AdminUsername,
+		"admin-username",
+		cfg.AdminUsername,
+		"Administrator username.")
+
+	flag.StringVar(&cfg.AdminPassword,
+		"admin-password",
+		cfg.AdminPassword,
+		"Administrator password.")
 
 	//	flag.StringVar(&cfg.TriggerExpiredBin, "trigger-expired-bin",
 	//		cfg.TriggerExpiredBin,
@@ -270,7 +282,7 @@ func main() {
 	// instead of globally.
 	//router.StrictSlash(true)
 
-	//router.HandleFunc("/admin", reqHandler(api.Admin)).Methods("GET", "HEAD")
+	router.HandleFunc("/admin", basicAuth(reqHandler(api.Admin))).Methods("GET", "HEAD")
 	//router.HandleFunc("/api", reqHandler(api.ViewAPI)).Methods("GET", "HEAD")
 	//router.HandleFunc("/doc", reqHandler(api.ViewDoc)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.ViewIndex)).Methods("GET", "HEAD")
@@ -343,6 +355,45 @@ func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration
 		finishTime := time.Now().UTC()
 		elapsedTime := finishTime.Sub(startTime)
 		ctx.Log.Println("Response time: " + elapsedTime.String())
+	}
+}
+
+func basicAuth(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Let the client know authentication is required
+	        w.Header().Set("WWW-Authenticate", "Basic realm='Filebin'")
+
+		// Abort here if the admin username or password is not set
+		if cfg.AdminUsername == "" || cfg.AdminPassword == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Read the authorization request header
+		auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+		if len(auth) != 2 || auth[0] != "Basic" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		payload, _ := base64.StdEncoding.DecodeString(auth[1])
+		pair := strings.SplitN(string(payload), ":", 2)
+
+		if len(pair) != 2 {
+			http.Error(w, "authorization failed", http.StatusUnauthorized)
+			return
+		}
+
+		// Verify that the username and password match
+		username := pair[0]
+		password := pair[1]
+		if username != cfg.AdminUsername || password != cfg.AdminPassword {
+			time.Sleep(3 * time.Second)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		fn(w, r)
 	}
 }
 

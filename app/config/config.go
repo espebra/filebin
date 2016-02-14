@@ -21,6 +21,8 @@ type Configuration struct {
 	Workers           int
 	Version           bool
 	CacheInvalidation bool
+	AdminUsername     string
+	AdminPassword     string
 }
 
 var Global Configuration
@@ -40,5 +42,6 @@ func init() {
 		DefaultBinLength:  16,
 		Workers:           1,
 		CacheInvalidation: false,
+		AdminUsername:     "admin",
 	}
 }

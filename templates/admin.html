@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta bins *must* come first in the head; any other head content must come *after* these bins -->
+
+        <meta name="description" content="Upload files and make them available for your friends. Think of it as Pastebin for files. Registration is not required.">
+        <meta name="author" content="Espen Braastad">
+        <link rel="icon" href="{{ .Ctx.Baseurl }}/static/img/favicon.png">
+
+        <title>Filebin</title>
+
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/font-awesome.css"/>
+    </head>
+
+    <body>
+        <div class="container-fluid">
+
+            <!-- Bin meta information -->
+            <div class="row">
+                <div class="col-sm-6">
+                    <h1 class="display-4">
+                        Filebin
+                    </h1>
+                </div>
+
+            <!-- Existing files in the bin -->
+            <table class="table">
+                <thead class="thead-default">
+                    <tr>
+                        <th>Bin</th>
+                        <th>Last updated</th>
+                        <th>Files</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $value := .Data }}
+                    <tr>
+                        <td><a href="{{ $.Ctx.Baseurl }}/{{ .Bin }}">{{ .Bin }}</a></td>
+                        <td>{{ .LastUpdateReadable }}</td>
+                        <td>{{ .Files | len }}</td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+    </body>
+</html>

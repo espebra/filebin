@@ -140,6 +140,6 @@ func (t *Bin) List(baseurl string) error {
 		t.Files = append(t.Files, f)
 	}
 	t.BytesReadable = humanize.Bytes(uint64(t.Bytes))
-	sort.Sort(ByDateTime(t.Files))
+	sort.Sort(FilesByDateTime(t.Files))
 	return err
 }
