@@ -42,7 +42,9 @@
                 {{ $file := .GetLink "file" }}
                 {{ if $image }}
                     <figure class="figure">
-                        <img src="{{ $image }}" class="figure-img img-fluid" alt="File {{ .Filename }} in bin {{ .Bin }}.">
+                        <a href="{{ $file }}">
+                            <img src="{{ $image }}" class="figure-img img-fluid" alt="File {{ .Filename }} in bin {{ .Bin }}.">
+                        </a>
                         <figcaption class="figure-caption">
                              <div class="pull-left">
                                  {{ .Filename }}
@@ -52,6 +54,12 @@
                                  {{ if ne .DateTimeString "" }}
                                        {{ .DateTimeString }}
                                  {{ end }}
+
+                                 {{ if .Longitude }} {{ if .Latitude }}
+                                     <a href="https://maps.google.com/?q={{ .Latitude }},{{ .Longitude }}" alt="Show location in Google Maps">
+                                          <i class="fa fa-lg fa-globe text-muted"></i>
+                                     </a>
+                                 {{ end }} {{ end }}
                              </div>
                         </figcaption>
                     </figure>
