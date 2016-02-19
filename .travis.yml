@@ -5,7 +5,7 @@ before_install:
  - sudo apt-get install libvips15 curl
 
 go:
-  - tip
+  - 1.6
 
 install:
   - make get-deps
