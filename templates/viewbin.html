@@ -153,7 +153,7 @@
                     {{ $file := .GetLink "file" }}
                     {{ if $thumbnail }}
                         <a href="{{ $file }}">
-                             <img class="media-object pull-left" alt="{{ .Filename }} thumbnail" src="{{ $thumbnail }}"/>
+                             <img class="thumb media-object pull-left" alt="{{ .Filename }} thumbnail" src="{{ $thumbnail }}"/>
                         </a>
                     {{ end }}
                 {{ end }}
