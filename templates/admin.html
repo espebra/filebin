@@ -35,6 +35,7 @@
                         <th>Bin</th>
                         <th>Last updated</th>
                         <th>Files</th>
+                        <th>Size</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -43,6 +44,7 @@
                         <td><a href="{{ $.Ctx.Baseurl }}/{{ .Bin }}">{{ .Bin }}</a></td>
                         <td>{{ .LastUpdateReadable }}</td>
                         <td>{{ .Files | len }}</td>
+                        <td>{{ .BytesReadable }}</td>
                     </tr>
                     {{ end }}
                 </tbody>
