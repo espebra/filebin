@@ -39,7 +39,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{ range $index, $value := .Data }}
+                    {{ range $index, $value := .Data.Bins }}
                     <tr>
                         <td><a href="{{ $.Ctx.Baseurl }}/{{ .Bin }}">{{ .Bin }}</a></td>
                         <td>{{ .LastUpdateReadable }}</td>
