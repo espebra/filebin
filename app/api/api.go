@@ -357,7 +357,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 	if expired {
-		ctx.Log.Println("Expired: " + t.ExpirationReadable)
+		ctx.Log.Println("Expired: " + t.ExpirationReadable())
 		http.Error(w, "This bin has expired.", 410)
 		return
 	}
@@ -496,7 +496,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		return
 	}
 	if expired {
-		ctx.Log.Println("Expired: " + t.ExpirationReadable)
+		ctx.Log.Println("Expired: " + t.ExpirationReadable())
 		http.Error(w, "This bin has expired.", 410)
 		return
 	}
@@ -560,7 +560,7 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 			return
 		}
 		if expired {
-			ctx.Log.Println("Expired: " + t.ExpirationReadable)
+			ctx.Log.Println("Expired: " + t.ExpirationReadable())
 			http.Error(w, "This bin has expired.", 410)
 			return
 		}
@@ -611,7 +611,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 			return
 		}
 		if expired {
-			ctx.Log.Println("Expired: " + t.ExpirationReadable)
+			ctx.Log.Println("Expired: " + t.ExpirationReadable())
 			http.Error(w, "This bin has expired.", 410)
 			return
 		}
@@ -670,7 +670,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 			return
 		}
 		if expired {
-			ctx.Log.Println("Expired: " + t.ExpirationReadable)
+			ctx.Log.Println("Expired: " + t.ExpirationReadable())
 			http.Error(w, "This bin has expired.", 410)
 			return
 		}

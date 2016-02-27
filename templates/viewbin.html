@@ -72,11 +72,11 @@
                                     This bin contains {{ .Data.Files | len }} files.
                                 {{ end }}
                                 <br/>
-                                {{ if .Data.LastUpdateReadable }}
+                                {{ if ne .Data.LastUpdateReadable "" }}
                                     Last updated {{ .Data.LastUpdateReadable }}.
                                     <br/>
                                 {{ end }}
-                                {{ if .Data.ExpirationReadable }}
+                                {{ if ne .Data.ExpirationReadable "" }}
                                     Expires {{ .Data.ExpirationReadable }}
                                     <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#expiration"><i class="fa fa-question-circle"></i></a>.
                                 {{ end }}

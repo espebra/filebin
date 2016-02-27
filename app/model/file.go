@@ -23,9 +23,7 @@ type File struct {
 	Bin             string    `json:"bin"`
 	BinDir          string    `json:"-"`
 	Bytes           int64     `json:"bytes"`
-	BytesReadable   string    `json:"-"`
 	MIME            string    `json:"mime"`
-	CreatedReadable string    `json:"-"`
 	CreatedAt       time.Time `json:"created"`
 	Links           []Link    `json:"links"`
 	Checksum        string    `json:"checksum,omitempty"`
@@ -37,7 +35,6 @@ type File struct {
 
 	// Image specific attributes
 	DateTime         time.Time  `json:"datetime,omitempty"`
-	DateTimeReadable string     `json:"-"`
 	Longitude        float64    `json:"longitude,omitempty"`
 	Latitude         float64    `json:"latitude,omitempty"`
 	Altitude         string     `json:"altitude,omitempty"`
@@ -213,9 +210,7 @@ func (f *File) StatInfo() error {
 		return err
 	}
 	f.CreatedAt = i.ModTime().UTC()
-	f.CreatedReadable = humanize.Time(f.CreatedAt)
 	f.Bytes = i.Size()
-	f.BytesReadable = humanize.Bytes(uint64(f.Bytes))
 
 	//i, err = os.Lstat(f.BinDir)
 	//if err != nil {
@@ -318,8 +313,6 @@ func (f *File) ParseExif() error {
 	f.DateTime, err = f.Exif.DateTime()
 	if err != nil {
 		/// XXX: Log
-	} else {
-		f.DateTimeReadable = humanize.Time(f.DateTime)
 	}
 
 	f.Latitude, f.Longitude, err = f.Exif.LatLong()
@@ -414,6 +407,18 @@ func (f *File) DateTimeString() string {
 	}
 
 	return f.DateTime.Format("2006-01-02 15:04:05")
+}
+
+func (f *File) CreatedReadable() string {
+	return humanize.Time(f.CreatedAt)
+}
+
+func (f *File) BytesReadable() string {
+	return humanize.Bytes(uint64(f.Bytes))
+}
+
+func (f *File) DateTimeReadable() string {
+	return humanize.Time(f.DateTime)
 }
 
 func purge(url string) error {

@@ -16,12 +16,9 @@ type Bin struct {
 	Bin                string    `json:"bin"`
 	BinDir             string    `json:"-"`
 	Bytes              int64     `json:"bytes"`
-	BytesReadable      string    `json:"-"`
-	ExpirationAt       time.Time `json:"-"`
-	ExpirationReadable string    `json:"expiration"`
+	ExpirationAt       time.Time `json:"expiration"`
 	Expired            bool      `json:"-"`
-	LastUpdateAt       time.Time `json:"-"`
-	LastUpdateReadable string    `json:"lastupdate"`
+	LastUpdateAt       time.Time `json:"lastupdate"`
 	Files              []File    `json:"files"`
 
 	Album bool `json:"-"`
@@ -65,7 +62,6 @@ func (t *Bin) StatInfo() error {
 		return err
 	}
 	t.LastUpdateAt = i.ModTime().UTC()
-	t.LastUpdateReadable = humanize.Time(t.LastUpdateAt)
 	return nil
 }
 
@@ -90,7 +86,6 @@ func (t *Bin) CalculateExpiration(expiration int64) error {
 	} else {
 		t.ExpirationAt = time.Now().UTC().Add(time.Duration(expiration) * time.Second)
 	}
-	t.ExpirationReadable = humanize.Time(t.ExpirationAt)
 	return nil
 }
 
@@ -139,7 +134,18 @@ func (t *Bin) List(baseurl string) error {
 
 		t.Files = append(t.Files, f)
 	}
-	t.BytesReadable = humanize.Bytes(uint64(t.Bytes))
 	sort.Sort(FilesByDateTime(t.Files))
 	return err
+}
+
+func (t Bin) BytesReadable() string {
+	return humanize.Bytes(uint64(t.Bytes))
+}
+
+func (t Bin) LastUpdateReadable() string {
+	return humanize.Time(t.LastUpdateAt)
+}
+
+func (t Bin) ExpirationReadable() string {
+	return humanize.Time(t.ExpirationAt)
 }
