@@ -42,9 +42,13 @@
                 {{ $file := .GetLink "file" }}
                 {{ if $image }}
                     <figure class="figure">
+<!--
                         <a href="{{ $file }}">
+-->
                             <img src="{{ $image }}" class="figure-img img-fluid" alt="File {{ .Filename }} in bin {{ .Bin }}.">
+<!--
                         </a>
+-->
                         <figcaption class="figure-caption">
                              <div class="pull-left">
                                  {{ .Filename }}
