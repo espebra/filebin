@@ -2,7 +2,7 @@
 
 ![Viewing a bin](doc/screenshot-web-interface-bin.png)
 
-Filebin is a web application that facilitates convenient file sharing over the web. This is the development branch of the next release that in the future will power [http://filebin.net](http://filebin.net).
+Filebin is a web application that facilitates convenient file sharing over the web. This is the development branch of the next release that in the future will power [http://filebin.net](http://filebin.net), and still work in progress.
 
 ## Table of contents
 
@@ -71,10 +71,10 @@ Git Commit Hash: 40bd401ec350c86a46cdb3dc87f6b70c3c0b796b
 UTC Build Time: 2015-11-11 23:01:35
 ```
 
-Create the directories to use for storing files, logs and temporary files:
+Create the directories to use for storing files and temporary files:
 
 ```bash
-$ mkdir ~/filebin ~/filebin/files ~/filebin/logs ~/filebin/temp
+$ mkdir ~/filebin ~/filebin/files ~/filebin/temp
 ```
 
 ## Configuration
@@ -93,8 +93,10 @@ $ ${GOPATH}/bin/filebin \
   --baseurl http://api.example.com:31337
   --filedir ~/filebin/files \
   --tempdir ~/filebin/temp \
-  --expiration 604800
-  --cache-invalidation
+  --expiration 604800 \
+  --cache-invalidation \
+  --admin-username admin \
+  --admin-password changeme \
   [...]
 ```
 
@@ -123,6 +125,10 @@ Bins expire after some time of inactivity. By default, bins will expire 3 months
 #### Cache invalidation
 
 Enabled with the parameter ``--cache-invalidation``. When enabled, HTTP PURGE requests will be sent to baseurl/path for every change to ensure content is invalidated on any frontend web cache.
+
+#### Admin username and password
+
+The parameters ``--admin-username`` and ``--admin-password`` will, if set, enable the administrator page. It is available at the URL baseurl/admin, with the specified username and password for login.
 
 #### Triggers
 
@@ -182,14 +188,15 @@ The parameter ``--trigger-delete-file <command>`` makes sure ``<command> <bin> <
 
 ### Upload file
 
-|			| Value				|
-| --------------------- | ------------------------------|
-| **Method**		| ``POST``			|
-| **URL**		| /				|
-| **URL parameters**	| *None*			|
-| **Request body**	| File content in binary form	|
-| **Success response**	| ``201``			|
-| **Error response**	| ``400``			|
+|			| Value						|
+| --------------------- | ----------------------------------------------|
+| **Method**		| ``POST``					|
+| **URL**		| /						|
+| **URL parameters**	| *None*					|
+| **Request headers**	| ``filename``, ``bin``, ``content-sha256``	|
+| **Request body**	| File content in binary form			|
+| **Success response**	| ``201``					|
+| **Error response**	| ``400``					|
 
 ###### Examples
 
@@ -221,9 +228,10 @@ $ curl --data-binary "@/path/to/some file" https://filebin.example.com/ \
 |			| Value						|
 | --------------------- | --------------------------------------------- |
 | **Method**		| ``GET``					|
-| **Request headers**	| ``content-type: application/json``		|
 | **URL**		| /:bin						|
 | **URL parameters**	| *None*					|
+| **Request headers**	| ``content-type: application/json``		|
+| **Request body**	| *None*					|
 | **Success response**	| ``200``					|
 | **Error response**	| ``404``					|
 
@@ -241,6 +249,9 @@ $ curl https://filebin.example.com/custombin
 | --------------------- | --------------------------------------------- |
 | **Method**		| ``GET``					|
 | **URL**		| /:archive/:bin				|
+| **URL parameters**	| *None*					|
+| **Request headers**	| *None*					|
+| **Request body**	| *None*					|
 | **Success response**	| ``200``					|
 | **Error response**	| ``404``					|
 
@@ -259,6 +270,8 @@ $ curl -o custombin.tar https://filebin.example.com/archive/custombin
 | **Method**		| ``GET``		|
 | **URL**		| /:bin/:filename	|
 | **URL parameters**	| *None*		|
+| **Request headers**	| *None*		|
+| **Request body**	| *None*		|
 | **Success response**	| ``200``		|
 | **Error response**	| ``404``		|
 
@@ -277,6 +290,8 @@ $ curl https://filebin.example.com/custombin/myfile
 | **Method**		| ``DELETE``		|
 | **URL**		| /:bin/:filename	|
 | **URL parameters**	| *None*		|
+| **Request headers**	| *None*		|
+| **Request body**	| *None*		|
 | **Success response**	| ``200``		|
 | **Error response**	| ``404``		|
 
@@ -287,6 +302,8 @@ $ curl https://filebin.example.com/custombin/myfile
 | **Method**		| ``DELETE``		|
 | **URL**		| /:bin			|
 | **URL parameters**	| *None*		|
+| **Request headers**	| *None*		|
+| **Request body**	| *None*		|
 | **Success response**	| ``200``		|
 | **Error response**	| ``404``		|
 
