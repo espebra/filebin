@@ -21,7 +21,7 @@ Filebin is a web application that facilitates convenient file sharing over the w
 * All functionality available through an [HTTP API](#web-service).
 * Upload files using drag and drop, select files from a dialog box or use cURL ([examples below](#web-service))
 * Large file support. 10 GB file upload has been tested, but it should work fine with larger files as well.
-* Archive (tar) download to make it easy to download multiple files in one go.
+* Archive (tar and zip) download to make it easy to download multiple files in one go.
 * Files expire automatically after a configurable period of time.
 * Files and entire bins can be deleted manually.
 * Thumbnails are displayed for image files.
@@ -243,13 +243,13 @@ The following command will print a JSON structure showing which files that avail
 $ curl https://filebin.example.com/custombin
 ```
 
-### Fetch bin as a tar archive
+### Fetch bin as an archive
 
 |			| Value						|
 | --------------------- | --------------------------------------------- |
 | **Method**		| ``GET``					|
 | **URL**		| /:archive/:bin				|
-| **URL parameters**	| *None*					|
+| **URL parameters**	| format=tar [default], format=zip		|
 | **Request headers**	| *None*					|
 | **Request body**	| *None*					|
 | **Success response**	| ``200``					|
@@ -260,7 +260,7 @@ $ curl https://filebin.example.com/custombin
 The following commands will download the files in ``custombin`` as a tar archive:
 
 ```bash
-$ curl -o custombin.tar https://filebin.example.com/archive/custombin
+$ curl -o custombin.tar https://filebin.example.com/archive/custombin?format=tar
 ```
 
 ### Download file
