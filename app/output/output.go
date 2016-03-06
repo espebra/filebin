@@ -97,7 +97,12 @@ func TARresponse(w http.ResponseWriter, bin string, paths []string, ctx model.Co
 			return
 		}
 		defer file.Close()
-		io.Copy(tw, file)
+		bytes, err := io.Copy(tw, file)
+		if err != nil {
+			ctx.Log.Println(err)
+			return
+		}
+		ctx.Log.Println("Added " + strconv.FormatInt(bytes, 10) + " bytes to the archive.")
 	}
 
 	if err := tw.Close() ; err != nil {
@@ -154,7 +159,12 @@ func ZIPresponse(w http.ResponseWriter, bin string, paths []string, ctx model.Co
 			return
 		}
 		defer file.Close()
-		io.Copy(ze, file)
+		bytes, err := io.Copy(ze, file)
+		if err != nil {
+			ctx.Log.Println(err)
+			return
+		}
+		ctx.Log.Println("Added " + strconv.FormatInt(bytes, 10) + " bytes to the archive.")
 	}
 
 	err := zw.Close()
