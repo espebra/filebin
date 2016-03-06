@@ -158,9 +158,12 @@ func ZIPresponse(w http.ResponseWriter, bin string, paths []string, ctx model.Co
 			ctx.Log.Println(err)
 			return
 		}
-		defer file.Close()
 		bytes, err := io.Copy(ze, file)
 		if err != nil {
+			ctx.Log.Println(err)
+			return
+		}
+		if err := file.Close(); err != nil {
 			ctx.Log.Println(err)
 			return
 		}
