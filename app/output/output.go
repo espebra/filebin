@@ -3,7 +3,7 @@ package output
 import (
 	"archive/tar"
 	"archive/zip"
-	"compress/flate"
+	//"compress/flate"
 
 	"encoding/json"
 	"html/template"
@@ -118,9 +118,9 @@ func ZIPresponse(w http.ResponseWriter, bin string, paths []string, ctx model.Co
 	zw := zip.NewWriter(w)
 
 	// For best compression
-	zw.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
-		return flate.NewWriter(out, flate.BestCompression)
-	})
+	//zw.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
+	//	return flate.NewWriter(out, flate.BestCompression)
+	//})
 
 
 	for _, path := range paths {
