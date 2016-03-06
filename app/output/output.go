@@ -2,6 +2,9 @@ package output
 
 import (
 	"archive/tar"
+	"archive/zip"
+	"compress/flate"
+
 	"encoding/json"
 	"html/template"
 	"io"
@@ -56,9 +59,10 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, d interface{}, 
 	}
 }
 
-func TARresponse(w http.ResponseWriter, status int, bin string, paths []string, ctx model.Context) {
+func TARresponse(w http.ResponseWriter, bin string, paths []string, ctx model.Context) {
 	ctx.Log.Println("Generating tar archive")
 
+        w.Header().Set("Content-Type", "application/x-tar")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+bin+`.tar"`)
 
 	tw := tar.NewWriter(w)
@@ -102,5 +106,63 @@ func TARresponse(w http.ResponseWriter, status int, bin string, paths []string, 
 	}
 
 	ctx.Log.Println("Tar archive successfully generated")
+	return
+}
+
+func ZIPresponse(w http.ResponseWriter, bin string, paths []string, ctx model.Context) {
+	ctx.Log.Println("Generating zip archive")
+
+        w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", `attachment; filename="`+bin+`.zip"`)
+
+	zw := zip.NewWriter(w)
+
+	// For best compression
+	zw.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
+		return flate.NewWriter(out, flate.BestCompression)
+	})
+
+
+	for _, path := range paths {
+		// Extract the filename from the absolute path
+		fname := filepath.Base(path)
+		ctx.Log.Println("Adding to zip archive: " + fname)
+
+		// Get stat info for modtime etc
+		info, err := os.Stat(path)
+		if err != nil {
+			ctx.Log.Println(err)
+			return
+		}
+
+		// Generate the Zip info header for this file based on the stat info
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			ctx.Log.Println(err)
+			return
+		}
+
+		ze, err := zw.CreateHeader(header)
+		if err != nil {
+			ctx.Log.Println(err)
+			return
+		}
+
+		file, err := os.Open(path)
+		if err != nil {
+			ctx.Log.Println(err)
+			return
+		}
+		defer file.Close()
+		io.Copy(ze, file)
+	}
+
+	err := zw.Close()
+	if err != nil {
+		ctx.Log.Println(err)
+		return
+	}
+
+	ctx.Log.Println("Zip archive successfully generated")
 	return
 }

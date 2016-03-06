@@ -483,14 +483,18 @@
                     <div class="modal-body">
 
                     <p>
-                        The files in this bin can be downloaded as a single tar archive. The default filename of the archive is <code>{{ .Data.Bin }}.tar</code> and the estimated size is {{ .Data.BytesReadable }}. 
+                        The files in this bin can be downloaded as a single archive. The default filename of the archive is <code>{{ .Data.Bin }}</code> and the full size is {{ .Data.BytesReadable }}.
                     </p>
 
-                    <p class="lead">Download as archive?</p>
+                    <p class="lead">Select archive format to download below.</p>
 
                     <div class="modal-footer">
                         <div class="pull-left">
-                            <a class="btn btn-success" href="{{ .Ctx.Baseurl }}/archive/{{ $.Data.Bin }}"><i class="fa fa-cloud-download"></i> Confirm</a>
+                            <div class="btn-group" role="group" aria-label="Basic example">
+
+                                <a class="btn btn-secondary" href="{{ .Ctx.Baseurl }}/archive/{{ $.Data.Bin }}?format=tar"><i class="fa text-primary fa-file-archive-o"></i> Tar</a>
+                                <a class="btn btn-secondary" href="{{ .Ctx.Baseurl }}/archive/{{ $.Data.Bin }}?format=zip"><i class="fa text-primary fa-file-archive-o"></i> Zip</a>
+                            </div>
                         </div>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close"><i class="fa fa-close"></i> Close</button>
                     </div>

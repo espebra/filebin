@@ -651,6 +651,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 }
 
 func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	format := r.FormValue("format")
 	params := mux.Vars(r)
 	t := model.Bin{}
 	err := t.SetBin(params["bin"])
@@ -701,16 +702,18 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 
 	w.Header().Set("Cache-Control", "s-maxage=3600")
 
-	var status = 200
-	w.Header().Set("Content-Type", "application/x-tar")
-
 	// Generate a map of paths to add to the tar response
 	var paths []string
 	for _, f := range t.Files {
 		path := filepath.Join(f.BinDir, f.Filename)
 		paths = append(paths, path)
 	}
-	output.TARresponse(w, status, t.Bin, paths, ctx)
+
+	if format == "zip" {
+		output.ZIPresponse(w, t.Bin, paths, ctx)
+	} else {
+		output.TARresponse(w, t.Bin, paths, ctx)
+	}
 	return
 }
 
