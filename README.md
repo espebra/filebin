@@ -2,7 +2,7 @@
 
 ![Viewing a bin](doc/screenshot-web-interface-bin.png)
 
-Filebin is a web application that facilitates convenient file sharing over the web. This is the development branch of the next release that in the future will power [http://filebin.net](http://filebin.net), and still work in progress.
+Filebin is a web application that facilitates convenient file sharing over the web. This is the development branch of the next release that in the future will power [http://filebin.net](http://filebin.net). It is still work in progress and the API may change. [Demo site](http://dev.filebin.net) available.
 
 ## Table of contents
 
@@ -248,8 +248,8 @@ $ curl -H "Accept: application/json" https://filebin.example.com/custombin
 |			| Value						|
 | --------------------- | --------------------------------------------- |
 | **Method**		| ``GET``					|
-| **URL**		| /:archive/:bin				|
-| **URL parameters**	| format=tar [default], format=zip		|
+| **URL**		| /:archive/:bin/:format			|
+| **URL parameters**	| *None*					|
 | **Request headers**	| *None*					|
 | **Request body**	| *None*					|
 | **Success response**	| ``200``					|
@@ -257,10 +257,14 @@ $ curl -H "Accept: application/json" https://filebin.example.com/custombin
 
 ###### Examples
 
-The following commands will download the files in ``custombin`` as a tar archive:
+The following commands will download the files in ``custombin`` as tar and zip archives:
 
 ```bash
-$ curl -o custombin.tar https://filebin.example.com/archive/custombin?format=tar
+# Tar
+$ curl -o custombin.tar https://filebin.example.com/archive/custombin/tar
+
+# Zip
+$ curl -o custombin.zip https://filebin.example.com/archive/custombin/zip
 ```
 
 ### Download file

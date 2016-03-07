@@ -651,8 +651,9 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 }
 
 func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	format := r.FormValue("format")
 	params := mux.Vars(r)
+	format := params["format"]
+
 	t := model.Bin{}
 	err := t.SetBin(params["bin"])
 	if err != nil {
@@ -711,8 +712,10 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 
 	if format == "zip" {
 		output.ZIPresponse(w, t.Bin, paths, ctx)
-	} else {
+	} else if format == "tar" {
 		output.TARresponse(w, t.Bin, paths, ctx)
+	} else {
+		http.Error(w, "Not found", 404)
 	}
 	return
 }

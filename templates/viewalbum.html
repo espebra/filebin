@@ -38,7 +38,7 @@
             </div>
 
             {{ range $index, $value := .Data.Files }}
-                {{ $image := .GetLink "albumitem" }}
+                {{ $image := .GetLink "album item" }}
                 {{ $file := .GetLink "file" }}
                 {{ if $image }}
                     <figure class="figure">

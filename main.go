@@ -287,7 +287,7 @@ func main() {
 	//router.HandleFunc("/doc", reqHandler(api.ViewDoc)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.ViewIndex)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.Upload)).Methods("POST")
-	router.HandleFunc("/archive/{bin:[A-Za-z0-9_-]+}", reqHandler(api.FetchArchive)).Methods("GET", "HEAD")
+	router.HandleFunc("/archive/{bin:[A-Za-z0-9_-]+}/{format:[a-z]+}", reqHandler(api.FetchArchive)).Methods("GET", "HEAD")
 	router.HandleFunc("/album/{bin:[A-Za-z0-9_-]+}", reqHandler(api.FetchAlbum)).Methods("GET", "HEAD")
 	router.HandleFunc("/{bin:[A-Za-z0-9_-]+}", reqHandler(api.FetchBin)).Methods("GET", "HEAD")
 	router.HandleFunc("/{bin:[A-Za-z0-9_-]+}", reqHandler(api.DeleteBin)).Methods("DELETE")

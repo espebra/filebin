@@ -123,6 +123,11 @@ func (f *File) GenerateLinks(baseurl string) {
 	fileLink.Href = baseurl + "/" + f.Bin + "/" + f.Filename
 	f.Links = append(f.Links, fileLink)
 
+	binLink := Link{}
+	binLink.Rel = "bin"
+	binLink.Href = baseurl + "/" + f.Bin
+	f.Links = append(f.Links, binLink)
+
 	if f.ImageExists(115, 115) {
 		thumbLink := Link{}
 		thumbLink.Rel = "thumbnail"
@@ -132,7 +137,7 @@ func (f *File) GenerateLinks(baseurl string) {
 
 	if f.ImageExists(1140, 0) {
 		albumItemLink := Link{}
-		albumItemLink.Rel = "albumitem"
+		albumItemLink.Rel = "album item"
 		albumItemLink.Href = baseurl + "/" + f.Bin + "/" + f.Filename + "?width=1140"
 		f.Links = append(f.Links, albumItemLink)
 
@@ -142,15 +147,15 @@ func (f *File) GenerateLinks(baseurl string) {
 		f.Links = append(f.Links, albumLink)
 	}
 
-	binLink := Link{}
-	binLink.Rel = "bin"
-	binLink.Href = baseurl + "/" + f.Bin
-	f.Links = append(f.Links, binLink)
+	tarLink := Link{}
+	tarLink.Rel = "tar archive"
+	tarLink.Href = baseurl + "/archive/" + f.Bin + "/tar"
+	f.Links = append(f.Links, tarLink)
 
-	archiveLink := Link{}
-	archiveLink.Rel = "archive"
-	archiveLink.Href = baseurl + "/archive/" + f.Bin
-	f.Links = append(f.Links, archiveLink)
+	zipLink := Link{}
+	zipLink.Rel = "zip archive"
+	zipLink.Href = baseurl + "/archive/" + f.Bin + "/zip"
+	f.Links = append(f.Links, zipLink)
 }
 
 func (f *File) EnsureBinDirectoryExists() error {
