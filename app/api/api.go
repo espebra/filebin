@@ -636,7 +636,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 
 	var status = 200
 
-	if r.Header.Get("Content-Type") == "application/json" {
+	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, status, t, ctx)
 		return
@@ -748,7 +748,7 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 	sort.Sort(model.BinsByLastUpdate(bins.Bins))
 
 	var status = 200
-	if r.Header.Get("Content-Type") == "application/json" {
+	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, status, bins, ctx)
 	} else {

@@ -230,7 +230,7 @@ $ curl --data-binary "@/path/to/some file" https://filebin.example.com/ \
 | **Method**		| ``GET``					|
 | **URL**		| /:bin						|
 | **URL parameters**	| *None*					|
-| **Request headers**	| ``content-type: application/json``		|
+| **Request headers**	| ``Accept: application/json``		|
 | **Request body**	| *None*					|
 | **Success response**	| ``200``					|
 | **Error response**	| ``404``					|
@@ -240,7 +240,7 @@ $ curl --data-binary "@/path/to/some file" https://filebin.example.com/ \
 The following command will print a JSON structure showing which files that available in the bin ``custombin``.
 
 ```bash
-$ curl https://filebin.example.com/custombin
+$ curl -H "Accept: application/json" https://filebin.example.com/custombin
 ```
 
 ### Fetch bin as an archive
