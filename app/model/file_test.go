@@ -252,7 +252,7 @@ func TestGenerateLinks(t *testing.T) {
 	f.SetBin("validbin")
 	f.GenerateLinks("http://localhost:8080")
 
-	if len(f.Links) != 3 {
+	if len(f.Links) != 4 {
 		t.Fatal("Unexpected amount of links:", len(f.Links))
 	}
 }
