@@ -255,7 +255,7 @@ function FileAPI (c, t, d, f, tag, url) {
             );
             xhr.setRequestHeader("Cache-Control", "no-cache");
             xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-            xhr.setRequestHeader("Filename", file.name);
+            xhr.setRequestHeader("Filename", file.name.replace(/[^A-Za-z0-9-_=,.]/g, "_"));
             xhr.setRequestHeader("Size", file.size);
             xhr.setRequestHeader("Bin", tag);
             xhr.send(file);
