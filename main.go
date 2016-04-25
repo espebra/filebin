@@ -18,6 +18,7 @@ import (
 	"github.com/espebra/filebin/app/api"
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/model"
+	"github.com/espebra/filebin/app/backend/fs"
 )
 
 var cfg = config.Global
@@ -26,6 +27,7 @@ var buildstamp = "No buildstamp provided"
 
 var staticBox *rice.Box
 var templateBox *rice.Box
+var backend fs.Backend
 
 // Initiate buffered channel for batch processing
 var WorkQueue = make(chan model.File, 1000)
@@ -188,10 +190,6 @@ func init() {
 		log.Fatalln("The directory " + cfg.Tempdir + " does not exist.")
 	}
 
-	if !isDir(cfg.Filedir) {
-		log.Fatalln("The directory " + cfg.Filedir + " does not exist.")
-	}
-
 	//if _, err := os.Stat(cfg.GeoIP2); err == nil {
 	//    gi, err = geoip2.Open(cfg.GeoIP2)
 	//    if err != nil {
@@ -205,6 +203,7 @@ func init() {
 }
 
 func main() {
+	var err error
 	log := log.New(os.Stdout, "- ", log.LstdFlags)
 
 	// Initialize boxes
@@ -268,6 +267,12 @@ func main() {
 
 	//fmt.Println("Trigger Expired bin: " + cfg.TriggerExpiredBin)
 
+	backend, err = fs.InitBackend(cfg.Baseurl, cfg.Filedir, cfg.Expiration)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	log.Println("Backend: " + backend.Info())
 	log.Println("Filebin server starting...")
 
 	router := mux.NewRouter()
@@ -312,7 +317,7 @@ func main() {
 	// Start dispatcher that will handle all background processing
 	model.StartDispatcher(cfg.Workers, cfg.CacheInvalidation, WorkQueue, log)
 
-	err := http.ListenAndServe(cfg.Host+":"+strconv.Itoa(cfg.Port), nil)
+	err = http.ListenAndServe(cfg.Host+":"+strconv.Itoa(cfg.Port), nil)
 	if err != nil {
 		log.Panicln(err.Error())
 	}
@@ -329,6 +334,7 @@ func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration
 		ctx.StaticBox = staticBox
 		ctx.Baseurl = cfg.Baseurl
 		ctx.WorkQueue = WorkQueue
+		ctx.Backend = &backend
 
 		// Initialize logger for this request
 		ctx.Log = log.New(os.Stdout, reqId+" ", log.LstdFlags)

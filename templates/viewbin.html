@@ -72,12 +72,12 @@
                                     This bin contains {{ .Data.Files | len }} files.
                                 {{ end }}
                                 <br/>
-                                {{ if ne .Data.LastUpdateReadable "" }}
-                                    Last updated {{ .Data.LastUpdateReadable }}.
+                                {{ if ne .Data.UpdatedReadable "" }}
+                                    Last updated {{ .Data.UpdatedReadable }}.
                                     <br/>
                                 {{ end }}
-                                {{ if ne .Data.ExpirationReadable "" }}
-                                    Expires {{ .Data.ExpirationReadable }}
+                                {{ if ne .Data.ExpiresReadable "" }}
+                                    Expires {{ .Data.ExpiresReadable }}
                                     <a href="" style="text-decoration: none;" data-toggle="modal" data-target="#expiration"><i class="fa fa-question-circle"></i></a>.
                                 {{ end }}
                             </small>
@@ -276,7 +276,7 @@
                                 <dd class="col-sm-9">
                                     {{ $bin := .GetLink "bin" }}
                                     <a href="{{ $bin }}">
-                                        {{ .Bin }}
+                                        {{ $.Data.Bin }}
                                     </a>
                                 </dd>
 
@@ -316,10 +316,10 @@
 
                                 <dt class="col-sm-3">Expires</dt>
                                 <dd class="col-sm-9">
-                                    {{ if $.Data.ExpirationReadable }}
-                                        {{ $.Data.ExpirationReadable }}
+                                    {{ if $.Data.ExpiresReadable }}
+                                        {{ $.Data.ExpiresReadable }}
                                     {{ end }}
-                                    ({{ $.Data.ExpirationAt.Format "2006-01-02 15:04:05 UTC" }})
+                                    ({{ $.Data.ExpiresAt.Format "2006-01-02 15:04:05 UTC" }})
                                 </dd>
                             </ul>
                         </div>
@@ -421,16 +421,16 @@
 
                             <dt class="col-sm-3">Last updated</dt>
                             <dd class="col-sm-9">
-                                {{ $.Data.LastUpdateReadable }}
-                                ({{ $.Data.LastUpdateAt.Format "2006-01-02 15:04:05 UTC" }})
+                                {{ $.Data.UpdatedReadable }}
+                                ({{ $.Data.UpdatedAt.Format "2006-01-02 15:04:05 UTC" }})
                             </dd>
 
                             <dt class="col-sm-3">Expires</dt>
                             <dd class="col-sm-9">
-                                {{ if $.Data.ExpirationReadable }}
-                                    {{ $.Data.ExpirationReadable }}
+                                {{ if $.Data.ExpiresReadable }}
+                                    {{ $.Data.ExpiresReadable }}
                                 {{ end }}
-                                ({{ $.Data.ExpirationAt.Format "2006-01-02 15:04:05 UTC" }})
+                                ({{ $.Data.ExpiresAt.Format "2006-01-02 15:04:05 UTC" }})
                             </dd>
                         </ul>
                     </div>

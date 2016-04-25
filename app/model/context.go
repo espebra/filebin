@@ -3,6 +3,7 @@ package model
 import (
 	"github.com/GeertJohan/go.rice"
 	"log"
+        "github.com/espebra/filebin/app/backend/fs"
 )
 
 type Context struct {
@@ -11,4 +12,5 @@ type Context struct {
 	Baseurl     string
 	Log         *log.Logger
 	WorkQueue   chan File
+	Backend     *fs.Backend
 }

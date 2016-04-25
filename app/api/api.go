@@ -2,16 +2,16 @@ package api
 
 import (
 	"fmt"
-	"syscall"
+	//"syscall"
 	"sort"
 	"math/rand"
 	"net/http"
-	"net/url"
+	//"net/url"
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"strconv"
-	"time"
+	//"strconv"
+	//"time"
 
 	"github.com/gorilla/mux"
 
@@ -85,230 +85,237 @@ func randomString(n int) string {
 }
 
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	var err error
-	f := model.File{}
-	f.RemoteAddr = r.RemoteAddr
-	f.UserAgent = r.Header.Get("User-Agent")
+	//params := mux.Vars(r)
+	bin := r.Header.Get("bin")
+	filename := r.Header.Get("filename")
+	f, err := ctx.Backend.UploadFile(bin, filename, r.Body)
+	if err != nil {
+		ctx.Log.Println(err)
+		http.Error(w, "Bin not found", 404)
+		return
+	}
+
+	//f.RemoteAddr = r.RemoteAddr
+	//f.UserAgent = r.Header.Get("User-Agent")
 
 	// Extract the bin from the request
-	bin := r.Header.Get("bin")
-	if bin == "" {
-		// To ensure backwards compatibility for uploads
-		bin = r.Header.Get("tag")
-	}
+	//bin := r.Header.Get("bin")
+	//if bin == "" {
+	//	// To ensure backwards compatibility for uploads
+	//	bin = r.Header.Get("tag")
+	//}
 
-	if bin == "" {
-		bin := randomString(cfg.DefaultBinLength)
-		err = f.SetBin(bin)
-		ctx.Log.Println("Bin generated: " + f.Bin)
-	} else {
-		err = f.SetBin(bin)
-		ctx.Log.Println("Bin specified: " + bin)
-	}
-	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	f.SetBinDir(cfg.Filedir)
-	ctx.Log.Println("Bin directory: " + f.BinDir)
-
-	contentLength, err := strconv.ParseUint(r.Header.Get("Content-Length"), 10, 64)
-	if err != nil {
-		ctx.Log.Println(err)
-	}
-	ctx.Log.Printf("Specified content length: %d bytes", contentLength)
+	//if bin == "" {
+	//	bin := randomString(cfg.DefaultBinLength)
+	//	err = f.SetBin(bin)
+	//	ctx.Log.Println("Bin generated: " + f.Bin)
+	//} else {
+	//	err = f.SetBin(bin)
+	//	ctx.Log.Println("Bin specified: " + bin)
+	//}
+	//if err != nil {
+	//	ctx.Log.Println(err)
+	//	http.Error(w, err.Error(), http.StatusBadRequest)
+	//	return
+	//}
+	//f.SetBinDir(cfg.Filedir)
+	//ctx.Log.Println("Bin directory: " + f.BinDir)
+	//contentLength, err := strconv.ParseUint(r.Header.Get("Content-Length"), 10, 64)
+	//if err != nil {
+	//	ctx.Log.Println(err)
+	//}
+	//ctx.Log.Printf("Specified content length: %d bytes", contentLength)
 
 	// Read the amounts of bytes free in the filedir directory
-	var stat syscall.Statfs_t
-	syscall.Statfs(cfg.Filedir, &stat)
-	freeBytes := stat.Bavail * uint64(stat.Bsize)
-	ctx.Log.Printf("Free storage: %d bytes", freeBytes)
+	//var stat syscall.Statfs_t
+	//syscall.Statfs(cfg.Filedir, &stat)
+	//freeBytes := stat.Bavail * uint64(stat.Bsize)
+	//ctx.Log.Printf("Free storage: %d bytes", freeBytes)
 
-	if contentLength >= freeBytes {
-		ctx.Log.Println("Not enough free disk space for the specified content-length. Trying to abort here.")
+	//if contentLength >= freeBytes {
+	//	ctx.Log.Println("Not enough free disk space for the specified content-length. Trying to abort here.")
 
-		// This will not work as expected since clients (usually) don't care about
-		// the response until the request delivery is complete.
-		http.Error(w, "Request Entity Too Large", 413)
-		return
-	}
+	//	// This will not work as expected since clients (usually) don't care about
+	//	// the response until the request delivery is complete.
+	//	http.Error(w, "Request Entity Too Large", 413)
+	//	return
+	//}
 
 	// Write the request body to a temporary file
-	err = f.WriteTempfile(r.Body, cfg.Tempdir)
-	if err != nil {
-		ctx.Log.Println("Unable to write tempfile: ", err)
+	//err = f.WriteTempfile(r.Body, cfg.Tempdir)
+	//if err != nil {
+	//	ctx.Log.Println("Unable to write tempfile: ", err)
 
-		// Clean up by removing the tempfile
-		f.ClearTemp()
+	//	// Clean up by removing the tempfile
+	//	f.ClearTemp()
 
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-	ctx.Log.Println("Tempfile: " + f.Tempfile)
-	ctx.Log.Println("Tempfile size: " + strconv.FormatInt(f.Bytes, 10) + " bytes")
+	//	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	//	return
+	//}
+	//ctx.Log.Println("Tempfile: " + f.Tempfile)
+	//ctx.Log.Println("Tempfile size: " + strconv.FormatInt(f.Bytes, 10) + " bytes")
 
-	// Do not accept files that are 0 bytes
-	if f.Bytes == 0 {
-		ctx.Log.Println("Empty files are not allowed. Aborting.")
+	//// Do not accept files that are 0 bytes
+	//if f.Bytes == 0 {
+	//	ctx.Log.Println("Empty files are not allowed. Aborting.")
 
-		// Clean up by removing the tempfile
-		f.ClearTemp()
+	//	// Clean up by removing the tempfile
+	//	f.ClearTemp()
 
-		http.Error(w, "No content. The file size must be more than "+
-			"0 bytes.", http.StatusBadRequest)
-		return
-	}
+	//	http.Error(w, "No content. The file size must be more than "+
+	//		"0 bytes.", http.StatusBadRequest)
+	//	return
+	//}
 
-	// Calculate and verify the checksum
-	checksum := r.Header.Get("content-sha256")
-	if checksum != "" {
-		ctx.Log.Println("Checksum specified: " + checksum)
-	}
-	err = f.VerifySHA256(checksum)
-	ctx.Log.Println("Checksum calculated: " + f.Checksum)
-	if err != nil {
-		ctx.Log.Println("The specified checksum did not match")
-		http.Error(w, "Checksum did not match", http.StatusConflict)
-		return
-	}
+	//// Calculate and verify the checksum
+	//checksum := r.Header.Get("content-sha256")
+	//if checksum != "" {
+	//	ctx.Log.Println("Checksum specified: " + checksum)
+	//}
+	//err = f.VerifySHA256(checksum)
+	//ctx.Log.Println("Checksum calculated: " + f.Checksum)
+	//if err != nil {
+	//	ctx.Log.Println("The specified checksum did not match")
+	//	http.Error(w, "Checksum did not match", http.StatusConflict)
+	//	return
+	//}
 
-	// Trigger new bin
-	t := model.Bin{}
-	t.SetBin(f.Bin)
-	t.SetBinDir(cfg.Filedir)
-	if !t.BinDirExists() {
-		if cfg.TriggerNewBin != "" {
-			ctx.Log.Println("Executing trigger: New bin")
-			triggerNewBinHandler(cfg.TriggerNewBin, f.Bin)
-		}
-	}
+	//// Trigger new bin
+	//t := model.Bin{}
+	//t.SetBin(f.Bin)
+	//t.SetBinDir(cfg.Filedir)
+	//if !t.BinDirExists() {
+	//	if cfg.TriggerNewBin != "" {
+	//		ctx.Log.Println("Executing trigger: New bin")
+	//		triggerNewBinHandler(cfg.TriggerNewBin, f.Bin)
+	//	}
+	//}
 
-	// Create the bin directory if it does not exist
-	err = f.EnsureBinDirectoryExists()
-	if err != nil {
-		ctx.Log.Println("Unable to create bin directory: ", f.BinDir)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
+	//// Create the bin directory if it does not exist
+	//err = f.EnsureBinDirectoryExists()
+	//if err != nil {
+	//	ctx.Log.Println("Unable to create bin directory: ", f.BinDir)
+	//	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	//	return
+	//}
 
-	t.CalculateExpiration(cfg.Expiration)
-	expired, err := t.IsExpired(cfg.Expiration)
-	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Internal server error", 500)
-		return
-	}
-	if expired {
-		ctx.Log.Println("The bin has expired. Aborting.")
-		http.Error(w, "This bin has expired.", 410)
-		return
-	}
+	//t.CalculateExpiration(cfg.Expiration)
+	//expired, err := t.IsExpired(cfg.Expiration)
+	//if err != nil {
+	//	ctx.Log.Println(err)
+	//	http.Error(w, "Internal server error", 500)
+	//	return
+	//}
+	//if expired {
+	//	ctx.Log.Println("The bin has expired. Aborting.")
+	//	http.Error(w, "This bin has expired.", 410)
+	//	return
+	//}
 
-	// Extract the filename from the request
-	fname := r.Header.Get("filename")
-	if fname == "" {
-		ctx.Log.Println("Filename generated: " + f.Checksum)
-		f.SetFilename(f.Checksum)
-	} else {
-		ctx.Log.Println("Filename specified: " + fname)
-		err = f.SetFilename(fname)
-		if err != nil {
-			ctx.Log.Println(err)
-			http.Error(w, "Invalid filename specified. It contains illegal characters or is too short.",
-				http.StatusBadRequest)
-			return
-		}
-	}
+	//// Extract the filename from the request
+	//fname := r.Header.Get("filename")
+	//if fname == "" {
+	//	ctx.Log.Println("Filename generated: " + f.Checksum)
+	//	f.SetFilename(f.Checksum)
+	//} else {
+	//	ctx.Log.Println("Filename specified: " + fname)
+	//	err = f.SetFilename(fname)
+	//	if err != nil {
+	//		ctx.Log.Println(err)
+	//		http.Error(w, "Invalid filename specified. It contains illegal characters or is too short.",
+	//			http.StatusBadRequest)
+	//		return
+	//	}
+	//}
 
-	if fname != f.Filename {
-		ctx.Log.Println("Filename sanitized: " + f.Filename)
-	}
+	//if fname != f.Filename {
+	//	ctx.Log.Println("Filename sanitized: " + f.Filename)
+	//}
 
-	err = f.DetectMIME()
-	if err != nil {
-		ctx.Log.Println("Unable to detect MIME: ", err)
-	} else {
-		ctx.Log.Println("MIME detected: " + f.MIME)
-	}
+	//err = f.DetectMIME()
+	//if err != nil {
+	//	ctx.Log.Println("Unable to detect MIME: ", err)
+	//} else {
+	//	ctx.Log.Println("MIME detected: " + f.MIME)
+	//}
 
-	ctx.Log.Println("Media type: " + f.MediaType())
-	if f.MediaType() == "image" {
-		err = f.ParseExif()
-		if err != nil {
-			ctx.Log.Println(err)
-		}
+	//ctx.Log.Println("Media type: " + f.MediaType())
+	//if f.MediaType() == "image" {
+	//	err = f.ParseExif()
+	//	if err != nil {
+	//		ctx.Log.Println(err)
+	//	}
 
-		// iOS devices provide only one filename even when uploading
-		// multiple images. Providing some workaround for this below.
-		// XXX: Refactoring needed.
-		if isWorkaroundNeeded(f.UserAgent) && !f.DateTime.IsZero() {
-			var fname string
-			dt := f.DateTime.Format("060102-150405")
+	//	// iOS devices provide only one filename even when uploading
+	//	// multiple images. Providing some workaround for this below.
+	//	// XXX: Refactoring needed.
+	//	if isWorkaroundNeeded(f.UserAgent) && !f.DateTime.IsZero() {
+	//		var fname string
+	//		dt := f.DateTime.Format("060102-150405")
 
-			// List of filenames to modify
-			if f.Filename == "image.jpeg" {
-				fname = "img-" + dt + ".jpeg"
-			}
-			if f.Filename == "image.gif" {
-				fname = "img-" + dt + ".gif"
-			}
-			if f.Filename == "image.png" {
-				fname = "img-" + dt + ".png"
-			}
+	//		// List of filenames to modify
+	//		if f.Filename == "image.jpeg" {
+	//			fname = "img-" + dt + ".jpeg"
+	//		}
+	//		if f.Filename == "image.gif" {
+	//			fname = "img-" + dt + ".gif"
+	//		}
+	//		if f.Filename == "image.png" {
+	//			fname = "img-" + dt + ".png"
+	//		}
 
-			if fname != "" {
-				ctx.Log.Println("Filename workaround triggered")
-				ctx.Log.Println("Filename modified: " + fname)
-				err = f.SetFilename(fname)
-				if err != nil {
-					ctx.Log.Println(err)
-				}
-			}
-		}
+	//		if fname != "" {
+	//			ctx.Log.Println("Filename workaround triggered")
+	//			ctx.Log.Println("Filename modified: " + fname)
+	//			err = f.SetFilename(fname)
+	//			if err != nil {
+	//				ctx.Log.Println(err)
+	//			}
+	//		}
+	//	}
 
-		//err = f.GenerateThumbnail()
-		//if err != nil {
-		//	ctx.Log.Println(err)
-		//}
+	//	//err = f.GenerateThumbnail()
+	//	//if err != nil {
+	//	//	ctx.Log.Println(err)
+	//	//}
 
-		//extra := make(map[string]string)
-		//if !f.DateTime.IsZero() {
-		//	extra["DateTime"] = f.DateTime.String()
-		//}
-		//f.Extra = extra
-	}
+	//	//extra := make(map[string]string)
+	//	//if !f.DateTime.IsZero() {
+	//	//	extra["DateTime"] = f.DateTime.String()
+	//	//}
+	//	//f.Extra = extra
+	//}
 
-	// Promote file from tempdir to the published bindir
-	f.Publish()
+	//// Promote file from tempdir to the published bindir
+	//f.Publish()
 
-	// Clean up by removing the tempfile
-	f.ClearTemp()
+	//// Clean up by removing the tempfile
+	//f.ClearTemp()
 
-	err = f.StatInfo()
-	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
+	//err = f.StatInfo()
+	//if err != nil {
+	//	ctx.Log.Println(err)
+	//	http.Error(w, "Internal Server Error", 500)
+	//	return
+	//}
 
-	f.GenerateLinks(cfg.Baseurl)
-	f.CreatedAt = time.Now().UTC()
-	//f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
+	//f.GenerateLinks(cfg.Baseurl)
+	//f.CreatedAt = time.Now().UTC()
+	////f.ExpiresAt = time.Now().UTC().Add(24 * 7 * 4 * time.Hour)
 
 	if cfg.TriggerUploadFile != "" {
 		ctx.Log.Println("Executing trigger: Uploaded file")
-		triggerUploadFileHandler(cfg.TriggerUploadFile, f.Bin, f.Filename)
+		triggerUploadFileHandler(cfg.TriggerUploadFile, bin, filename)
 	}
 
 	// Purging any old content
-	if cfg.CacheInvalidation {
-		if err := f.Purge(); err != nil {
-			ctx.Log.Println(err)
-		}
-	}
+	//if cfg.CacheInvalidation {
+	//	if err := f.Purge(); err != nil {
+	//		ctx.Log.Println(err)
+	//	}
+	//}
 
-	ctx.WorkQueue <- f
+	//ctx.WorkQueue <- f
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -317,85 +324,41 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 }
 
 func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	// Query parameters
-	u, err := url.Parse(r.RequestURI)
-	if err != nil {
-		ctx.Log.Println(err)
-	}
-
-	queryParams, err := url.ParseQuery(u.RawQuery)
-	if err != nil {
-		ctx.Log.Println(err)
-	}
-
-	// Request headers
 	params := mux.Vars(r)
+	bin := params["bin"]
+	filename := params["filename"]
 
-	f := model.File{}
-	f.SetFilename(params["filename"])
+	f, err := ctx.Backend.GetFileMetaData(bin, filename)
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w, "Invalid filename specified. It contains illegal characters or is too short.", 400)
+		http.Error(w, "Not found", 404)
 		return
-	}
-	err = f.SetBin(params["bin"])
-	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Invalid bin specified. It contains illegal characters or is too short.", 400)
-		return
-	}
-	f.SetBinDir(cfg.Filedir)
-
-	t := model.Bin{}
-	t.SetBin(f.Bin)
-	t.SetBinDir(cfg.Filedir)
-	t.CalculateExpiration(cfg.Expiration)
-	expired, err := t.IsExpired(cfg.Expiration)
-	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-	if expired {
-		ctx.Log.Println("Expired: " + t.ExpirationReadable())
-		http.Error(w, "This bin has expired.", 410)
-		return
-	}
-
-	// Default path
-	path := filepath.Join(f.BinDir, f.Filename)
-
-	err = f.DetectMIME()
-	if err != nil {
-		ctx.Log.Println("Unable to detect MIME: ", err)
-	} else {
-		ctx.Log.Println("MIME detected: " + f.MIME)
-	}
-
-	if f.MediaType() == "image" {
-		width, _ := strconv.Atoi(queryParams.Get("width"))
-		height, _ := strconv.Atoi(queryParams.Get("height"))
-		if (width > 0) || (height > 0) {
-			ctx.Log.Println("Size requested: " +
-				strconv.Itoa(width) + "x" +
-				strconv.Itoa(height) + " px")
-			if f.ImageExists(width, height) {
-				path = f.ImagePath(width, height)
-			} else {
-				http.Error(w, "Image not found", 404)
-				return
-			}
-		}
-	}
-
-	if cfg.TriggerDownloadFile != "" {
-		ctx.Log.Println("Executing trigger: Download file")
-		triggerDownloadFileHandler(cfg.TriggerDownloadFile, f.Bin, f.Filename)
 	}
 
 	w.Header().Set("Vary", "Content-Type")
-	w.Header().Set("Cache-Control", "s-maxage=3600")
-	http.ServeFile(w, r, path)
+	if r.Header.Get("Accept") == "application/json" {
+		w.Header().Set("Content-Type", "application/json")
+		output.JSONresponse(w, 200, f, ctx)
+	} else {
+		fp, err := ctx.Backend.GetFile(bin, filename)
+		if err != nil {
+			ctx.Log.Println(err)
+			http.Error(w, "Not found", 404)
+			return
+		}
+
+		w.Header().Set("Cache-Control", "s-maxage=3600")
+		if f.Algorithm == "sha256" {
+			w.Header().Set("Content-SHA256", f.Checksum)
+		}
+
+		if cfg.TriggerDownloadFile != "" {
+			ctx.Log.Println("Executing trigger: Download file")
+			triggerDownloadFileHandler(cfg.TriggerDownloadFile, bin, filename)
+		}
+
+		http.ServeContent(w, r, f.Filename, f.CreatedAt, fp)
+	}
 }
 
 func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
@@ -593,43 +556,42 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 
 func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	params := mux.Vars(r)
-	t := model.Bin{}
-	err := t.SetBin(params["bin"])
+	b, err := ctx.Backend.GetBinMetaData(params["bin"])
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w, "Invalid bin", 400)
+		http.Error(w, "Bin not found", 404)
 		return
 	}
 
-	t.SetBinDir(cfg.Filedir)
-	t.CalculateExpiration(cfg.Expiration)
-	if t.BinDirExists() {
-		expired, err := t.IsExpired(cfg.Expiration)
-		if err != nil {
-			ctx.Log.Println(err)
-			http.Error(w, "Internal server error", 500)
-			return
-		}
-		if expired {
-			ctx.Log.Println("Expired: " + t.ExpirationReadable())
-			http.Error(w, "This bin has expired.", 410)
-			return
-		}
+	//t.SetBinDir(cfg.Filedir)
+	//t.CalculateExpiration(cfg.Expiration)
+	//if t.BinDirExists() {
+	//	expired, err := t.IsExpired(cfg.Expiration)
+	//	if err != nil {
+	//		ctx.Log.Println(err)
+	//		http.Error(w, "Internal server error", 500)
+	//		return
+	//	}
+	//	if expired {
+	//		ctx.Log.Println("Expired: " + t.ExpirationReadable())
+	//		http.Error(w, "This bin has expired.", 410)
+	//		return
+	//	}
 
-		err = t.StatInfo()
-		if err != nil {
-			ctx.Log.Println(err)
-			http.Error(w, "Internal Server Error", 500)
-			return
-		}
+	//	err = t.StatInfo()
+	//	if err != nil {
+	//		ctx.Log.Println(err)
+	//		http.Error(w, "Internal Server Error", 500)
+	//		return
+	//	}
 
-		err = t.List(cfg.Baseurl)
-		if err != nil {
-			ctx.Log.Println(err)
-			http.Error(w, "Error reading the bin contents.", 404)
-			return
-		}
-	}
+	//	err = t.List(cfg.Baseurl)
+	//	if err != nil {
+	//		ctx.Log.Println(err)
+	//		http.Error(w, "Error reading the bin contents.", 404)
+	//		return
+	//	}
+	//}
 
 	w.Header().Set("Vary", "Content-Type")
 	w.Header().Set("Cache-Control", "s-maxage=3600")
@@ -638,13 +600,13 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
-		output.JSONresponse(w, status, t, ctx)
+		output.JSONresponse(w, status, b, ctx)
 		return
 	} else {
-		if len(t.Files) == 0 {
-			output.HTMLresponse(w, "newbin", status, t, ctx)
+		if len(b.Files) == 0 {
+			output.HTMLresponse(w, "newbin", status, b, ctx)
 		} else {
-			output.HTMLresponse(w, "viewbin", status, t, ctx)
+			output.HTMLresponse(w, "viewbin", status, b, ctx)
 		}
 		return
 	}
