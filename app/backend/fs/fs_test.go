@@ -173,3 +173,41 @@ func TestExpiredBin(t *testing.T) {
 		t.Fatal("Bin has unexpectedly not expired")
 	}
 }
+
+func TestDeleteFile(t *testing.T) {
+	bin := "testbin"
+	filename := "testfile"
+
+	if err := be.DeleteFile(bin, filename); err != nil {
+		t.Fatal(err)
+	}
+
+	_, err := be.GetFileMetaData(bin, filename)
+	if err == nil {
+		t.Fatal("Unexpected success when reading deleted file")
+	}
+
+	err = be.DeleteFile(bin, filename)
+	expected := "File " + filename + " does not exist in bin " + bin + "."
+	if err.Error() != expected {
+		t.Fatal(err)
+	}
+}
+
+func TestDeleteBin(t *testing.T) {
+	bin := "testbin"
+	if err := be.DeleteBin(bin); err != nil {
+		t.Fatal(err)
+	}
+
+	_, err := be.GetBinMetaData(bin)
+	if err == nil {
+		t.Fatal("Unexpected success when reading deleted bin")
+	}
+
+	err = be.DeleteBin(bin)
+	expected := "Bin " + bin + " does not exist."
+	if err.Error() != expected {
+		t.Fatal(err)
+	}
+}

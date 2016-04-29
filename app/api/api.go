@@ -363,61 +363,23 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 }
 
 func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	var err error
 	params := mux.Vars(r)
+	bin := params["bin"]
 
-	t := model.Bin{}
-
-	err = t.SetBin(params["bin"])
-	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Invalid bin", 400)
-		return
-	}
-	t.SetBinDir(cfg.Filedir)
-
-	// Bin does not exist
-	if t.BinDirExists() == false {
-		http.Error(w, "Bin Not Found", 404)
-		return
-	}
-
-	t.List(cfg.Baseurl)
-	if err != nil {
+	if err := ctx.Backend.DeleteBin(bin); err != nil {
 		ctx.Log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 
-	if cfg.TriggerDeleteBin != "" {
-		ctx.Log.Println("Executing trigger: Delete bin")
-		triggerDeleteBinHandler(cfg.TriggerDeleteBin, t.Bin)
-	}
-
-	// Bin exists, so let's remove it.
-	err = t.Remove()
-	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-
-	// Verify that the bin directory is removed before sending the response.
-	if t.BinDirExists() == true {
-		// Failsafe. This should not happen.
-		ctx.Log.Println("Failed to delete the bin. The bin dir still exists.")
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-
-	// Purging any old content
-	if cfg.CacheInvalidation {
-		for _, f := range t.Files {
-			if err := f.Purge(); err != nil {
-				ctx.Log.Println(err)
-			}
-		}
-	}
+	//// Purging any old content
+	//if cfg.CacheInvalidation {
+	//	for _, f := range t.Files {
+	//		if err := f.Purge(); err != nil {
+	//			ctx.Log.Println(err)
+	//		}
+	//	}
+	//}
 
 	ctx.Log.Println("Bin deleted successfully.")
 	http.Error(w, "Bin Deleted Successfully", 200)
@@ -426,53 +388,11 @@ func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 }
 
 func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	var err error
 	params := mux.Vars(r)
-	f := model.File{}
-	f.SetFilename(params["filename"])
-	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Invalid filename specified. It contains illegal characters or is too short.", 400)
-		return
-	}
-	err = f.SetBin(params["bin"])
-	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Invalid bin specified. It contains illegal characters or is too short.", 400)
-		return
-	}
-	f.SetBinDir(cfg.Filedir)
+	bin := params["bin"]
+	filename := params["filename"]
 
-	if f.Exists() == false {
-		ctx.Log.Println("The file does not exist.")
-		http.Error(w, "File Not Found", 404)
-		return
-	}
-
-	t := model.Bin{}
-	t.SetBin(f.Bin)
-	t.SetBinDir(cfg.Filedir)
-	t.CalculateExpiration(cfg.Expiration)
-	expired, err := t.IsExpired(cfg.Expiration)
-	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Internal server error", 500)
-		return
-	}
-	if expired {
-		ctx.Log.Println("Expired: " + t.ExpirationReadable())
-		http.Error(w, "This bin has expired.", 410)
-		return
-	}
-
-	f.GenerateLinks(cfg.Baseurl)
-	err = f.DetectMIME()
-	if err != nil {
-		ctx.Log.Println("Unable to detect MIME: ", err)
-	}
-
-	err = f.StatInfo()
-	if err != nil {
+	if err := ctx.Backend.DeleteFile(bin, filename); err != nil {
 		ctx.Log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
@@ -480,28 +400,17 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 
 	if cfg.TriggerDeleteFile != "" {
 		ctx.Log.Println("Executing trigger: Delete file")
-		triggerDeleteFileHandler(cfg.TriggerDeleteFile, f.Bin, f.Filename)
+		triggerDeleteFileHandler(cfg.TriggerDeleteFile, bin, filename)
 	}
 
-	err = f.Remove()
-	if err != nil {
-		ctx.Log.Println("Unable to remove file: ", err)
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
+	//// Purging any old content
+	//if cfg.CacheInvalidation {
+	//	if err := f.Purge(); err != nil {
+	//		ctx.Log.Println(err)
+	//	}
+	//}
 
-	// Purging any old content
-	if cfg.CacheInvalidation {
-		if err := f.Purge(); err != nil {
-			ctx.Log.Println(err)
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-
-	var status = 200
-	output.JSONresponse(w, status, f, ctx)
-	return
+	http.Error(w, "File deleted successfully", 200)
 }
 
 func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {

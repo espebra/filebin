@@ -158,6 +158,16 @@ func (be *Backend) GetBinMetaData(bin string) (Bin, error) {
 	return b, err
 }
 
+func (be *Backend) DeleteBin(bin string) error {
+	bindir := filepath.Join(be.filedir, bin)
+	if !isDir(bindir) {
+		return errors.New("Bin " + bin + " does not exist.")
+	}
+
+	err := os.RemoveAll(bindir)
+	return err
+}
+
 func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWriter) (io.Writer, string, error) {
 	be.Log.Println("Generate bin archive: " + bin)
 
@@ -373,6 +383,7 @@ func (be *Backend) GetFileMetaData(bin string, filename string) (File, error) {
 func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (File, error) {
 	be.Log.Println("Uploading file " + filename + " to bin " + bin)
 	f := File{}
+	f.Filename = filename
 
 	if !isDir(be.tempdir) {
 		if err := os.Mkdir(be.tempdir, 0700); err != nil {
@@ -394,6 +405,7 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	}
 	be.Log.Println("Uploaded " + strconv.FormatInt(bytes, 10) + " bytes")
 
+	f.Bytes = bytes
 	if bytes == 0 {
 		be.Log.Println("Empty files are not allowed. Aborting.")
 
@@ -417,6 +429,20 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	}
 	f.MIME = http.DetectContentType(buffer)
 
+	hash := sha256.New()
+	fp.Seek(0, 0)
+	if err != nil {
+		return f, err
+	}
+	_, err = io.Copy(hash, fp)
+	if err != nil {
+		return f, err
+	}
+
+	var result []byte
+	f.Checksum = hex.EncodeToString(hash.Sum(result))
+	f.Algorithm = "sha256"
+
 	bindir := filepath.Join(be.filedir, bin)
 	if !isDir(bindir) {
 		if err := os.Mkdir(bindir, 0700); err != nil {
@@ -437,9 +463,6 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 		return f, err
 	}
 
-	f.Filename = filename
-	f.Bytes = bytes
-
 	fi, err := os.Lstat(dst)
 	if err != nil {
 		be.Log.Println(err)
@@ -450,6 +473,16 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	f.Links = generateLinks(be.baseurl, bin, filename)
 
 	return f, err
+}
+
+func (be *Backend) DeleteFile(bin string, filename string) error {
+	fpath := filepath.Join(be.filedir, bin, filename)
+	if !isFile(fpath) {
+		return errors.New("File " + filename + " does not exist in bin " + bin + ".")
+	}
+
+	err := os.Remove(fpath)
+	return err
 }
 
 func (b Bin) BytesReadable() string {
@@ -568,6 +601,18 @@ func copyFileContents(src, dst string) (err error) {
 	}
 	err = out.Sync()
 	return err
+}
+
+func isFile(path string) bool {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	if fi.IsDir() {
+		return false
+	} else {
+		return true
+	}
 }
 
 func isDir(path string) bool {
