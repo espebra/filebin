@@ -1,24 +1,24 @@
 package main
 
 import (
+	"encoding/base64"
 	"flag"
 	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
-	"time"
 	"strconv"
-	"encoding/base64"
 	"strings"
+	"time"
 
 	"github.com/GeertJohan/go.rice"
 	"github.com/gorilla/mux"
 
 	"github.com/espebra/filebin/app/api"
+	"github.com/espebra/filebin/app/backend/fs"
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/model"
-	"github.com/espebra/filebin/app/backend/fs"
 )
 
 var cfg = config.Global
@@ -267,7 +267,7 @@ func main() {
 
 	//fmt.Println("Trigger Expired bin: " + cfg.TriggerExpiredBin)
 
-	backend, err = fs.InitBackend(cfg.Baseurl, cfg.Filedir, cfg.Expiration)
+	backend, err = fs.InitBackend(cfg.Baseurl, cfg.Filedir, cfg.Tempdir, cfg.Expiration, log)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -367,7 +367,7 @@ func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration
 func basicAuth(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Let the client know authentication is required
-	        w.Header().Set("WWW-Authenticate", "Basic realm='Filebin'")
+		w.Header().Set("WWW-Authenticate", "Basic realm='Filebin'")
 
 		// Abort here if the admin username or password is not set
 		if cfg.AdminUsername == "" || cfg.AdminPassword == "" {

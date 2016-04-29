@@ -2,13 +2,14 @@ package api
 
 import (
 	"fmt"
+	//"io"
 	//"syscall"
-	"sort"
 	"math/rand"
 	"net/http"
+	"sort"
 	//"net/url"
 	"os/exec"
-	"path/filepath"
+	//"path/filepath"
 	"regexp"
 	//"strconv"
 	//"time"
@@ -91,7 +92,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	f, err := ctx.Backend.UploadFile(bin, filename, r.Body)
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w, "Bin not found", 404)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
@@ -615,71 +616,43 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	params := mux.Vars(r)
 	format := params["format"]
+	bin := params["bin"]
 
-	t := model.Bin{}
-	err := t.SetBin(params["bin"])
+	_, _, err := ctx.Backend.GetBinArchive(bin, format, w)
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w, "Invalid bin", 400)
-		return
-	}
-
-	t.SetBinDir(cfg.Filedir)
-	t.CalculateExpiration(cfg.Expiration)
-	if t.BinDirExists() {
-		expired, err := t.IsExpired(cfg.Expiration)
-		if err != nil {
-			ctx.Log.Println(err)
-			http.Error(w, "Internal server error", 500)
-			return
-		}
-		if expired {
-			ctx.Log.Println("Expired: " + t.ExpirationReadable())
-			http.Error(w, "This bin has expired.", 410)
-			return
-		}
-
-		err = t.StatInfo()
-		if err != nil {
-			ctx.Log.Println(err)
-			http.Error(w, "Internal Server Error", 500)
-			return
-		}
-
-		err = t.List(cfg.Baseurl)
-		if err != nil {
-			ctx.Log.Println(err)
-			http.Error(w, "Error reading the bin contents.", 404)
-			return
-		}
-	} else {
-		// The bin does not exist
-		http.Error(w, "Not found", 404)
+		http.Error(w, "Bin not found", 404)
 		return
 	}
 
 	if cfg.TriggerDownloadBin != "" {
 		ctx.Log.Println("Executing trigger: Download bin")
-		triggerDownloadBinHandler(cfg.TriggerDownloadBin, t.Bin)
+		triggerDownloadBinHandler(cfg.TriggerDownloadBin, bin)
 	}
 
 	w.Header().Set("Cache-Control", "s-maxage=3600")
 
 	// Generate a map of paths to add to the tar response
-	var paths []string
-	for _, f := range t.Files {
-		path := filepath.Join(f.BinDir, f.Filename)
-		paths = append(paths, path)
-	}
+	//var paths []string
+	//for _, f := range t.Files {
+	//	path := filepath.Join(f.BinDir, f.Filename)
+	//	paths = append(paths, path)
+	//}
 
-	if format == "zip" {
-		output.ZIPresponse(w, t.Bin, paths, ctx)
-	} else if format == "tar" {
-		output.TARresponse(w, t.Bin, paths, ctx)
-	} else {
-		http.Error(w, "Not found", 404)
-	}
-	return
+	//if format == "zip" {
+	//	output.ZIPresponse(w, t.Bin, paths, ctx)
+	//} else if format == "tar" {
+	//	output.TARresponse(w, t.Bin, paths, ctx)
+	//} else {
+	//	http.Error(w, "Not found", 404)
+	//}
+	//http.ServeContent(w, r, archiveName, time.Now(), fp)
+	//bytes, err := io.Copy(w, fp)
+	//if err != nil {
+	//	ctx.Log.Println(err)
+	//	http.Error(w, "Archive generation failed", 500)
+	//	return
+	//}
 }
 
 func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
