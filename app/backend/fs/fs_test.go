@@ -3,6 +3,7 @@ package fs
 import (
 	"bytes"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -21,12 +22,20 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	baseurl := "http://127.0.0.1"
-	filedir := os.Getenv("GOPATH") + "/src/github.com/espebra/filebin/app/backend/fs/tests/filedir"
-	tempdir := os.Getenv("GOPATH") + "/src/github.com/espebra/filebin/app/backend/fs/tests/tempdir"
-
 	log := log.New(os.Stdout, "- ", log.LstdFlags)
-	var err error
+
+	baseurl := "http://127.0.0.1"
+
+	filedir, err := ioutil.TempDir("", "filebin-filedir")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tempdir, err := ioutil.TempDir("", "filebin-tempdir")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	be, err = InitBackend(baseurl, filedir, tempdir, int64(EXPIRATION), log)
 	if err != nil {
 		log.Println(err)
@@ -34,6 +43,11 @@ func TestMain(m *testing.M) {
 	}
 
 	retCode := m.Run()
+
+	// Clean up
+	os.RemoveAll(filedir)
+	os.RemoveAll(tempdir)
+
 	os.Exit(retCode)
 }
 

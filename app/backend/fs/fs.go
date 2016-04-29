@@ -380,6 +380,12 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	be.Log.Println("Uploading file " + filename + " to bin " + bin)
 	f := File{}
 
+	if !isDir(be.tempdir) {
+		if err := os.Mkdir(be.tempdir, 0700); err != nil {
+			return f, err
+		}
+	}
+
 	fp, err := ioutil.TempFile(be.tempdir, "upload")
 	defer fp.Close()
 	if err != nil {
@@ -396,8 +402,7 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 
 	bindir := filepath.Join(be.filedir, bin)
 	if !isDir(bindir) {
-		err = os.Mkdir(bindir, 0700)
-		if err != nil {
+		if err := os.Mkdir(bindir, 0700); err != nil {
 			return f, err
 		}
 	}
