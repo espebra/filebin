@@ -2,14 +2,12 @@ package fs
 
 import (
 	"bytes"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
-	"time"
-	//	"path/filepath"
 	"testing"
+	"time"
 )
 
 const (
@@ -62,7 +60,7 @@ func TestInfo(t *testing.T) {
 func TestUploadFile(t *testing.T) {
 	bin := "testbin"
 	filename := "testfile"
-	data := nopCloser{bytes.NewBufferString(CONTENT)}
+	data := ioutil.NopCloser(bytes.NewBufferString(CONTENT))
 
 	f, err := be.UploadFile(bin, filename, data)
 	if err != nil {
@@ -73,6 +71,13 @@ func TestUploadFile(t *testing.T) {
 	}
 	if f.Bytes != 12 {
 		t.Fatal("Unexpected file size: " + strconv.FormatInt(f.Bytes, 10))
+	}
+	if f.MIME != "application/octet-stream" {
+		t.Fatal("Unexpected MIME: " + f.MIME)
+	}
+	numLinks := len(f.Links)
+	if numLinks != 2 {
+		t.Fatal("Unexpected number of links: " + strconv.Itoa(numLinks))
 	}
 }
 
@@ -167,12 +172,4 @@ func TestExpiredBin(t *testing.T) {
 	if b.Expired() != true {
 		t.Fatal("Bin has unexpectedly not expired")
 	}
-}
-
-type nopCloser struct {
-	io.Reader
-}
-
-func (nopCloser) Close() error {
-	return nil
 }

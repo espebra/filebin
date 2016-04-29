@@ -54,10 +54,10 @@ type File struct {
 	//Tempfile        string    `json:"-"`
 
 	// Image specific attributes
-	DateTime  time.Time `json:"datetime,omitempty"`
-	Longitude float64   `json:"longitude,omitempty"`
-	Latitude  float64   `json:"latitude,omitempty"`
-	Altitude  string    `json:"altitude,omitempty"`
+	DateTime  *time.Time `json:"datetime,omitempty"`
+	Longitude float64    `json:"longitude,omitempty"`
+	Latitude  float64    `json:"latitude,omitempty"`
+	Altitude  string     `json:"altitude,omitempty"`
 	//Exif             *exif.Exif `json:"-"`
 }
 
@@ -199,6 +199,8 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 
 	var fp io.Writer
 	if format == "zip" {
+		w.Header().Set("Content-Type", "application/zip")
+		w.Header().Set("Content-Disposition", `attachment; filename="`+bin+`.zip"`)
 		zw := zip.NewWriter(w)
 		zw.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
 			return flate.NewWriter(out, flate.BestSpeed)
@@ -207,7 +209,7 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 		for _, path := range paths {
 			// Extract the filename from the absolute path
 			fname := filepath.Base(path)
-			be.Log.Println("Adding to zip archive: " + fname)
+			//be.Log.Println("Adding to zip archive: " + fname)
 
 			// Get stat info for modtime etc
 			info, err := os.Stat(path)
@@ -246,7 +248,7 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 				return nil, "", err
 			}
 
-			be.Log.Println("Added " + strconv.FormatInt(bytes, 10) + " bytes to the archive.")
+			be.Log.Println("Added " + strconv.FormatInt(bytes, 10) + " bytes to the archive: " + fname)
 		}
 		if err := zw.Close(); err != nil {
 			be.Log.Println(err)
@@ -254,11 +256,13 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 		}
 		be.Log.Println("Zip archive generated successfully")
 	} else if format == "tar" {
+		w.Header().Set("Content-Type", "application/x-tar")
+		w.Header().Set("Content-Disposition", `attachment; filename="`+bin+`.tar"`)
 		tw := tar.NewWriter(w)
 		for _, path := range paths {
 			// Extract the filename from the absolute path
 			fname := filepath.Base(path)
-			be.Log.Println("Adding to tar archive: " + fname)
+			//be.Log.Println("Adding to tar archive: " + fname)
 
 			// Get stat info for modtime etc
 			info, err := os.Stat(path)
@@ -290,7 +294,7 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 				be.Log.Println(err)
 				return nil, "", err
 			}
-			be.Log.Println("Added " + strconv.FormatInt(bytes, 10) + " bytes to the archive.")
+			be.Log.Println("Added " + strconv.FormatInt(bytes, 10) + " bytes to the archive: " + fname)
 		}
 		if err := tw.Close(); err != nil {
 			be.Log.Println(err)
@@ -361,17 +365,7 @@ func (be *Backend) GetFileMetaData(bin string, filename string) (File, error) {
 		return f, err
 	}
 	f.MIME = http.DetectContentType(buffer)
-
-	// Links
-	fileLink := link{}
-	fileLink.Rel = "file"
-	fileLink.Href = be.baseurl + "/" + bin + "/" + filename
-	f.Links = append(f.Links, fileLink)
-
-	binLink := link{}
-	binLink.Rel = "bin"
-	binLink.Href = be.baseurl + "/" + bin
-	f.Links = append(f.Links, binLink)
+	f.Links = generateLinks(be.baseurl, bin, filename)
 
 	return f, nil
 }
@@ -400,6 +394,29 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	}
 	be.Log.Println("Uploaded " + strconv.FormatInt(bytes, 10) + " bytes")
 
+	if bytes == 0 {
+		be.Log.Println("Empty files are not allowed. Aborting.")
+
+		if err := os.Remove(fp.Name()); err != nil {
+			be.Log.Println(err)
+			return f, err
+		}
+
+		err := errors.New("No content. The file size must be more than 0 bytes")
+		return f, err
+	}
+
+	buffer := make([]byte, 512)
+	_, err = fp.Seek(0, 0)
+	if err != nil {
+		return f, err
+	}
+	_, err = fp.Read(buffer)
+	if err != nil {
+		return f, err
+	}
+	f.MIME = http.DetectContentType(buffer)
+
 	bindir := filepath.Join(be.filedir, bin)
 	if !isDir(bindir) {
 		if err := os.Mkdir(bindir, 0700); err != nil {
@@ -423,12 +440,15 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	f.Filename = filename
 	f.Bytes = bytes
 
-	//path := filepath.Join(be.filedir, bin, filename)
-	//fp, err := os.Open(path)
-	//if err != nil {
-	//	return fp, err
-	//}
-	//defer fp.Close()
+	fi, err := os.Lstat(dst)
+	if err != nil {
+		be.Log.Println(err)
+		return f, err
+	}
+
+	f.CreatedAt = fi.ModTime()
+	f.Links = generateLinks(be.baseurl, bin, filename)
+
 	return f, err
 }
 
@@ -560,4 +580,20 @@ func isDir(path string) bool {
 	} else {
 		return false
 	}
+}
+
+func generateLinks(baseurl string, bin string, filename string) []link {
+	links := []link{}
+
+	// Links
+	fileLink := link{}
+	fileLink.Rel = "file"
+	fileLink.Href = baseurl + "/" + bin + "/" + filename
+	links = append(links, fileLink)
+
+	binLink := link{}
+	binLink.Rel = "bin"
+	binLink.Href = baseurl + "/" + bin
+	links = append(links, binLink)
+	return links
 }
