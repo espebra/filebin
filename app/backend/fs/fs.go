@@ -15,11 +15,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	//"sort"
+	"sort"
 	"log"
 
 	"github.com/dustin/go-humanize"
 	"github.com/disintegration/imaging"
+	"github.com/rwcarlsen/goexif/exif"
 )
 
 type Backend struct {
@@ -60,7 +61,7 @@ type File struct {
 	Longitude float64   `json:"longitude,omitempty"`
 	Latitude  float64   `json:"latitude,omitempty"`
 	Altitude  string    `json:"altitude,omitempty"`
-	//Exif             *exif.Exif `json:"-"`
+	Exif             *exif.Exif `json:"-"`
 }
 
 type link struct {
@@ -178,9 +179,16 @@ func (be *Backend) GetBinMetaData(bin string) (Bin, error) {
 		if err != nil {
 			continue
 		}
+
+		if strings.Split(f.MIME, "/")[0] == "image" {
+			b.Album = true
+		}
+		
 		b.Bytes = b.Bytes + f.Bytes
 		b.Files = append(b.Files, f)
 	}
+
+	sort.Sort(FilesByDateTime(b.Files))
 
 	return b, err
 }
@@ -403,6 +411,24 @@ func (be *Backend) GetFileMetaData(bin string, filename string) (File, error) {
 	f.MIME = http.DetectContentType(buffer)
 	f.Links = generateLinks(be.filedir, be.baseurl, bin, filename)
 
+
+	// Exif
+	_, err = fp.Seek(0, 0)
+	f.Exif, err = exif.Decode(fp)
+	if err != nil {
+		return f, err
+	}
+
+	f.DateTime, err = f.Exif.DateTime()
+	if err != nil {
+		/// XXX: Log
+	}
+
+	f.Latitude, f.Longitude, err = f.Exif.LatLong()
+	if err != nil {
+		/// XXX: Log
+	}
+
 	return f, nil
 }
 
@@ -568,6 +594,10 @@ func (f *File) CreatedReadable() string {
 	return humanize.Time(f.CreatedAt)
 }
 
+func (f *File) DateTimeReadable() string {
+	return humanize.Time(f.DateTime)
+}
+
 func (f *File) GetLink(s string) string {
 	link := ""
 	for _, l := range f.Links {
@@ -716,4 +746,34 @@ func generateLinks(filedir string, baseurl string, bin string, filename string) 
 	}
 	return links
 
+}
+
+// Sort files by DateTime
+type FilesByDateTime []File
+
+func (a FilesByDateTime) Len() int {
+        return len(a)
+}
+
+func (a FilesByDateTime) Swap(i, j int) {
+        a[i], a[j] = a[j], a[i]
+}
+
+func (a FilesByDateTime) Less(i, j int) bool {
+        return a[i].DateTime.Before(a[j].DateTime)
+}
+
+// Sort bins by Update At
+type BinsByUpdateAt []Bin
+
+func (a BinsByUpdateAt) Len() int {
+        return len(a)
+}
+
+func (a BinsByUpdateAt) Swap(i, j int) {
+        a[i], a[j] = a[j], a[i]
+}
+
+func (a BinsByUpdateAt) Less(i, j int) bool {
+        return a[i].UpdatedAt.After(a[j].UpdatedAt)
 }

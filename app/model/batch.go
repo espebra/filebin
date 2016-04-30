@@ -21,7 +21,7 @@ func StartWorker(CacheInvalidation bool, WorkQueue chan Job, log *log.Logger, ba
 		case j := <-WorkQueue:
 			startTime := time.Now().UTC()
 
-			log.Print("Batch process starting in bin " + j.Bin + " for file " + j.Filename)
+			log.Print("Batch job starting: " + j.Bin + "/" + j.Filename)
 			err = backend.GenerateThumbnail(j.Bin, j.Filename, 115, 115, true)
 			if err != nil {
 				log.Print(err)
@@ -42,7 +42,7 @@ func StartWorker(CacheInvalidation bool, WorkQueue chan Job, log *log.Logger, ba
 
 			finishTime := time.Now().UTC()
 			elapsedTime := finishTime.Sub(startTime)
-			log.Println("Batch job completed in: " + elapsedTime.String())
+			log.Println("Batch job completed: " + elapsedTime.String())
 		}
 	}
 }
