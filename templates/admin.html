@@ -23,10 +23,40 @@
             <!-- Bin meta information -->
             <div class="row">
                 <div class="col-sm-6">
-                    <h1 class="display-4">
-                        Filebin
+                    <h1 class="display-1">
+                        Filebin dashboard
                     </h1>
                 </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-2">
+                <div class="card card-block card-success card-inverse">
+                  <h4 class="card-title">{{ .Data.Bins | len }}</h4>
+                  <p class="card-text">
+                     Bin count
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-md-2">
+                <div class="card card-block card-warning card-inverse">
+                  <h4 class="card-title">{{ .Data.Files }}</h4>
+                  <p class="card-text">
+                     File count
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-md-2">
+                <div class="card card-block card-info card-inverse">
+                  <h4 class="card-title">{{ .Data.BytesReadable }}</h4>
+                  <p class="card-text">
+                     Storage size
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <!-- Existing files in the bin -->
             <table class="table">
@@ -39,10 +69,11 @@
                     </tr>
                 </thead>
                 <tbody>
+
                     {{ range $index, $value := .Data.Bins }}
                     <tr>
                         <td><a href="{{ $.Ctx.Baseurl }}/{{ .Bin }}">{{ .Bin }}</a></td>
-                        <td>{{ .LastUpdateReadable }}</td>
+                        <td>{{ .UpdatedReadable }}</td>
                         <td>{{ .Files | len }}</td>
                         <td>{{ .BytesReadable }}</td>
                     </tr>

@@ -12,7 +12,7 @@ import (
 	"net/url"
 	"os/exec"
 	"regexp"
-	"sort"
+	//"sort"
 )
 
 func isWorkaroundNeeded(useragent string) bool {
@@ -603,19 +603,9 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 }
 
 func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	bins := model.Bins{}
-	bins.Baseurl = cfg.Baseurl
-	bins.Expiration = cfg.Expiration
-	bins.Filedir = cfg.Filedir
-	if err := bins.Scan(); err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-
-	sort.Sort(model.BinsByLastUpdate(bins.Bins))
-
 	var status = 200
+	bins := ctx.Backend
+
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, status, bins, ctx)

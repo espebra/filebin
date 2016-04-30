@@ -29,6 +29,7 @@ type Backend struct {
 	baseurl    string
 	expiration int64
 	Bytes      int64 `json:"bytes"`
+	Files      int `json:"files"`
 	Bins       []Bin
 	Log        *log.Logger `json:"-"`
 }
@@ -116,7 +117,9 @@ func (be *Backend) GetAllMetaData() (*Backend, error) {
 		}
 		be.Bytes = be.Bytes + b.Bytes
 		be.Bins = append(be.Bins, b)
+		be.Files = be.Files + len(b.Files)
 	}
+	sort.Sort(BinsByUpdatedAt(be.Bins))
 
 	return be, nil
 }
@@ -564,6 +567,10 @@ func (be *Backend) DeleteFile(bin string, filename string) error {
 	return err
 }
 
+func (be *Backend) BytesReadable() string {
+	return humanize.Bytes(uint64(be.Bytes))
+}
+
 func (b Bin) BytesReadable() string {
 	return humanize.Bytes(uint64(b.Bytes))
 }
@@ -763,16 +770,16 @@ func (a FilesByDateTime) Less(i, j int) bool {
 }
 
 // Sort bins by Update At
-type BinsByUpdateAt []Bin
+type BinsByUpdatedAt []Bin
 
-func (a BinsByUpdateAt) Len() int {
+func (a BinsByUpdatedAt) Len() int {
         return len(a)
 }
 
-func (a BinsByUpdateAt) Swap(i, j int) {
+func (a BinsByUpdatedAt) Swap(i, j int) {
         a[i], a[j] = a[j], a[i]
 }
 
-func (a BinsByUpdateAt) Less(i, j int) bool {
+func (a BinsByUpdatedAt) Less(i, j int) bool {
         return a[i].UpdatedAt.After(a[j].UpdatedAt)
 }
