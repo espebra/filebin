@@ -411,22 +411,21 @@ func (be *Backend) GetFileMetaData(bin string, filename string) (File, error) {
 	f.MIME = http.DetectContentType(buffer)
 	f.Links = generateLinks(be.filedir, be.baseurl, bin, filename)
 
-
 	// Exif
 	_, err = fp.Seek(0, 0)
 	f.Exif, err = exif.Decode(fp)
 	if err != nil {
-		return f, err
-	}
-
-	f.DateTime, err = f.Exif.DateTime()
-	if err != nil {
 		/// XXX: Log
-	}
+	} else {
+		f.DateTime, err = f.Exif.DateTime()
+		if err != nil {
+			/// XXX: Log
+		}
 
-	f.Latitude, f.Longitude, err = f.Exif.LatLong()
-	if err != nil {
-		/// XXX: Log
+		f.Latitude, f.Longitude, err = f.Exif.LatLong()
+		if err != nil {
+			/// XXX: Log
+		}
 	}
 
 	return f, nil

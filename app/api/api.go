@@ -596,20 +596,10 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 }
 
 func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	t := model.Bin{}
 	bin := randomString(cfg.DefaultBinLength)
-	err := t.SetBin(bin)
-	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-	ctx.Log.Println("Bin generated: " + t.Bin)
-
-	w.Header().Set("Cache-Control", "s-maxage=3600")
-	w.Header().Set("Location", ctx.Baseurl+"/"+t.Bin)
-	var status = 302
-	output.JSONresponse(w, status, t, ctx)
+	w.Header().Set("Location", ctx.Baseurl+"/"+bin)
+	http.Error(w, "Generated bin: " + bin, 302)
+	return
 }
 
 func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {

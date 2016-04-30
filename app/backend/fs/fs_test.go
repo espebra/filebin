@@ -127,6 +127,7 @@ func TestGetBinMetaData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	if b.Bytes != 12 {
 		t.Fatal("Unexpected bin size: " + strconv.FormatInt(b.Bytes, 10))
 	}
