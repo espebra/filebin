@@ -2,8 +2,8 @@ package model
 
 import (
 	"github.com/GeertJohan/go.rice"
+	"github.com/espebra/filebin/app/backend/fs"
 	"log"
-        "github.com/espebra/filebin/app/backend/fs"
 )
 
 type Context struct {

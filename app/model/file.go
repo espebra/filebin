@@ -19,26 +19,26 @@ import (
 )
 
 type File struct {
-	Filename        string    `json:"filename"`
-	Bin             string    `json:"bin"`
-	BinDir          string    `json:"-"`
-	Bytes           int64     `json:"bytes"`
-	MIME            string    `json:"mime"`
-	CreatedAt       time.Time `json:"created"`
-	Links           []Link    `json:"links"`
-	Checksum        string    `json:"checksum,omitempty"`
-	Algorithm       string    `json:"algorithm,omitempty"`
-	Verified        bool      `json:"verified"`
-	RemoteAddr      string    `json:"-"`
-	UserAgent       string    `json:"-"`
-	Tempfile        string    `json:"-"`
+	Filename   string    `json:"filename"`
+	Bin        string    `json:"bin"`
+	BinDir     string    `json:"-"`
+	Bytes      int64     `json:"bytes"`
+	MIME       string    `json:"mime"`
+	CreatedAt  time.Time `json:"created"`
+	Links      []Link    `json:"links"`
+	Checksum   string    `json:"checksum,omitempty"`
+	Algorithm  string    `json:"algorithm,omitempty"`
+	Verified   bool      `json:"verified"`
+	RemoteAddr string    `json:"-"`
+	UserAgent  string    `json:"-"`
+	Tempfile   string    `json:"-"`
 
 	// Image specific attributes
-	DateTime         time.Time  `json:"datetime,omitempty"`
-	Longitude        float64    `json:"longitude,omitempty"`
-	Latitude         float64    `json:"latitude,omitempty"`
-	Altitude         string     `json:"altitude,omitempty"`
-	Exif             *exif.Exif `json:"-"`
+	DateTime  time.Time  `json:"datetime,omitempty"`
+	Longitude float64    `json:"longitude,omitempty"`
+	Latitude  float64    `json:"latitude,omitempty"`
+	Altitude  string     `json:"altitude,omitempty"`
+	Exif      *exif.Exif `json:"-"`
 }
 
 func (f *File) SetBin(s string) error {

@@ -1,28 +1,28 @@
 package config
 
 type Configuration struct {
-	Host              string
-	Port              int
-	Readtimeout       int
-	Writetimeout      int
-	Maxheaderbytes    int
-	Filedir           string
-	Baseurl           string
-	Tempdir           string
-	Expiration        int64
-	TriggerNewBin     string
-	TriggerUploadFile string
-	TriggerDownloadBin string
+	Host                string
+	Port                int
+	Readtimeout         int
+	Writetimeout        int
+	Maxheaderbytes      int
+	Filedir             string
+	Baseurl             string
+	Tempdir             string
+	Expiration          int64
+	TriggerNewBin       string
+	TriggerUploadFile   string
+	TriggerDownloadBin  string
 	TriggerDownloadFile string
-	TriggerDeleteBin  string
-	TriggerDeleteFile string
-	TriggerExpireBin  string
-	DefaultBinLength  int
-	Workers           int
-	Version           bool
-	CacheInvalidation bool
-	AdminUsername     string
-	AdminPassword     string
+	TriggerDeleteBin    string
+	TriggerDeleteFile   string
+	TriggerExpireBin    string
+	DefaultBinLength    int
+	Workers             int
+	Version             bool
+	CacheInvalidation   bool
+	AdminUsername       string
+	AdminPassword       string
 }
 
 var Global Configuration

@@ -62,7 +62,7 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, d interface{}, 
 func TARresponse(w http.ResponseWriter, bin string, paths []string, ctx model.Context) {
 	ctx.Log.Println("Generating tar archive")
 
-        w.Header().Set("Content-Type", "application/x-tar")
+	w.Header().Set("Content-Type", "application/x-tar")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+bin+`.tar"`)
 
 	tw := tar.NewWriter(w)
@@ -105,7 +105,7 @@ func TARresponse(w http.ResponseWriter, bin string, paths []string, ctx model.Co
 		ctx.Log.Println("Added " + strconv.FormatInt(bytes, 10) + " bytes to the archive.")
 	}
 
-	if err := tw.Close() ; err != nil {
+	if err := tw.Close(); err != nil {
 		ctx.Log.Println(err)
 		return
 	}
@@ -117,7 +117,7 @@ func TARresponse(w http.ResponseWriter, bin string, paths []string, ctx model.Co
 func ZIPresponse(w http.ResponseWriter, bin string, paths []string, ctx model.Context) {
 	ctx.Log.Println("Generating zip archive")
 
-        w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Type", "application/zip")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+bin+`.zip"`)
 
 	zw := zip.NewWriter(w)

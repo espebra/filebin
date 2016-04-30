@@ -13,13 +13,13 @@ import (
 )
 
 type Bin struct {
-	Bin                string    `json:"bin"`
-	BinDir             string    `json:"-"`
-	Bytes              int64     `json:"bytes"`
-	ExpirationAt       time.Time `json:"expiration"`
-	Expired            bool      `json:"-"`
-	LastUpdateAt       time.Time `json:"lastupdate"`
-	Files              []File    `json:"files"`
+	Bin          string    `json:"bin"`
+	BinDir       string    `json:"-"`
+	Bytes        int64     `json:"bytes"`
+	ExpirationAt time.Time `json:"expiration"`
+	Expired      bool      `json:"-"`
+	LastUpdateAt time.Time `json:"lastupdate"`
+	Files        []File    `json:"files"`
 
 	Album bool `json:"-"`
 }
