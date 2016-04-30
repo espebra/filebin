@@ -19,6 +19,7 @@ import (
 	"log"
 
 	"github.com/dustin/go-humanize"
+	"github.com/disintegration/imaging"
 )
 
 type Backend struct {
@@ -42,6 +43,7 @@ type Bin struct {
 
 type File struct {
 	Filename  string    `json:"filename"`
+	Bin  string    `json:"filename,omitempty"`
 	Bytes     int64     `json:"bytes"`
 	MIME      string    `json:"mime"`
 	CreatedAt time.Time `json:"created"`
@@ -92,6 +94,8 @@ func (be *Backend) Info() string {
 }
 
 func (be *Backend) GetAllMetaData() (*Backend, error) {
+	be.Log.Println("Reading all backend data")
+
 	// Return metadata for all bins and files
 	path := be.filedir
 	bins, err := ioutil.ReadDir(path)
@@ -117,6 +121,8 @@ func (be *Backend) GetAllMetaData() (*Backend, error) {
 }
 
 func (be *Backend) BinExists(bin string) bool {
+	be.Log.Println("Checing if bin " + bin + " exists")
+
 	path := filepath.Join(be.filedir, bin)
 
 	if !isDir(path) {
@@ -127,6 +133,8 @@ func (be *Backend) BinExists(bin string) bool {
 }
 
 func (be *Backend) NewBin(bin string) Bin {
+	be.Log.Println("Generate new bin " + bin)
+
 	b := Bin{}
 	b.Bin = bin
 	b.UpdatedAt = time.Now().UTC()
@@ -179,6 +187,8 @@ func (be *Backend) GetBinMetaData(bin string) (Bin, error) {
 
 func (be *Backend) DeleteBin(bin string) error {
 	bindir := filepath.Join(be.filedir, bin)
+	be.Log.Println("Deleting bin " + bin + " (" + bindir + ")")
+
 	if !isDir(bindir) {
 		return errors.New("Bin " + bin + " does not exist.")
 	}
@@ -188,26 +198,10 @@ func (be *Backend) DeleteBin(bin string) error {
 }
 
 func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWriter) (io.Writer, string, error) {
-	be.Log.Println("Generate bin archive: " + bin)
+	be.Log.Println("Generating " + format + " archive of bin " + bin)
 
 	var err error
-
-	//b := Bin{}
 	path := filepath.Join(be.filedir, bin)
-
-	// Directory info
-	//fi, err := os.Lstat(path)
-	//if err != nil  {
-	//	return b, err
-	//}
-	//if fi.IsDir() == false {
-	//	return b, errors.New("Bin does not exist.")
-	//}
-
-	//b.UpdatedAt = fi.ModTime()
-	//b.ExpiresAt = b.UpdatedAt.Add(time.Duration(be.expiration) * time.Second)
-	//b.Bytes = 0
-	//b.Bin = bin
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -340,7 +334,7 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 }
 
 func (be *Backend) GetFile(bin string, filename string) (io.ReadSeeker, error) {
-	be.Log.Println("File contents: " + bin + "/" + filename)
+	be.Log.Println("Read file contents: " + bin + "/" + filename)
 
 	path := filepath.Join(be.filedir, bin, filename)
 	fp, err := os.Open(path)
@@ -351,8 +345,21 @@ func (be *Backend) GetFile(bin string, filename string) (io.ReadSeeker, error) {
 	return fp, err
 }
 
+func (be *Backend) GetThumbnail(bin string, filename string, width int, height int) (io.ReadSeeker, error) {
+	be.Log.Println("Read thumbnail contents: " + bin + "/" + filename)
+
+	cachedir := filepath.Join(be.filedir, bin, ".cache")
+	path := filepath.Join(cachedir, strconv.Itoa(width)+"x"+strconv.Itoa(height)+"-"+filename)
+
+	fp, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	return fp, err
+}
+
 func (be *Backend) GetFileMetaData(bin string, filename string) (File, error) {
-	be.Log.Println("File meta data: " + filename)
+	be.Log.Println("Read file meta data: " + filename)
 
 	f := File{}
 	path := filepath.Join(be.filedir, bin, filename)
@@ -394,15 +401,43 @@ func (be *Backend) GetFileMetaData(bin string, filename string) (File, error) {
 		return f, err
 	}
 	f.MIME = http.DetectContentType(buffer)
-	f.Links = generateLinks(be.baseurl, bin, filename)
+	f.Links = generateLinks(be.filedir, be.baseurl, bin, filename)
 
 	return f, nil
+}
+
+func (be *Backend) GenerateThumbnail(bin string, filename string, width int, height int, crop bool) error {
+	fpath := filepath.Join(be.filedir, bin, filename)
+
+	cachedir := filepath.Join(be.filedir, bin, ".cache")
+	if !isDir(cachedir) {
+		if err := os.Mkdir(cachedir, 0700); err != nil {
+			return err
+		}
+	}
+	dst := filepath.Join(cachedir, strconv.Itoa(width)+"x"+strconv.Itoa(height)+"-"+filename)
+
+	s, err := imaging.Open(fpath)
+	if err != nil {
+		return err
+	}
+
+	if crop {
+		im := imaging.Fill(s, width, height, imaging.Center, imaging.Lanczos)
+		err = imaging.Save(im, dst)
+	} else {
+		im := imaging.Resize(s, width, height, imaging.Lanczos)
+		err = imaging.Save(im, dst)
+	}
+
+	return err
 }
 
 func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (File, error) {
 	be.Log.Println("Uploading file " + filename + " to bin " + bin)
 	f := File{}
 	f.Filename = filename
+	f.Bin = bin
 
 	if !isDir(be.tempdir) {
 		if err := os.Mkdir(be.tempdir, 0700); err != nil {
@@ -489,7 +524,7 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	}
 
 	f.CreatedAt = fi.ModTime()
-	f.Links = generateLinks(be.baseurl, bin, filename)
+	f.Links = generateLinks(be.filedir, be.baseurl, bin, filename)
 
 	return f, err
 }
@@ -646,7 +681,7 @@ func isDir(path string) bool {
 	}
 }
 
-func generateLinks(baseurl string, bin string, filename string) []link {
+func generateLinks(filedir string, baseurl string, bin string, filename string) []link {
 	links := []link{}
 
 	// Links
@@ -659,5 +694,26 @@ func generateLinks(baseurl string, bin string, filename string) []link {
 	binLink.Rel = "bin"
 	binLink.Href = baseurl + "/" + bin
 	links = append(links, binLink)
+
+	cachedir := filepath.Join(filedir, bin, ".cache")
+	if isFile(filepath.Join(cachedir, "115x115-"+filename)) {
+		thumbLink := link{}
+		thumbLink.Rel = "thumbnail"
+		thumbLink.Href = baseurl + "/" + bin + "/" + filename + "?width=115&height=115"
+		links = append(links, thumbLink)
+	}
+
+	if isFile(filepath.Join(cachedir, "1140x0-"+filename)) {
+		albumItemLink := link{}
+		albumItemLink.Rel = "album item"
+		albumItemLink.Href = baseurl + "/" + bin + "/" + filename + "?width=1140"
+		links = append(links, albumItemLink)
+
+		albumLink := link{}
+		albumLink.Rel = "album"
+		albumLink.Href = baseurl + "/album/" + bin
+		links = append(links, albumLink)
+	}
 	return links
+
 }

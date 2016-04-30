@@ -8,6 +8,8 @@ import (
 	"github.com/gorilla/mux"
 	"math/rand"
 	"net/http"
+	"strconv"
+	"net/url"
 	"os/exec"
 	"regexp"
 	"sort"
@@ -308,7 +310,10 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	//	}
 	//}
 
-	//ctx.WorkQueue <- f
+	j := model.Job { }
+	j.Filename = filename
+	j.Bin = bin
+	ctx.WorkQueue <- j
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -317,6 +322,17 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 }
 
 func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	// Query parameters
+	u, err := url.Parse(r.RequestURI)
+	if err != nil {
+		ctx.Log.Println(err)
+	}
+
+	queryParams, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		ctx.Log.Println(err)
+	}
+
 	params := mux.Vars(r)
 	bin := params["bin"]
 	filename := params["filename"]
@@ -329,29 +345,43 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	}
 
 	w.Header().Set("Vary", "Content-Type")
+	w.Header().Set("Cache-Control", "s-maxage=3600")
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, 200, f, ctx)
-	} else {
-		fp, err := ctx.Backend.GetFile(bin, filename)
+		return
+	}
+
+	width, _ := strconv.Atoi(queryParams.Get("width"))
+	height, _ := strconv.Atoi(queryParams.Get("height"))
+	if (width > 0) || (height > 0) {
+	        fp, err := ctx.Backend.GetThumbnail(bin, filename, width, height)
 		if err != nil {
 			ctx.Log.Println(err)
-			http.Error(w, "Not found", 404)
+			http.Error(w, "Image not found", 404)
 			return
 		}
-
-		w.Header().Set("Cache-Control", "s-maxage=3600")
-		if f.Algorithm == "sha256" {
-			w.Header().Set("Content-SHA256", f.Checksum)
-		}
-
-		if cfg.TriggerDownloadFile != "" {
-			ctx.Log.Println("Executing trigger: Download file")
-			triggerDownloadFileHandler(cfg.TriggerDownloadFile, bin, filename)
-		}
-
 		http.ServeContent(w, r, f.Filename, f.CreatedAt, fp)
+		return
 	}
+
+	fp, err := ctx.Backend.GetFile(bin, filename)
+	if err != nil {
+		ctx.Log.Println(err)
+		http.Error(w, "Not found", 404)
+		return
+	}
+
+	if f.Algorithm == "sha256" {
+		w.Header().Set("Content-SHA256", f.Checksum)
+	}
+
+	if cfg.TriggerDownloadFile != "" {
+		ctx.Log.Println("Executing trigger: Download file")
+		triggerDownloadFileHandler(cfg.TriggerDownloadFile, bin, filename)
+	}
+
+	http.ServeContent(w, r, f.Filename, f.CreatedAt, fp)
 }
 
 func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {

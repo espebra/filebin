@@ -30,7 +30,7 @@ var templateBox *rice.Box
 var backend fs.Backend
 
 // Initiate buffered channel for batch processing
-var WorkQueue = make(chan model.File, 1000)
+var WorkQueue = make(chan model.Job, 1000)
 
 func isDir(path string) bool {
 	fi, err := os.Stat(path)
@@ -315,7 +315,7 @@ func main() {
 	//router.HandleFunc("/user/{id:[0-9]+}", user.GetViewPage).Methods("GET")
 
 	// Start dispatcher that will handle all background processing
-	model.StartDispatcher(cfg.Workers, cfg.CacheInvalidation, WorkQueue, log)
+	model.StartDispatcher(cfg.Workers, cfg.CacheInvalidation, WorkQueue, log, &backend)
 
 	err = http.ListenAndServe(cfg.Host+":"+strconv.Itoa(cfg.Port), nil)
 	if err != nil {

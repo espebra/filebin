@@ -4,47 +4,45 @@ import (
 	"log"
 	"math/rand"
 	"time"
-	//"github.com/disintegration/imaging"
+	"github.com/espebra/filebin/app/backend/fs"
 )
 
 // Dispatcher function to spawn a number of workers
-func StartDispatcher(nworkers int, CacheInvalidation bool, WorkQueue chan File, log *log.Logger) {
+func StartDispatcher(nworkers int, CacheInvalidation bool, WorkQueue chan Job, log *log.Logger, backend *fs.Backend) {
 	for i := 0; i < nworkers; i++ {
-		go StartWorker(CacheInvalidation, WorkQueue, log)
+		go StartWorker(CacheInvalidation, WorkQueue, log, backend)
 	}
 }
 
-func StartWorker(CacheInvalidation bool, WorkQueue chan File, log *log.Logger) {
+func StartWorker(CacheInvalidation bool, WorkQueue chan Job, log *log.Logger, backend *fs.Backend) {
 	var err error
 	for {
 		select {
-		case f := <-WorkQueue:
+		case j := <-WorkQueue:
 			startTime := time.Now().UTC()
 
-			jobId := "b-" + randomString(5) + " "
-			log.SetPrefix(jobId)
-
-			log.Print("Batch process starting: " + f.Bin + ", " + f.Filename)
-			// Simulate some processing time
-			if f.MediaType() == "image" {
-				err = f.GenerateImage(115, 115, true)
-				if err != nil {
-					log.Print(err)
-				}
-				err = f.GenerateImage(1140, 0, false)
-				if err != nil {
-					log.Print(err)
-				}
-
-				if CacheInvalidation {
-					if err := f.Purge(); err != nil {
-						log.Print(err)
-					}
-				}
+			log.Print("Batch process starting in bin " + j.Bin + " for file " + j.Filename)
+			err = backend.GenerateThumbnail(j.Bin, j.Filename, 115, 115, true)
+			if err != nil {
+				log.Print(err)
+				continue
 			}
+
+			err = backend.GenerateThumbnail(j.Bin, j.Filename, 1140, 0, false)
+			if err != nil {
+				log.Print(err)
+				continue
+			}
+
+			//if CacheInvalidation {
+			//	if err := f.Purge(); err != nil {
+			//		log.Print(err)
+			//	}
+			//}
+
 			finishTime := time.Now().UTC()
 			elapsedTime := finishTime.Sub(startTime)
-			log.Println("Completed in: " + elapsedTime.String())
+			log.Println("Batch job completed in: " + elapsedTime.String())
 		}
 	}
 }

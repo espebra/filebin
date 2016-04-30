@@ -6,11 +6,16 @@ import (
 	"log"
 )
 
+type Job struct {
+	Bin	string
+	Filename	string
+}
+
 type Context struct {
 	TemplateBox *rice.Box
 	StaticBox   *rice.Box
 	Baseurl     string
 	Log         *log.Logger
-	WorkQueue   chan File
+	WorkQueue   chan Job
 	Backend     *fs.Backend
 }
