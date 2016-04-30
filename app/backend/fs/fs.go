@@ -36,7 +36,7 @@ type Bin struct {
 	Bytes     int64     `json:"bytes"`
 	ExpiresAt time.Time `json:"expires"`
 	UpdatedAt time.Time `json:"updated"`
-	Files     []File    `json:"files"`
+	Files     []File    `json:"files,omitempty"`
 	Album     bool      `json:"-"`
 }
 
@@ -54,10 +54,10 @@ type File struct {
 	//Tempfile        string    `json:"-"`
 
 	// Image specific attributes
-	DateTime  *time.Time `json:"datetime,omitempty"`
-	Longitude float64    `json:"longitude,omitempty"`
-	Latitude  float64    `json:"latitude,omitempty"`
-	Altitude  string     `json:"altitude,omitempty"`
+	DateTime  time.Time `json:"datetime,omitempty"`
+	Longitude float64   `json:"longitude,omitempty"`
+	Latitude  float64   `json:"latitude,omitempty"`
+	Altitude  string    `json:"altitude,omitempty"`
 	//Exif             *exif.Exif `json:"-"`
 }
 
@@ -114,6 +114,25 @@ func (be *Backend) GetAllMetaData() (*Backend, error) {
 	}
 
 	return be, nil
+}
+
+func (be *Backend) BinExists(bin string) bool {
+	path := filepath.Join(be.filedir, bin)
+
+	if !isDir(path) {
+		return false
+	}
+
+	return true
+}
+
+func (be *Backend) NewBin(bin string) Bin {
+	b := Bin{}
+	b.Bin = bin
+	b.UpdatedAt = time.Now().UTC()
+	b.ExpiresAt = b.UpdatedAt.Add(time.Duration(be.expiration) * time.Second)
+	b.Bytes = 0
+	return b
 }
 
 func (be *Backend) GetBinMetaData(bin string) (Bin, error) {

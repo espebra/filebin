@@ -2,23 +2,15 @@ package api
 
 import (
 	"fmt"
-	//"io"
-	//"syscall"
-	"math/rand"
-	"net/http"
-	"sort"
-	//"net/url"
-	"os/exec"
-	//"path/filepath"
-	"regexp"
-	//"strconv"
-	//"time"
-
-	"github.com/gorilla/mux"
-
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/model"
 	"github.com/espebra/filebin/app/output"
+	"github.com/gorilla/mux"
+	"math/rand"
+	"net/http"
+	"os/exec"
+	"regexp"
+	"sort"
 )
 
 func isWorkaroundNeeded(useragent string) bool {
@@ -466,11 +458,20 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 
 func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	params := mux.Vars(r)
-	b, err := ctx.Backend.GetBinMetaData(params["bin"])
+	bin := params["bin"]
+
+	var err error
+
+	b, err := ctx.Backend.GetBinMetaData(bin)
 	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Bin not found", 404)
-		return
+		if ctx.Backend.BinExists(bin) {
+			ctx.Log.Println(err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		} else {
+			// This bin needs to be created
+			b = ctx.Backend.NewBin(bin)
+		}
 	}
 
 	//t.SetBinDir(cfg.Filedir)
