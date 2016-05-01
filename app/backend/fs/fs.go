@@ -88,6 +88,7 @@ func InitBackend(baseurl string, filedir string, tempdir string, expiration int6
 	be.baseurl = baseurl
 	be.expiration = expiration
 	be.tempdir = tempdir
+	//be.GetAllMetaData()
 	return be, err
 }
 
@@ -95,14 +96,14 @@ func (be *Backend) Info() string {
 	return "FS backend from " + be.filedir
 }
 
-func (be *Backend) GetAllMetaData() (*Backend, error) {
+func (be *Backend) GetAllMetaData() error {
 	be.Log.Println("Reading all backend data")
 
 	// Return metadata for all bins and files
 	path := be.filedir
 	bins, err := ioutil.ReadDir(path)
 	if err != nil {
-		return be, err
+		return err
 	}
 
 	for _, bin := range bins {
@@ -120,8 +121,7 @@ func (be *Backend) GetAllMetaData() (*Backend, error) {
 		be.Files = be.Files + len(b.Files)
 	}
 	sort.Sort(BinsByUpdatedAt(be.Bins))
-
-	return be, nil
+	return nil
 }
 
 func (be *Backend) BinExists(bin string) bool {
