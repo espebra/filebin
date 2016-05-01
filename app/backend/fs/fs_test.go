@@ -147,15 +147,15 @@ func TestGetBinMetaData(t *testing.T) {
 }
 
 func TestAllMetaData(t *testing.T) {
-	a, err := be.GetAllMetaData()
+	err := be.GetAllMetaData()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if a.Bytes != 12 {
-		t.Fatal("Unexpected total size: " + strconv.FormatInt(a.Bytes, 10))
+	if be.Bytes != 12 {
+		t.Fatal("Unexpected total size: " + strconv.FormatInt(be.Bytes, 10))
 	}
 
-	binNum := len(a.Bins)
+	binNum := len(be.Bins)
 	if binNum != 1 {
 		t.Fatal("Unexpected bin count: " + strconv.Itoa(binNum))
 	}
