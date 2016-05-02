@@ -140,15 +140,11 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	}
 
 	b, err := ctx.Backend.GetBinMetaData(bin)
-	if err != nil {
-		ctx.Log.Println(err)
-		http.Error(w, "Not found", 404)
-		return
-	}
-
-	if b.Expired {
-		http.Error(w, "This bin expired " + b.ExpiresReadable + ".", 410)
-		return
+	if err == nil {
+		if b.Expired {
+			http.Error(w, "This bin expired " + b.ExpiresReadable + ".", 410)
+			return
+		}
 	}
 
 	filename := sanitizeFilename(r.Header.Get("filename"))
