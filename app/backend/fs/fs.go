@@ -259,6 +259,7 @@ func (be *Backend) GetBinMetaData(bin string) (Bin, error) {
 	b.ExpiresAt = b.UpdatedAt.Add(time.Duration(be.expiration) * time.Second)
 	b.BytesReadable = humanize.Bytes(uint64(b.Bytes))
 	b.UpdatedReadable = humanize.Time(b.UpdatedAt)
+	b.ExpiresReadable = humanize.Time(b.ExpiresAt)
 
 	sort.Sort(FilesByDateTime(b.Files))
 	if len(b.Files) == 0 {
