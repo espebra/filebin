@@ -176,16 +176,13 @@ func (be *Backend) getAllMetaData() error {
 }
 
 func (be *Backend) BinExists(bin string) bool {
-	be.Log.Println("Checing if bin " + bin + " exists")
-
 	be.lock.RLock()
+	defer be.lock.RUnlock()
 	for _, f := range be.files {
 		if f.Bin == bin {
 			return true
 		}
 	}
-	be.lock.RUnlock()
-
 	return false
 }
 
