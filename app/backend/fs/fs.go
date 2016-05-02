@@ -240,10 +240,7 @@ func (be *Backend) NewBin(bin string) Bin {
 }
 
 func (be *Backend) GetBinMetaData(bin string) (Bin, error) {
-	be.Log.Println("Reading bin meta data: " + bin)
-
 	b := Bin{}
-
 	be.lock.RLock()
 	for _, f := range be.files {
 		if f.Bin != bin {
@@ -425,8 +422,6 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 }
 
 func (be *Backend) GetFile(bin string, filename string) (io.ReadSeeker, error) {
-	be.Log.Println("Reading file contents: " + bin + "/" + filename)
-
 	path := filepath.Join(be.filedir, bin, filename)
 	fp, err := os.Open(path)
 	if err != nil {
@@ -437,8 +432,6 @@ func (be *Backend) GetFile(bin string, filename string) (io.ReadSeeker, error) {
 }
 
 func (be *Backend) GetThumbnail(bin string, filename string, width int, height int) (io.ReadSeeker, error) {
-	be.Log.Println("Read thumbnail contents: " + bin + "/" + filename)
-
 	cachedir := filepath.Join(be.filedir, bin, ".cache")
 	path := filepath.Join(cachedir, strconv.Itoa(width)+"x"+strconv.Itoa(height)+"-"+filename)
 
@@ -450,7 +443,6 @@ func (be *Backend) GetThumbnail(bin string, filename string, width int, height i
 }
 
 func (be *Backend) GetFileMetaData(bin string, filename string) (File, error) {
-
 	f := File{}
 	be.lock.RLock()
 	defer be.lock.RUnlock()

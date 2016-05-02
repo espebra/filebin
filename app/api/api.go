@@ -520,53 +520,24 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 }
 
 func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	t := model.Bin{}
 	params := mux.Vars(r)
-	err := t.SetBin(params["bin"])
-	if err != nil {
-		ctx.Log.Println(err)
+	bin := params["bin"]
+	if err := verifyBin(bin); err != nil {
 		http.Error(w, "Invalid bin", 400)
 		return
 	}
 
-	t.SetBinDir(cfg.Filedir)
-	t.CalculateExpiration(cfg.Expiration)
-	if t.BinDirExists() {
-		expired, err := t.IsExpired(cfg.Expiration)
-		if err != nil {
-			ctx.Log.Println(err)
-			http.Error(w, "Internal server error", 500)
-			return
-		}
-		if expired {
-			ctx.Log.Println("Expired: " + t.ExpirationReadable())
-			http.Error(w, "This bin has expired.", 410)
-			return
-		}
-
-		err = t.StatInfo()
-		if err != nil {
-			ctx.Log.Println(err)
-			http.Error(w, "Internal Server Error", 500)
-			return
-		}
-
-		err = t.List(cfg.Baseurl)
-		if err != nil {
-			ctx.Log.Println(err)
-			http.Error(w, "Error reading the bin contents.", 404)
-			return
-		}
-	} else {
-		// The bin does not exist
-		http.Error(w, "Not found", 404)
+	b, err := ctx.Backend.GetBinMetaData(bin)
+	if err != nil {
+		ctx.Log.Println(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Cache-Control", "s-maxage=3600")
 
 	var status = 200
-	output.HTMLresponse(w, "viewalbum", status, t, ctx)
+	output.HTMLresponse(w, "viewalbum", status, b, ctx)
 	return
 }
 
