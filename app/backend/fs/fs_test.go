@@ -149,7 +149,7 @@ func TestGetBinMetaData(t *testing.T) {
 		t.Fatal("Unexpected file count: " + strconv.Itoa(fileNum))
 	}
 
-	if b.Expired() != false {
+	if b.Expired != false {
 		t.Fatal("Bin has unexpectedly expired")
 	}
 }
@@ -170,7 +170,7 @@ func TestExpiredBin(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if b.Expired() != true {
+	if b.Expired != true {
 		t.Fatal("Bin has unexpectedly not expired")
 	}
 }

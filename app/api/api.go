@@ -472,7 +472,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 		return
 	}
 
-	_, _, err := ctx.Backend.GetBinArchive(bin, format, w)
+	_, _, err = ctx.Backend.GetBinArchive(bin, format, w)
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w, "Bin not found", 404)
