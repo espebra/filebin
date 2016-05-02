@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 	"sort"
+	"sync"
 	"log"
 
 	"github.com/dustin/go-humanize"
@@ -24,13 +25,13 @@ import (
 )
 
 type Backend struct {
+	lock       sync.RWMutex
 	filedir    string
 	tempdir    string
 	baseurl    string
 	expiration int64
 	Bytes      int64 `json:"bytes"`
-	Files      int `json:"files"`
-	Bins       []Bin
+	files      map[string]File
 	Log        *log.Logger `json:"-"`
 }
 
@@ -39,13 +40,16 @@ type Bin struct {
 	Bytes     int64     `json:"bytes"`
 	ExpiresAt time.Time `json:"expires"`
 	UpdatedAt time.Time `json:"updated"`
+	UpdatedReadable string
+	BytesReadable string
+	ExpiresReadable string
 	Files     []File    `json:"files,omitempty"`
 	Album     bool      `json:"-"`
 }
 
 type File struct {
 	Filename  string    `json:"filename"`
-	Bin  string    `json:"filename,omitempty"`
+	Bin  string    `json:"bin"`
 	Bytes     int64     `json:"bytes"`
 	MIME      string    `json:"mime"`
 	CreatedAt time.Time `json:"created"`
@@ -74,21 +78,26 @@ func InitBackend(baseurl string, filedir string, tempdir string, expiration int6
 	be := Backend{}
 
 	fi, err := os.Lstat(filedir)
-	if err == nil {
-		if fi.IsDir() {
-			// Filedir exists as a directory.
-			be.filedir = filedir
-		} else {
-			// Path exists, but is not a directory.
-			err = errors.New("The specified filedir is not a directory.")
-		}
+	if err != nil {
+		return be, err
 	}
 
+	if fi.IsDir() {
+		// Filedir exists as a directory.
+		be.filedir = filedir
+	} else {
+		// Path exists, but is not a directory.
+		err = errors.New("The specified filedir is not a directory.")
+		return be, err
+	}
+
+	be.lock.Lock()
 	be.Log = log
 	be.baseurl = baseurl
 	be.expiration = expiration
 	be.tempdir = tempdir
-	//be.GetAllMetaData()
+	err = be.getAllMetaData()
+	be.lock.Unlock()
 	return be, err
 }
 
@@ -96,44 +105,128 @@ func (be *Backend) Info() string {
 	return "FS backend from " + be.filedir
 }
 
-func (be *Backend) GetAllMetaData() error {
+func (be *Backend) getBins() ([]string, error) {
+	var bins []string
+	
+	entries, err := ioutil.ReadDir(be.filedir)
+	if err != nil {
+		return bins, err
+	}
+
+	for _, entry := range entries {
+		// Do not care about files
+		if entry.IsDir() == false {
+			continue
+		}
+		bins = append(bins, entry.Name())
+	}
+
+	return bins, nil
+}
+
+func (be *Backend) getFiles(bin string) ([]string, error) {
+	var files []string
+	
+	path := filepath.Join(be.filedir, bin)
+	entries, err := ioutil.ReadDir(path)
+	if err != nil {
+		return files, err
+	}
+
+	for _, entry := range entries {
+		// Skip directories
+		if entry.IsDir() == true {
+			continue
+		}
+
+		// Skip files starting with .
+		//if strings.HasPrefix(entry.Name(), ".") {
+		//	continue
+		//}
+		files = append(files, entry.Name())
+	}
+
+	return files, nil
+}
+
+func (be *Backend) getAllMetaData() error {
 	be.Log.Println("Reading all backend data")
 
 	// Return metadata for all bins and files
-	path := be.filedir
-	bins, err := ioutil.ReadDir(path)
+	bins, err := be.getBins()
 	if err != nil {
 		return err
 	}
-
+	be.files = make(map[string]File)
 	for _, bin := range bins {
-		// Do not care about files
-		if bin.IsDir() == false {
-			continue
-		}
-
-		b, err := be.GetBinMetaData(bin.Name())
+		files, err := be.getFiles(bin)
 		if err != nil {
-			continue
+			return err
 		}
-		be.Bytes = be.Bytes + b.Bytes
-		be.Bins = append(be.Bins, b)
-		be.Files = be.Files + len(b.Files)
+		for _, filename := range files {
+			f, err := be.getFileMetaData(bin, filename)
+			if err != nil {
+				continue
+			}
+			id := f.Bin + f.Filename
+			be.files[id] = f
+		}
 	}
-	sort.Sort(BinsByUpdatedAt(be.Bins))
 	return nil
 }
 
 func (be *Backend) BinExists(bin string) bool {
 	be.Log.Println("Checing if bin " + bin + " exists")
 
-	path := filepath.Join(be.filedir, bin)
-
-	if !isDir(path) {
-		return false
+	be.lock.RLock()
+	for _, f := range be.files {
+		if f.Bin == bin {
+			return true
+		}
 	}
+	be.lock.RUnlock()
 
-	return true
+	return false
+}
+
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
+func (be *Backend) GetBins() ([]string) {
+	var bins []string
+	be.lock.RLock()
+	for _, f := range be.files {
+		if !stringInSlice(f.Bin, bins) {
+			bins = append(bins, f.Bin)
+		}
+	}
+	be.lock.RUnlock()
+
+	return bins
+}
+
+func (be *Backend) GetBinsMetaData() ([]Bin) {
+	var bins []Bin
+
+	be.lock.RLock()
+	for _, b := range be.GetBins() {
+		bin, err := be.GetBinMetaData(b)
+		if err != nil {
+			// Log
+		}
+
+		bins = append(bins, bin)
+	}
+	be.lock.RUnlock()
+	sort.Sort(BinsByUpdatedAt(bins))
+
+	return bins
 }
 
 func (be *Backend) NewBin(bin string) Bin {
@@ -143,7 +236,6 @@ func (be *Backend) NewBin(bin string) Bin {
 	b.Bin = bin
 	b.UpdatedAt = time.Now().UTC()
 	b.ExpiresAt = b.UpdatedAt.Add(time.Duration(be.expiration) * time.Second)
-	b.Bytes = 0
 	return b
 }
 
@@ -151,49 +243,36 @@ func (be *Backend) GetBinMetaData(bin string) (Bin, error) {
 	be.Log.Println("Reading bin meta data: " + bin)
 
 	b := Bin{}
-	path := filepath.Join(be.filedir, bin)
 
-	// Directory info
-	fi, err := os.Lstat(path)
-	if err != nil {
-		return b, err
-	}
-	if fi.IsDir() == false {
-		return b, errors.New("Bin does not exist.")
-	}
-
-	b.UpdatedAt = fi.ModTime()
-	b.ExpiresAt = b.UpdatedAt.Add(time.Duration(be.expiration) * time.Second)
-	b.Bytes = 0
-	b.Bin = bin
-
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		return b, err
-	}
-
-	for _, file := range files {
-		// Do not care about sub directories (such as .cache)
-		if file.IsDir() == true {
+	be.lock.RLock()
+	for _, f := range be.files {
+		if f.Bin != bin {
 			continue
 		}
 
-		f, err := be.GetFileMetaData(bin, file.Name())
-		if err != nil {
-			continue
-		}
-
+		b.Bytes = b.Bytes + f.Bytes
+		b.Files = append(b.Files, f)
 		if strings.Split(f.MIME, "/")[0] == "image" {
 			b.Album = true
 		}
-		
-		b.Bytes = b.Bytes + f.Bytes
-		b.Files = append(b.Files, f)
+
+		if f.CreatedAt.After(b.UpdatedAt) {
+			b.UpdatedAt = f.CreatedAt
+		}
 	}
+	be.lock.RUnlock()
+
+	b.ExpiresAt = b.UpdatedAt.Add(time.Duration(be.expiration) * time.Second)
+	b.BytesReadable = humanize.Bytes(uint64(b.Bytes))
+	b.UpdatedReadable = humanize.Time(b.UpdatedAt)
 
 	sort.Sort(FilesByDateTime(b.Files))
-
-	return b, err
+	if len(b.Files) == 0 {
+		err := errors.New("Bin does not exist")
+		return b, err
+	}
+	b.Bin = bin
+	return b, nil
 }
 
 func (be *Backend) DeleteBin(bin string) error {
@@ -205,6 +284,14 @@ func (be *Backend) DeleteBin(bin string) error {
 	}
 
 	err := os.RemoveAll(bindir)
+	be.lock.Lock()
+	for id, f := range be.files {
+		if f.Bin != bin {
+			continue
+		}
+		delete(be.files, id)
+	}
+	be.lock.Unlock()
 	return err
 }
 
@@ -212,24 +299,17 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 	be.Log.Println("Generating " + format + " archive of bin " + bin)
 
 	var err error
-	path := filepath.Join(be.filedir, bin)
-
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		return nil, "", err
-	}
-
 	var paths []string
 
-	for _, file := range files {
-		// Do not care about sub directories (such as .cache)
-		if file.IsDir() == true {
+	be.lock.RLock()
+	for _, f := range be.files {
+		if f.Bin != bin {
 			continue
 		}
-
-		p := filepath.Join(path, file.Name())
+		p := filepath.Join(be.filedir, bin, f.Filename)
 		paths = append(paths, p)
 	}
+	be.lock.RUnlock()
 
 	var fp io.Writer
 	if format == "zip" {
@@ -282,7 +362,7 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 				return nil, "", err
 			}
 
-			be.Log.Println("Added " + strconv.FormatInt(bytes, 10) + " bytes to the archive: " + fname)
+			be.Log.Println("Added " + fname + " to the archive: " + strconv.FormatInt(bytes, 10) + " bytes")
 		}
 		if err := zw.Close(); err != nil {
 			be.Log.Println(err)
@@ -328,7 +408,7 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 				be.Log.Println(err)
 				return nil, "", err
 			}
-			be.Log.Println("Added " + strconv.FormatInt(bytes, 10) + " bytes to the archive: " + fname)
+			be.Log.Println("Added " + fname + " to the archive: " + strconv.FormatInt(bytes, 10) + " bytes")
 		}
 		if err := tw.Close(); err != nil {
 			be.Log.Println(err)
@@ -345,7 +425,7 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 }
 
 func (be *Backend) GetFile(bin string, filename string) (io.ReadSeeker, error) {
-	be.Log.Println("Read file contents: " + bin + "/" + filename)
+	be.Log.Println("Reading file contents: " + bin + "/" + filename)
 
 	path := filepath.Join(be.filedir, bin, filename)
 	fp, err := os.Open(path)
@@ -370,7 +450,25 @@ func (be *Backend) GetThumbnail(bin string, filename string, width int, height i
 }
 
 func (be *Backend) GetFileMetaData(bin string, filename string) (File, error) {
-	be.Log.Println("Read file meta data: " + filename)
+
+	f := File{}
+	be.lock.RLock()
+	defer be.lock.RUnlock()
+	for _, f := range be.files {
+		if f.Bin != bin {
+			continue
+		}
+		if f.Filename != filename {
+			continue
+		}
+		return f, nil
+	}
+	err := errors.New("File not found")
+	return f, err
+}
+
+func (be *Backend) getFileMetaData(bin string, filename string) (File, error) {
+	be.Log.Println("Reading file meta data: " + filename + " (" + bin + ")...")
 
 	f := File{}
 	path := filepath.Join(be.filedir, bin, filename)
@@ -381,6 +479,7 @@ func (be *Backend) GetFileMetaData(bin string, filename string) (File, error) {
 		return f, errors.New("File does not exist.")
 	}
 
+	f.Bin = bin
 	f.Filename = filename
 	f.Bytes = fi.Size()
 	f.CreatedAt = fi.ModTime()
@@ -457,6 +556,16 @@ func (be *Backend) GenerateThumbnail(bin string, filename string, width int, hei
 		im := imaging.Resize(s, width, height, imaging.Lanczos)
 		err = imaging.Save(im, dst)
 	}
+
+	be.lock.Lock()
+	id := bin + filename
+	delete(be.files, id)
+	f, err := be.getFileMetaData(bin, filename)
+	if err != nil {
+		// Log
+	}
+	be.files[id] = f
+	be.lock.Unlock()
 
 	return err
 }
@@ -554,6 +663,12 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	f.CreatedAt = fi.ModTime()
 	f.Links = generateLinks(be.filedir, be.baseurl, bin, filename)
 
+	be.lock.Lock()
+	id := f.Bin + f.Filename
+	delete(be.files, id)
+	be.files[id] = f
+	be.lock.Unlock()
+
 	return f, err
 }
 
@@ -564,23 +679,12 @@ func (be *Backend) DeleteFile(bin string, filename string) error {
 	}
 
 	err := os.Remove(fpath)
+
+	be.lock.Lock()
+	id := bin + filename
+	delete(be.files, id)
+	be.lock.Unlock()
 	return err
-}
-
-func (be *Backend) BytesReadable() string {
-	return humanize.Bytes(uint64(be.Bytes))
-}
-
-func (b Bin) BytesReadable() string {
-	return humanize.Bytes(uint64(b.Bytes))
-}
-
-func (b Bin) UpdatedReadable() string {
-	return humanize.Time(b.UpdatedAt)
-}
-
-func (b Bin) ExpiresReadable() string {
-	return humanize.Time(b.ExpiresAt)
 }
 
 func (b Bin) Expired() bool {

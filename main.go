@@ -271,7 +271,6 @@ func main() {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	backend.GetAllMetaData()
 
 	log.Println("Backend: " + backend.Info())
 	log.Println("Filebin server starting...")

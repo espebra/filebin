@@ -5,6 +5,7 @@ import (
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/model"
 	"github.com/espebra/filebin/app/output"
+	"github.com/espebra/filebin/app/backend/fs"
 	"github.com/gorilla/mux"
 	"math/rand"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"os/exec"
 	"regexp"
 	//"sort"
+        "github.com/dustin/go-humanize"
 )
 
 func isWorkaroundNeeded(useragent string) bool {
@@ -604,13 +606,35 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 
 func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var status = 200
-	bins := ctx.Backend
+	bins := ctx.Backend.GetBinsMetaData()
+
+	type Out struct {
+		Bins []fs.Bin
+		Files int
+		Bytes int64
+		BytesReadable string
+	}
+
+	var files int
+	var bytes int64
+	for _, b := range bins {
+		files = files + len(b.Files)
+		bytes = bytes + b.Bytes
+	}
+
+	data := Out{
+		Bins: bins,
+		Files: files,
+		Bytes: bytes,
+		BytesReadable: humanize.Bytes(uint64(bytes)),
+	}
+	
 
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
-		output.JSONresponse(w, status, bins, ctx)
+		output.JSONresponse(w, status, data, ctx)
 	} else {
-		output.HTMLresponse(w, "admin", status, bins, ctx)
+		output.HTMLresponse(w, "admin", status, data, ctx)
 	}
 	return
 }

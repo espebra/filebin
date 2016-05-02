@@ -79,6 +79,14 @@ func TestUploadFile(t *testing.T) {
 	if numLinks != 2 {
 		t.Fatal("Unexpected number of links: " + strconv.Itoa(numLinks))
 	}
+
+	files, err := be.getFiles(bin)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(files) != 1 {
+		t.Fatal("Unexpected number of files: " + strconv.Itoa(len(files)))
+	}
 }
 
 func TestGetFileMetaData(t *testing.T) {
@@ -147,17 +155,9 @@ func TestGetBinMetaData(t *testing.T) {
 }
 
 func TestAllMetaData(t *testing.T) {
-	err := be.GetAllMetaData()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if be.Bytes != 12 {
-		t.Fatal("Unexpected total size: " + strconv.FormatInt(be.Bytes, 10))
-	}
-
-	binNum := len(be.Bins)
-	if binNum != 1 {
-		t.Fatal("Unexpected bin count: " + strconv.Itoa(binNum))
+	fileNum := len(be.files)
+	if fileNum != 1 {
+		t.Fatal("Unexpected file count: " + strconv.Itoa(fileNum))
 	}
 }
 
