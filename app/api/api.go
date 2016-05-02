@@ -1,20 +1,22 @@
 package api
 
 import (
+	"errors"
 	"fmt"
+	"github.com/espebra/filebin/app/backend/fs"
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/model"
 	"github.com/espebra/filebin/app/output"
-	"github.com/espebra/filebin/app/backend/fs"
 	"github.com/gorilla/mux"
 	"math/rand"
 	"net/http"
-	"strconv"
 	"net/url"
 	"os/exec"
 	"regexp"
+	"strconv"
+	"strings"
 	//"sort"
-        "github.com/dustin/go-humanize"
+	"github.com/dustin/go-humanize"
 )
 
 func isWorkaroundNeeded(useragent string) bool {
@@ -81,10 +83,68 @@ func randomString(n int) string {
 	return string(b)
 }
 
+func verifyBin(s string) error {
+	var invalid = regexp.MustCompile("[^A-Za-z0-9-_.]")
+	if invalid.MatchString(s) {
+		return errors.New("The bin contains invalid characters.")
+	}
+
+	if len(s) < 8 {
+		return errors.New("The bin is too short.")
+	}
+
+	if strings.HasPrefix(s, ".") {
+		return errors.New("Invalid bin specified.")
+	}
+
+	return nil
+}
+
+func verifyFilename(s string) error {
+	var invalid = regexp.MustCompile("[^A-Za-z0-9-_=,.]")
+	if invalid.MatchString(s) {
+		return errors.New("The filename contains invalid characters.")
+	}
+
+	if len(s) == 0 {
+		return errors.New("The filename is empty.")
+	}
+
+	if strings.HasPrefix(s, ".") {
+		return errors.New("Invalid filename specified.")
+	}
+
+	return nil
+}
+
+func sanitizeFilename(s string) string {
+	var invalid = regexp.MustCompile("[^A-Za-z0-9-_=,.]")
+	s = invalid.ReplaceAllString(s, "_")
+
+	if strings.HasPrefix(s, ".") {
+		s = strings.Replace(s, ".", "_", 1)
+	}
+
+	if len(s) == 0 {
+		s = "_"
+	}
+	return s
+}
+
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	//params := mux.Vars(r)
 	bin := r.Header.Get("bin")
-	filename := r.Header.Get("filename")
+	if err := verifyBin(bin); err != nil {
+		http.Error(w, "Invalid bin", 400)
+		return
+	}
+
+	filename := sanitizeFilename(r.Header.Get("filename"))
+	if err := verifyFilename(filename); err != nil {
+		http.Error(w, "Invalid filename", 400)
+		return
+	}
+
 	f, err := ctx.Backend.UploadFile(bin, filename, r.Body)
 	if err != nil {
 		ctx.Log.Println(err)
@@ -312,7 +372,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	//	}
 	//}
 
-	j := model.Job { }
+	j := model.Job{}
 	j.Filename = filename
 	j.Bin = bin
 	ctx.WorkQueue <- j
@@ -337,7 +397,16 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 
 	params := mux.Vars(r)
 	bin := params["bin"]
+	if err := verifyBin(bin); err != nil {
+		http.Error(w, "Invalid bin", 400)
+		return
+	}
+
 	filename := params["filename"]
+	if err := verifyFilename(filename); err != nil {
+		http.Error(w, "Invalid filename", 400)
+		return
+	}
 
 	f, err := ctx.Backend.GetFileMetaData(bin, filename)
 	if err != nil {
@@ -357,7 +426,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	width, _ := strconv.Atoi(queryParams.Get("width"))
 	height, _ := strconv.Atoi(queryParams.Get("height"))
 	if (width > 0) || (height > 0) {
-	        fp, err := ctx.Backend.GetThumbnail(bin, filename, width, height)
+		fp, err := ctx.Backend.GetThumbnail(bin, filename, width, height)
 		if err != nil {
 			ctx.Log.Println(err)
 			http.Error(w, "Image not found", 404)
@@ -389,6 +458,10 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	params := mux.Vars(r)
 	bin := params["bin"]
+	if err := verifyBin(bin); err != nil {
+		http.Error(w, "Invalid bin", 400)
+		return
+	}
 
 	if err := ctx.Backend.DeleteBin(bin); err != nil {
 		ctx.Log.Println(err)
@@ -414,7 +487,16 @@ func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	params := mux.Vars(r)
 	bin := params["bin"]
+	if err := verifyBin(bin); err != nil {
+		http.Error(w, "Invalid bin", 400)
+		return
+	}
+
 	filename := params["filename"]
+	if err := verifyFilename(filename); err != nil {
+		http.Error(w, "Invalid filename", 400)
+		return
+	}
 
 	if err := ctx.Backend.DeleteFile(bin, filename); err != nil {
 		ctx.Log.Println(err)
@@ -491,6 +573,10 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	params := mux.Vars(r)
 	bin := params["bin"]
+	if err := verifyBin(bin); err != nil {
+		http.Error(w, "Invalid bin", 400)
+		return
+	}
 
 	var err error
 
@@ -559,6 +645,10 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 	params := mux.Vars(r)
 	format := params["format"]
 	bin := params["bin"]
+	if err := verifyBin(bin); err != nil {
+		http.Error(w, "Invalid bin", 400)
+		return
+	}
 
 	_, _, err := ctx.Backend.GetBinArchive(bin, format, w)
 	if err != nil {
@@ -600,7 +690,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	bin := randomString(cfg.DefaultBinLength)
 	w.Header().Set("Location", ctx.Baseurl+"/"+bin)
-	http.Error(w, "Generated bin: " + bin, 302)
+	http.Error(w, "Generated bin: "+bin, 302)
 	return
 }
 
@@ -609,9 +699,9 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 	bins := ctx.Backend.GetBinsMetaData()
 
 	type Out struct {
-		Bins []fs.Bin
-		Files int
-		Bytes int64
+		Bins          []fs.Bin
+		Files         int
+		Bytes         int64
 		BytesReadable string
 	}
 
@@ -623,12 +713,11 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 	}
 
 	data := Out{
-		Bins: bins,
-		Files: files,
-		Bytes: bytes,
+		Bins:          bins,
+		Files:         files,
+		Bytes:         bytes,
 		BytesReadable: humanize.Bytes(uint64(bytes)),
 	}
-	
 
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
