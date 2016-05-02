@@ -72,7 +72,11 @@
                 <tbody>
 
                     {{ range $index, $value := .Data.Bins }}
+                    {{ if .Expired }}
+                    <tr class="table-warning">
+                    {{ else }}
                     <tr>
+                    {{ end }}
                         <td><a href="{{ $.Ctx.Baseurl }}/{{ .Bin }}">{{ .Bin }}</a></td>
                         <td>{{ .UpdatedReadable }}</td>
                         <td>{{ .Files | len }}</td>
