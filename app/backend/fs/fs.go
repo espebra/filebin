@@ -38,11 +38,12 @@ type Backend struct {
 type Bin struct {
 	Bin       string    `json:"bin"`
 	Bytes     int64     `json:"bytes"`
+	BytesReadable string
 	ExpiresAt time.Time `json:"expires"`
+	ExpiresReadable string
+	Expired bool `json:"-"`
 	UpdatedAt time.Time `json:"updated"`
 	UpdatedReadable string
-	BytesReadable string
-	ExpiresReadable string
 	Files     []File    `json:"files,omitempty"`
 	Album     bool      `json:"-"`
 }
@@ -257,9 +258,15 @@ func (be *Backend) GetBinMetaData(bin string) (Bin, error) {
 	be.lock.RUnlock()
 
 	b.ExpiresAt = b.UpdatedAt.Add(time.Duration(be.expiration) * time.Second)
+
 	b.BytesReadable = humanize.Bytes(uint64(b.Bytes))
 	b.UpdatedReadable = humanize.Time(b.UpdatedAt)
 	b.ExpiresReadable = humanize.Time(b.ExpiresAt)
+
+	now := time.Now().UTC()
+	if now.After(b.ExpiresAt) {
+		b.Expired = true
+	}
 
 	sort.Sort(FilesByDateTime(b.Files))
 	if len(b.Files) == 0 {
@@ -675,15 +682,6 @@ func (be *Backend) DeleteFile(bin string, filename string) error {
 	delete(be.files, id)
 	be.lock.Unlock()
 	return err
-}
-
-func (b Bin) Expired() bool {
-	now := time.Now().UTC()
-	if now.Before(b.ExpiresAt) {
-		return false
-	} else {
-		return true
-	}
 }
 
 func (f File) BytesReadable() string {
