@@ -9,18 +9,18 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
-	"time"
-	"sort"
 	"sync"
-	"log"
+	"time"
 
-	"github.com/dustin/go-humanize"
 	"github.com/disintegration/imaging"
+	"github.com/dustin/go-humanize"
 	"github.com/rwcarlsen/goexif/exif"
 )
 
@@ -36,21 +36,21 @@ type Backend struct {
 }
 
 type Bin struct {
-	Bin       string    `json:"bin"`
-	Bytes     int64     `json:"bytes"`
-	BytesReadable string
-	ExpiresAt time.Time `json:"expires"`
+	Bin             string `json:"bin"`
+	Bytes           int64  `json:"bytes"`
+	BytesReadable   string
+	ExpiresAt       time.Time `json:"expires"`
 	ExpiresReadable string
-	Expired bool `json:"-"`
-	UpdatedAt time.Time `json:"updated"`
+	Expired         bool      `json:"-"`
+	UpdatedAt       time.Time `json:"updated"`
 	UpdatedReadable string
-	Files     []File    `json:"files,omitempty"`
-	Album     bool      `json:"-"`
+	Files           []File `json:"files,omitempty"`
+	Album           bool   `json:"-"`
 }
 
 type File struct {
 	Filename  string    `json:"filename"`
-	Bin  string    `json:"bin"`
+	Bin       string    `json:"bin"`
 	Bytes     int64     `json:"bytes"`
 	MIME      string    `json:"mime"`
 	CreatedAt time.Time `json:"created"`
@@ -63,11 +63,11 @@ type File struct {
 	//Tempfile        string    `json:"-"`
 
 	// Image specific attributes
-	DateTime  time.Time `json:"datetime,omitempty"`
-	Longitude float64   `json:"longitude,omitempty"`
-	Latitude  float64   `json:"latitude,omitempty"`
-	Altitude  string    `json:"altitude,omitempty"`
-	Exif             *exif.Exif `json:"-"`
+	DateTime  time.Time  `json:"datetime,omitempty"`
+	Longitude float64    `json:"longitude,omitempty"`
+	Latitude  float64    `json:"latitude,omitempty"`
+	Altitude  string     `json:"altitude,omitempty"`
+	Exif      *exif.Exif `json:"-"`
 }
 
 type link struct {
@@ -108,7 +108,7 @@ func (be *Backend) Info() string {
 
 func (be *Backend) getBins() ([]string, error) {
 	var bins []string
-	
+
 	entries, err := ioutil.ReadDir(be.filedir)
 	if err != nil {
 		return bins, err
@@ -127,7 +127,7 @@ func (be *Backend) getBins() ([]string, error) {
 
 func (be *Backend) getFiles(bin string) ([]string, error) {
 	var files []string
-	
+
 	path := filepath.Join(be.filedir, bin)
 	entries, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -196,7 +196,7 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
-func (be *Backend) GetBins() ([]string) {
+func (be *Backend) GetBins() []string {
 	var bins []string
 	be.RLock()
 	defer be.RUnlock()
@@ -209,11 +209,9 @@ func (be *Backend) GetBins() ([]string) {
 	return bins
 }
 
-func (be *Backend) GetBinsMetaData() ([]Bin) {
+func (be *Backend) GetBinsMetaData() []Bin {
 	var bins []Bin
 
-	be.RLock()
-	defer be.RUnlock()
 	for _, b := range be.GetBins() {
 		bin, err := be.GetBinMetaData(b)
 		if err != nil {
@@ -851,28 +849,28 @@ func generateLinks(filedir string, baseurl string, bin string, filename string) 
 type FilesByDateTime []File
 
 func (a FilesByDateTime) Len() int {
-        return len(a)
+	return len(a)
 }
 
 func (a FilesByDateTime) Swap(i, j int) {
-        a[i], a[j] = a[j], a[i]
+	a[i], a[j] = a[j], a[i]
 }
 
 func (a FilesByDateTime) Less(i, j int) bool {
-        return a[i].DateTime.Before(a[j].DateTime)
+	return a[i].DateTime.Before(a[j].DateTime)
 }
 
 // Sort bins by Update At
 type BinsByUpdatedAt []Bin
 
 func (a BinsByUpdatedAt) Len() int {
-        return len(a)
+	return len(a)
 }
 
 func (a BinsByUpdatedAt) Swap(i, j int) {
-        a[i], a[j] = a[j], a[i]
+	a[i], a[j] = a[j], a[i]
 }
 
 func (a BinsByUpdatedAt) Less(i, j int) bool {
-        return a[i].UpdatedAt.After(a[j].UpdatedAt)
+	return a[i].UpdatedAt.After(a[j].UpdatedAt)
 }
