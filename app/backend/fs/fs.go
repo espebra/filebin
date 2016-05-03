@@ -25,7 +25,7 @@ import (
 )
 
 type Backend struct {
-	lock       sync.RWMutex
+	sync.RWMutex
 	filedir    string
 	tempdir    string
 	baseurl    string
@@ -92,13 +92,13 @@ func InitBackend(baseurl string, filedir string, tempdir string, expiration int6
 		return be, err
 	}
 
-	be.lock.Lock()
+	be.Lock()
 	be.Log = log
 	be.baseurl = baseurl
 	be.expiration = expiration
 	be.tempdir = tempdir
 	err = be.getAllMetaData()
-	be.lock.Unlock()
+	be.Unlock()
 	return be, err
 }
 
@@ -177,8 +177,8 @@ func (be *Backend) getAllMetaData() error {
 }
 
 func (be *Backend) BinExists(bin string) bool {
-	be.lock.RLock()
-	defer be.lock.RUnlock()
+	be.RLock()
+	defer be.RUnlock()
 	for _, f := range be.files {
 		if f.Bin == bin {
 			return true
@@ -198,13 +198,13 @@ func stringInSlice(a string, list []string) bool {
 
 func (be *Backend) GetBins() ([]string) {
 	var bins []string
-	be.lock.RLock()
+	be.RLock()
+	defer be.RUnlock()
 	for _, f := range be.files {
 		if !stringInSlice(f.Bin, bins) {
 			bins = append(bins, f.Bin)
 		}
 	}
-	be.lock.RUnlock()
 
 	return bins
 }
@@ -212,7 +212,8 @@ func (be *Backend) GetBins() ([]string) {
 func (be *Backend) GetBinsMetaData() ([]Bin) {
 	var bins []Bin
 
-	be.lock.RLock()
+	be.RLock()
+	defer be.RUnlock()
 	for _, b := range be.GetBins() {
 		bin, err := be.GetBinMetaData(b)
 		if err != nil {
@@ -221,7 +222,6 @@ func (be *Backend) GetBinsMetaData() ([]Bin) {
 
 		bins = append(bins, bin)
 	}
-	be.lock.RUnlock()
 	sort.Sort(BinsByUpdatedAt(bins))
 
 	return bins
@@ -239,7 +239,7 @@ func (be *Backend) NewBin(bin string) Bin {
 
 func (be *Backend) GetBinMetaData(bin string) (Bin, error) {
 	b := Bin{}
-	be.lock.RLock()
+	be.RLock()
 	for _, f := range be.files {
 		if f.Bin != bin {
 			continue
@@ -255,7 +255,7 @@ func (be *Backend) GetBinMetaData(bin string) (Bin, error) {
 			b.UpdatedAt = f.CreatedAt
 		}
 	}
-	be.lock.RUnlock()
+	be.RUnlock()
 
 	b.ExpiresAt = b.UpdatedAt.Add(time.Duration(be.expiration) * time.Second)
 
@@ -286,14 +286,14 @@ func (be *Backend) DeleteBin(bin string) error {
 	}
 
 	err := os.RemoveAll(bindir)
-	be.lock.Lock()
+	be.Lock()
+	defer be.Unlock()
 	for id, f := range be.files {
 		if f.Bin != bin {
 			continue
 		}
 		delete(be.files, id)
 	}
-	be.lock.Unlock()
 	return err
 }
 
@@ -303,7 +303,7 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 	var err error
 	var paths []string
 
-	be.lock.RLock()
+	be.RLock()
 	for _, f := range be.files {
 		if f.Bin != bin {
 			continue
@@ -311,7 +311,7 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 		p := filepath.Join(be.filedir, bin, f.Filename)
 		paths = append(paths, p)
 	}
-	be.lock.RUnlock()
+	be.RUnlock()
 
 	var fp io.Writer
 	if format == "zip" {
@@ -449,8 +449,8 @@ func (be *Backend) GetThumbnail(bin string, filename string, width int, height i
 
 func (be *Backend) GetFileMetaData(bin string, filename string) (File, error) {
 	f := File{}
-	be.lock.RLock()
-	defer be.lock.RUnlock()
+	be.RLock()
+	defer be.RUnlock()
 	for _, f := range be.files {
 		if f.Bin != bin {
 			continue
@@ -554,15 +554,16 @@ func (be *Backend) GenerateThumbnail(bin string, filename string, width int, hei
 		err = imaging.Save(im, dst)
 	}
 
-	be.lock.Lock()
-	id := bin + filename
-	delete(be.files, id)
 	f, err := be.getFileMetaData(bin, filename)
 	if err != nil {
 		// Log
 	}
+
+	be.Lock()
+	defer be.Unlock()
+	id := bin + filename
+	delete(be.files, id)
 	be.files[id] = f
-	be.lock.Unlock()
 
 	return err
 }
@@ -660,11 +661,11 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	f.CreatedAt = fi.ModTime()
 	f.Links = generateLinks(be.filedir, be.baseurl, bin, filename)
 
-	be.lock.Lock()
+	be.Lock()
+	defer be.Unlock()
 	id := f.Bin + f.Filename
 	delete(be.files, id)
 	be.files[id] = f
-	be.lock.Unlock()
 
 	return f, err
 }
@@ -677,10 +678,10 @@ func (be *Backend) DeleteFile(bin string, filename string) error {
 
 	err := os.Remove(fpath)
 
-	be.lock.Lock()
+	be.Lock()
+	defer be.Unlock()
 	id := bin + filename
 	delete(be.files, id)
-	be.lock.Unlock()
 	return err
 }
 
