@@ -142,7 +142,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	b, err := ctx.Backend.GetBinMetaData(bin)
 	if err == nil {
 		if b.Expired {
-			http.Error(w, "This bin expired " + b.ExpiresReadable + ".", 410)
+			http.Error(w, "This bin expired "+b.ExpiresReadable+".", 410)
 			return
 		}
 	}
@@ -253,7 +253,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	}
 
 	if b.Expired {
-		http.Error(w, "This bin expired " + b.ExpiresReadable + ".", 410)
+		http.Error(w, "This bin expired "+b.ExpiresReadable+".", 410)
 		return
 	}
 
@@ -390,7 +390,7 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	}
 
 	if b.Expired {
-		http.Error(w, "This bin expired " + b.ExpiresReadable + ".", 410)
+		http.Error(w, "This bin expired "+b.ExpiresReadable+".", 410)
 		return
 	}
 
@@ -424,7 +424,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	}
 
 	if b.Expired {
-		http.Error(w, "This bin expired " + b.ExpiresReadable + ".", 410)
+		http.Error(w, "This bin expired "+b.ExpiresReadable+".", 410)
 		return
 	}
 
@@ -464,7 +464,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 	}
 
 	if b.Expired {
-		http.Error(w, "This bin expired " + b.ExpiresReadable + ".", 410)
+		http.Error(w, "This bin expired "+b.ExpiresReadable+".", 410)
 		return
 	}
 
@@ -496,7 +496,9 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 
 	type Out struct {
 		Bins          []fs.Bin
+		BinsReadable  string
 		Files         int
+		FilesReadable string
 		Bytes         int64
 		BytesReadable string
 	}
@@ -513,6 +515,8 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 		Files:         files,
 		Bytes:         bytes,
 		BytesReadable: humanize.Bytes(uint64(bytes)),
+		BinsReadable:  humanize.Comma(int64(len(bins))),
+		FilesReadable: humanize.Comma(int64(files)),
 	}
 
 	if r.Header.Get("Accept") == "application/json" {

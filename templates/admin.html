@@ -33,7 +33,7 @@
             <div class="row">
               <div class="col-md-2">
                 <div class="card card-block card-success card-inverse">
-                  <h4 class="card-title">{{ .Data.Bins | len }}</h4>
+                  <h4 class="card-title">{{ .Data.BinsReadable }}</h4>
                   <p class="card-text">
                      Bin count
                   </p>
@@ -42,7 +42,7 @@
 
               <div class="col-md-2">
                 <div class="card card-block card-warning card-inverse">
-                  <h4 class="card-title">{{ .Data.Files }}</h4>
+                  <h4 class="card-title">{{ .Data.FilesReadable }}</h4>
                   <p class="card-text">
                      File count
                   </p>
