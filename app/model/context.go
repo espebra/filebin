@@ -7,8 +7,8 @@ import (
 )
 
 type Job struct {
-	Bin	string
-	Filename	string
+	Bin      string
+	Filename string
 }
 
 type Context struct {

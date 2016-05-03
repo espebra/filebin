@@ -1,10 +1,10 @@
 package model
 
 import (
+	"github.com/espebra/filebin/app/backend/fs"
 	"log"
 	"math/rand"
 	"time"
-	"github.com/espebra/filebin/app/backend/fs"
 )
 
 // Dispatcher function to spawn a number of workers
