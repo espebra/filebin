@@ -55,19 +55,12 @@ type File struct {
 	MIME      string    `json:"mime"`
 	CreatedAt time.Time `json:"created"`
 	Checksum  string    `json:"checksum,omitempty"`
-	Algorithm string    `json:"algorithm,omitempty"`
 	Links     []link    `json:"links"`
-	//Verified        bool      `json:"verified"`
-	//RemoteAddr      string    `json:"-"`
-	//UserAgent       string    `json:"-"`
-	//Tempfile        string    `json:"-"`
 
 	// Image specific attributes
 	DateTime  time.Time  `json:"datetime,omitempty"`
 	Longitude float64    `json:"longitude,omitempty"`
 	Latitude  float64    `json:"latitude,omitempty"`
-	Altitude  string     `json:"altitude,omitempty"`
-	//Exif      *exif.Exif `json:"-"`
 }
 
 type link struct {
@@ -493,7 +486,6 @@ func (be *Backend) getFileMetaData(bin string, filename string) (File, error) {
 	}
 	var result []byte
 	f.Checksum = hex.EncodeToString(hash.Sum(result))
-	f.Algorithm = "sha256"
 
 	// MIME
 	buffer := make([]byte, 512)
@@ -628,7 +620,6 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 
 	var result []byte
 	f.Checksum = hex.EncodeToString(hash.Sum(result))
-	f.Algorithm = "sha256"
 
 	bindir := filepath.Join(be.filedir, bin)
 	if !isDir(bindir) {
