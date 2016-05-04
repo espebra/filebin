@@ -15,7 +15,7 @@
         <!-- Bootstrap -->
         <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.css"/>
         <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/font-awesome.css"/>
-
+        <script src="{{ .Ctx.Baseurl }}/static/js/sorttable.js"></script>
     </head>
 
     <body>
@@ -60,7 +60,7 @@
             </div>
 
             <!-- Existing files in the bin -->
-            <table class="table">
+            <table class="sortable table">
                 <thead class="thead-default">
                     <tr>
                         <th>Bin</th>
@@ -78,9 +78,9 @@
                     <tr>
                     {{ end }}
                         <td><a href="{{ $.Ctx.Baseurl }}/{{ .Bin }}">{{ .Bin }}</a></td>
-                        <td>{{ .UpdatedReadable }}</td>
+                        <td sorttable_customkey="{{ .UpdatedAt }}">{{ .UpdatedReadable }}</td>
                         <td>{{ .Files | len }}</td>
-                        <td>{{ .BytesReadable }}</td>
+                        <td sorttable_customkey="{{ .Bytes }}">{{ .BytesReadable }}</td>
                     </tr>
                     {{ end }}
                 </tbody>
