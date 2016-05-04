@@ -67,7 +67,7 @@ type File struct {
 	Longitude float64    `json:"longitude,omitempty"`
 	Latitude  float64    `json:"latitude,omitempty"`
 	Altitude  string     `json:"altitude,omitempty"`
-	Exif      *exif.Exif `json:"-"`
+	//Exif      *exif.Exif `json:"-"`
 }
 
 type link struct {
@@ -232,6 +232,7 @@ func (be *Backend) NewBin(bin string) Bin {
 	b.Bin = bin
 	b.UpdatedAt = time.Now().UTC()
 	b.ExpiresAt = b.UpdatedAt.Add(time.Duration(be.expiration) * time.Second)
+	b.ExpiresReadable = humanize.Time(b.ExpiresAt)
 	return b
 }
 
@@ -487,8 +488,7 @@ func (be *Backend) getFileMetaData(bin string, filename string) (File, error) {
 	defer fp.Close()
 
 	hash := sha256.New()
-	_, err = io.Copy(hash, fp)
-	if err != nil {
+	if _, err = io.Copy(hash, fp); err != nil {
 		return f, err
 	}
 	var result []byte
@@ -497,29 +497,29 @@ func (be *Backend) getFileMetaData(bin string, filename string) (File, error) {
 
 	// MIME
 	buffer := make([]byte, 512)
-	_, err = fp.Seek(0, 0)
-	if err != nil {
+	if _, err = fp.Seek(0, 0); err != nil {
 		return f, err
 	}
-	_, err = fp.Read(buffer)
-	if err != nil {
+	if _, err = fp.Read(buffer); err != nil {
 		return f, err
 	}
 	f.MIME = http.DetectContentType(buffer)
 	f.Links = generateLinks(be.filedir, be.baseurl, bin, filename)
 
 	// Exif
-	_, err = fp.Seek(0, 0)
-	f.Exif, err = exif.Decode(fp)
+	if _, err = fp.Seek(0, 0); err != nil {
+		return f, err
+	}
+	exif, err := exif.Decode(fp)
 	if err != nil {
 		/// XXX: Log
 	} else {
-		f.DateTime, err = f.Exif.DateTime()
+		f.DateTime, err = exif.DateTime()
 		if err != nil {
 			/// XXX: Log
 		}
 
-		f.Latitude, f.Longitude, err = f.Exif.LatLong()
+		f.Latitude, f.Longitude, err = exif.LatLong()
 		if err != nil {
 			/// XXX: Log
 		}
