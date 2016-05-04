@@ -2,7 +2,7 @@ language: go
 
 before_install:
  - sudo apt-get update -q
- - sudo apt-get install libvips15 curl
+ - sudo apt-get install curl
 
 go:
   - tip
