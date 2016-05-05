@@ -20,14 +20,6 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
-func isWorkaroundNeeded(useragent string) bool {
-	matched, err := regexp.MatchString("(iPhone|iPad|iPod)", useragent)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return matched
-}
-
 func triggerNewBinHandler(c string, bin string) error {
 	cmd := exec.Command(c, bin)
 	err := cmdHandler(cmd)
@@ -182,40 +174,9 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		return
 	}
 
-	//f.RemoteAddr = r.RemoteAddr
-	//f.UserAgent = r.Header.Get("User-Agent")
-
-	//	// iOS devices provide only one filename even when uploading
-	//	// multiple images. Providing some workaround for this below.
-	//	// XXX: Refactoring needed.
-	//	if isWorkaroundNeeded(f.UserAgent) && !f.DateTime.IsZero() {
-	//		var fname string
-	//		dt := f.DateTime.Format("060102-150405")
-
-	//		// List of filenames to modify
-	//		if f.Filename == "image.jpeg" {
-	//			fname = "img-" + dt + ".jpeg"
-	//		}
-	//		if f.Filename == "image.gif" {
-	//			fname = "img-" + dt + ".gif"
-	//		}
-	//		if f.Filename == "image.png" {
-	//			fname = "img-" + dt + ".png"
-	//		}
-
-	//		if fname != "" {
-	//			ctx.Log.Println("Filename workaround triggered")
-	//			ctx.Log.Println("Filename modified: " + fname)
-	//			err = f.SetFilename(fname)
-	//			if err != nil {
-	//				ctx.Log.Println(err)
-	//			}
-	//		}
-	//	}
-
 	if cfg.TriggerUploadFile != "" {
 		ctx.Log.Println("Executing trigger: Uploaded file")
-		triggerUploadFileHandler(cfg.TriggerUploadFile, bin, filename)
+		triggerUploadFileHandler(cfg.TriggerUploadFile, f.Bin, f.Filename)
 	}
 
 	// Purging any old content
@@ -228,8 +189,8 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	}
 
 	j := model.Job{}
-	j.Filename = filename
-	j.Bin = bin
+	j.Filename = f.Filename
+	j.Bin = f.Bin
 	ctx.WorkQueue <- j
 
 	w.Header().Set("Content-Type", "application/json")

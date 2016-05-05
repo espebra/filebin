@@ -36,16 +36,16 @@ type Backend struct {
 }
 
 type Bin struct {
-	Bin             string `json:"bin"`
-	Bytes           int64  `json:"bytes"`
-	BytesReadable   string
+	Bin             string    `json:"bin"`
+	Bytes           int64     `json:"bytes"`
+	BytesReadable   string    `json:"-"`
 	ExpiresAt       time.Time `json:"expires"`
-	ExpiresReadable string
+	ExpiresReadable string    `json:"-"`
 	Expired         bool      `json:"-"`
 	UpdatedAt       time.Time `json:"updated"`
-	UpdatedReadable string
-	Files           []File `json:"files,omitempty"`
-	Album           bool   `json:"-"`
+	UpdatedReadable string    `json:"-"`
+	Files           []File    `json:"files,omitempty"`
+	Album           bool      `json:"-"`
 }
 
 type File struct {
@@ -625,6 +625,50 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	var result []byte
 	f.Checksum = hex.EncodeToString(hash.Sum(result))
 
+	// Exif
+	if _, err = fp.Seek(0, 0); err != nil {
+		return f, err
+	}
+	exif, err := exif.Decode(fp)
+	if err != nil {
+		/// XXX: Log
+	} else {
+		f.DateTime, err = exif.DateTime()
+		if err != nil {
+			/// XXX: Log
+		}
+
+		f.Latitude, f.Longitude, err = exif.LatLong()
+		if err != nil {
+			/// XXX: Log
+		}
+	}
+
+	// iOS devices provide only one filename even when uploading
+	// multiple images. Providing some workaround for this below.
+	// XXX: Refactoring needed. Can probably be done nicer.
+	if strings.Split(f.MIME, "/")[0] == "image" && !f.DateTime.IsZero() {
+		dt := f.DateTime.Format("060102-150405")
+		var fname string
+
+		// List of filenames to modify
+		if filename == "image.jpeg" {
+			fname = "img-" + dt + ".jpeg"
+		}
+		if filename == "image.gif" {
+			fname = "img-" + dt + ".gif"
+		}
+		if filename == "image.png" {
+			fname = "img-" + dt + ".png"
+		}
+
+		if fname != "" {
+			be.Log.Println("Filename workaround triggered")
+			be.Log.Println("Filename modified: " + fname)
+			f.Filename = fname
+		}
+	}
+
 	bindir := filepath.Join(be.filedir, bin)
 	if !isDir(bindir) {
 		if err := os.Mkdir(bindir, 0700); err != nil {
@@ -632,7 +676,7 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 		}
 	}
 
-	dst := filepath.Join(bindir, filename)
+	dst := filepath.Join(bindir, f.Filename)
 	be.Log.Println("Copying contents to " + dst)
 	if err := CopyFile(fp.Name(), dst); err != nil {
 		be.Log.Println(err)
@@ -652,7 +696,7 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	}
 
 	f.CreatedAt = fi.ModTime()
-	f.Links = generateLinks(be.filedir, be.baseurl, bin, filename)
+	f.Links = generateLinks(be.filedir, be.baseurl, bin, f.Filename)
 
 	be.Lock()
 	defer be.Unlock()
