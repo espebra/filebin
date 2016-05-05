@@ -58,9 +58,9 @@ type File struct {
 	Links     []link    `json:"links"`
 
 	// Image specific attributes
-	DateTime  time.Time  `json:"datetime,omitempty"`
-	Longitude float64    `json:"longitude,omitempty"`
-	Latitude  float64    `json:"latitude,omitempty"`
+	DateTime  time.Time `json:"datetime,omitempty"`
+	Longitude float64   `json:"longitude,omitempty"`
+	Latitude  float64   `json:"latitude,omitempty"`
 }
 
 type link struct {
@@ -262,22 +262,26 @@ func (be *Backend) GetBinMetaData(bin string) (Bin, error) {
 
 	sort.Sort(FilesByDateTime(b.Files))
 	if len(b.Files) == 0 {
-		err := errors.New("Bin does not exist")
+		err := errors.New("Bin " + bin + " does not exist")
 		return b, err
 	}
 	b.Bin = bin
 	return b, nil
 }
 
-func (be *Backend) DeleteBin(bin string) error {
+func (be *Backend) DeleteBin(bin string) (Bin, error) {
+	b, err := be.GetBinMetaData(bin)
+	if err != nil {
+		return b, err
+	}
+
 	bindir := filepath.Join(be.filedir, bin)
 	be.Log.Println("Deleting bin " + bin + " (" + bindir + ")")
 
-	if !isDir(bindir) {
-		return errors.New("Bin " + bin + " does not exist.")
+	if err := os.RemoveAll(bindir); err != nil {
+		return b, err
 	}
 
-	err := os.RemoveAll(bindir)
 	be.Lock()
 	defer be.Unlock()
 	for id, f := range be.files {
@@ -286,7 +290,7 @@ func (be *Backend) DeleteBin(bin string) error {
 		}
 		delete(be.files, id)
 	}
-	return err
+	return b, nil
 }
 
 func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWriter) (io.Writer, string, error) {
@@ -659,19 +663,21 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	return f, err
 }
 
-func (be *Backend) DeleteFile(bin string, filename string) error {
-	fpath := filepath.Join(be.filedir, bin, filename)
-	if !isFile(fpath) {
-		return errors.New("File " + filename + " does not exist in bin " + bin + ".")
+func (be *Backend) DeleteFile(bin string, filename string) (File, error) {
+	f, err := be.GetFileMetaData(bin, filename)
+	if err != nil {
+		return f, err
 	}
-
-	err := os.Remove(fpath)
+	fpath := filepath.Join(be.filedir, bin, filename)
+	if err := os.Remove(fpath); err != nil {
+		return f, err
+	}
 
 	be.Lock()
 	defer be.Unlock()
 	id := bin + filename
 	delete(be.files, id)
-	return err
+	return f, nil
 }
 
 func (f File) BytesReadable() string {

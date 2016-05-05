@@ -11,13 +11,19 @@ import (
 )
 
 const (
-	CONTENT    = "Some content"
 	EXPIRATION = 3
 )
 
 var (
 	be Backend
 )
+
+func uploadFile(bin string, filename string, data string) (File, error) {
+	body := ioutil.NopCloser(bytes.NewBufferString(data))
+
+	f, err := be.UploadFile(bin, filename, body)
+	return f, err
+}
 
 func TestMain(m *testing.M) {
 	log := log.New(os.Stdout, "- ", log.LstdFlags)
@@ -58,11 +64,7 @@ func TestInfo(t *testing.T) {
 }
 
 func TestUploadFile(t *testing.T) {
-	bin := "testbin"
-	filename := "testfile"
-	data := ioutil.NopCloser(bytes.NewBufferString(CONTENT))
-
-	f, err := be.UploadFile(bin, filename, data)
+	f, err := uploadFile("testbin", "testfile", "Some content")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +82,7 @@ func TestUploadFile(t *testing.T) {
 		t.Fatal("Unexpected number of links: " + strconv.Itoa(numLinks))
 	}
 
-	files, err := be.getFiles(bin)
+	files, err := be.getFiles("testbin")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -123,7 +125,7 @@ func TestGetFile(t *testing.T) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(fp)
 	content := buf.String()
-	if content != CONTENT {
+	if content != "Some content" {
 		t.Fatal("Unexpected content: " + content)
 	}
 }
@@ -179,35 +181,38 @@ func TestDeleteFile(t *testing.T) {
 	bin := "testbin"
 	filename := "testfile"
 
-	if err := be.DeleteFile(bin, filename); err != nil {
+	if _, err := be.DeleteFile(bin, filename); err != nil {
 		t.Fatal(err)
 	}
 
-	_, err := be.GetFileMetaData(bin, filename)
-	if err == nil {
+	if _, err := be.GetFileMetaData(bin, filename); err == nil {
 		t.Fatal("Unexpected success when reading deleted file")
 	}
 
-	err = be.DeleteFile(bin, filename)
-	expected := "File " + filename + " does not exist in bin " + bin + "."
+	_, err := be.DeleteFile(bin, filename)
+	expected := "File not found"
 	if err.Error() != expected {
 		t.Fatal(err)
 	}
 }
 
 func TestDeleteBin(t *testing.T) {
-	bin := "testbin"
-	if err := be.DeleteBin(bin); err != nil {
+	bin := "2bdeleted"
+	_, err := uploadFile(bin, "testfile2", "Some other content")
+	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, err := be.GetBinMetaData(bin)
-	if err == nil {
+	if _, err := be.DeleteBin(bin); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := be.GetBinMetaData(bin); err == nil {
 		t.Fatal("Unexpected success when reading deleted bin")
 	}
 
-	err = be.DeleteBin(bin)
-	expected := "Bin " + bin + " does not exist."
+	_, err = be.DeleteBin(bin)
+	expected := "Bin " + bin + " does not exist"
 	if err.Error() != expected {
 		t.Fatal(err)
 	}

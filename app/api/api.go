@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	//"sort"
 	"github.com/dustin/go-humanize"
 )
@@ -131,6 +132,27 @@ func sanitizeFilename(s string) string {
 	return s
 }
 
+func purgeURL(url string) error {
+	timeout := time.Duration(2 * time.Second)
+	client := &http.Client{
+		Timeout: timeout,
+	}
+	fmt.Println("Purged " + url)
+
+	// Invalidate the file
+	req, err := http.NewRequest("PURGE", url, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Do(req)
+	if err != nil {
+		return err
+	}
+	// Should probably log the URL and response code
+	return nil
+}
+
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	//params := mux.Vars(r)
 	bin := r.Header.Get("bin")
@@ -191,29 +213,19 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	//		}
 	//	}
 
-	//	//err = f.GenerateThumbnail()
-	//	//if err != nil {
-	//	//	ctx.Log.Println(err)
-	//	//}
-
-	//	//extra := make(map[string]string)
-	//	//if !f.DateTime.IsZero() {
-	//	//	extra["DateTime"] = f.DateTime.String()
-	//	//}
-	//	//f.Extra = extra
-	//}
-
 	if cfg.TriggerUploadFile != "" {
 		ctx.Log.Println("Executing trigger: Uploaded file")
 		triggerUploadFileHandler(cfg.TriggerUploadFile, bin, filename)
 	}
 
 	// Purging any old content
-	//if cfg.CacheInvalidation {
-	//	if err := f.Purge(); err != nil {
-	//		ctx.Log.Println(err)
-	//	}
-	//}
+	if cfg.CacheInvalidation {
+		for _, l := range f.Links {
+			if err := purgeURL(l.Href); err != nil {
+				ctx.Log.Println(err)
+			}
+		}
+	}
 
 	j := model.Job{}
 	j.Filename = filename
@@ -316,20 +328,23 @@ func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
-	if err := ctx.Backend.DeleteBin(bin); err != nil {
+	b, err := ctx.Backend.DeleteBin(bin)
+	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 
 	//// Purging any old content
-	//if cfg.CacheInvalidation {
-	//	for _, f := range t.Files {
-	//		if err := f.Purge(); err != nil {
-	//			ctx.Log.Println(err)
-	//		}
-	//	}
-	//}
+	if cfg.CacheInvalidation {
+		for _, f := range b.Files {
+			for _, l := range f.Links {
+				if err := purgeURL(l.Href); err != nil {
+					ctx.Log.Println(err)
+				}
+			}
+		}
+	}
 
 	ctx.Log.Println("Bin deleted successfully.")
 	http.Error(w, "Bin Deleted Successfully", 200)
@@ -351,7 +366,8 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		return
 	}
 
-	if err := ctx.Backend.DeleteFile(bin, filename); err != nil {
+	f, err := ctx.Backend.DeleteFile(bin, filename)
+	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
@@ -362,12 +378,14 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		triggerDeleteFileHandler(cfg.TriggerDeleteFile, bin, filename)
 	}
 
-	//// Purging any old content
-	//if cfg.CacheInvalidation {
-	//	if err := f.Purge(); err != nil {
-	//		ctx.Log.Println(err)
-	//	}
-	//}
+	// Purging any old content
+	if cfg.CacheInvalidation {
+		for _, l := range f.Links {
+			if err := purgeURL(l.Href); err != nil {
+				ctx.Log.Println(err)
+			}
+		}
+	}
 
 	http.Error(w, "File deleted successfully", 200)
 }
@@ -527,7 +545,7 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 }
 
 func PurgeHandler(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	ctx.Log.Println("Unexpected PURGE request received")
+	ctx.Log.Println("Unexpected PURGE request received: " + r.RequestURI)
 	http.Error(w, "Not implemented", 501)
 	return
 }
