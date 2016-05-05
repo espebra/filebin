@@ -267,10 +267,14 @@ func main() {
 
 	//fmt.Println("Trigger Expired bin: " + cfg.TriggerExpiredBin)
 
+	startTime := time.Now().UTC()
 	backend, err = fs.InitBackend(cfg.Baseurl, cfg.Filedir, cfg.Tempdir, cfg.Expiration, log)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
+	finishTime := time.Now().UTC()
+	elapsedTime := finishTime.Sub(startTime)
+	backend.Log.Println("Backend initialized in: " + elapsedTime.String())
 
 	log.Println("Backend: " + backend.Info())
 	log.Println("Filebin server starting...")
