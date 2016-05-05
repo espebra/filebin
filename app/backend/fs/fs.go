@@ -525,6 +525,15 @@ func (be *Backend) getFileMetaData(bin string, filename string) (File, error) {
 }
 
 func (be *Backend) GenerateThumbnail(bin string, filename string, width int, height int, crop bool) error {
+	f, err := be.GetFileMetaData(bin, filename)
+	if err != nil {
+		return err
+	}
+
+	if strings.Split(f.MIME, "/")[0] != "image" {
+		return errors.New("Batch job skipped: " + filename + " is not an image")
+	}
+
 	fpath := filepath.Join(be.filedir, bin, filename)
 
 	cachedir := filepath.Join(be.filedir, bin, ".cache")
@@ -546,11 +555,6 @@ func (be *Backend) GenerateThumbnail(bin string, filename string, width int, hei
 	} else {
 		im := imaging.Resize(s, width, height, imaging.Lanczos)
 		err = imaging.Save(im, dst)
-	}
-
-	f, err := be.getFileMetaData(bin, filename)
-	if err != nil {
-		// Log
 	}
 
 	be.Lock()
