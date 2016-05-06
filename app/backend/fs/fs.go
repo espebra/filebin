@@ -557,6 +557,7 @@ func (be *Backend) GenerateThumbnail(bin string, filename string, width int, hei
 		err = imaging.Save(im, dst)
 	}
 
+	f.Links = generateLinks(be.filedir, be.baseurl, f.Bin, f.Filename)
 	be.Lock()
 	defer be.Unlock()
 	id := bin + filename
