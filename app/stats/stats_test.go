@@ -48,11 +48,35 @@ func TestGet(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-	stats := s.GetCounters()
+	stats := s.GetAll()
 	if len(stats) != 1 {
 		t.Fatal("The number of stats is not 1")
 	}
 	if stats["foo"] != 2 {
 		t.Fatal("The value is not 2. Weird.")
+	}
+}
+
+func TestIncr(t *testing.T) {
+	if s.Incr("bar") != 1 {
+		t.Fatal("The value is not 1")
+	}
+	if s.Incr("bar") != 2 {
+		t.Fatal("The value is not 2")
+	}
+	if s.Incr("bar") != 3 {
+		t.Fatal("The value is not 3")
+	}
+}
+
+func TestDecr(t *testing.T) {
+	if s.Decr("bar") != 2 {
+		t.Fatal("The value is not 2")
+	}
+	if s.Decr("bar") != 1 {
+		t.Fatal("The value is not 1")
+	}
+	if s.Decr("bar") != 0 {
+		t.Fatal("The value is not 0")
 	}
 }

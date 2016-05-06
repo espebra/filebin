@@ -21,10 +21,18 @@ func InitStats() Stats {
 }
 
 func (s *Stats) Uptime() time.Duration {
+	s.RLock()
+	defer s.RUnlock()
 	return time.Since(s.startTime)
 }
 
-func (s *Stats) GetCounters() map[string]int64 {
+func (s *Stats) StartTime() time.Time {
+	s.RLock()
+	defer s.RUnlock()
+	return s.startTime
+}
+
+func (s *Stats) GetAll() map[string]int64 {
 	s.RLock()
 	defer s.RUnlock()
 	return s.counters
@@ -45,6 +53,25 @@ func (s *Stats) IncrSet(key string, i int64) int64 {
 	if found {
 		newValue = currentValue + i
 	}
+	s.counters[key] = newValue
+	return newValue
+}
+
+func (s *Stats) Incr(key string) int64 {
+	s.Lock()
+	defer s.Unlock()
+	currentValue, _ := s.counters[key]
+	newValue := currentValue + 1
+	s.counters[key] = newValue
+	return newValue
+}
+
+
+func (s *Stats) Decr(key string) int64 {
+	s.Lock()
+	defer s.Unlock()
+	currentValue, _ := s.counters[key]
+	newValue := currentValue - 1
 	s.counters[key] = newValue
 	return newValue
 }

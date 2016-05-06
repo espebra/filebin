@@ -146,7 +146,6 @@ func purgeURL(url string) error {
 }
 
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	//params := mux.Vars(r)
 	bin := r.Header.Get("bin")
 	if err := verifyBin(bin); err != nil {
 		http.Error(w, "Invalid bin", 400)
@@ -167,12 +166,17 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		return
 	}
 
+	ctx.Stats.Incr("current-upload")
+	defer ctx.Stats.Decr("current-upload")
+
 	f, err := ctx.Backend.UploadFile(bin, filename, r.Body)
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+
+	ctx.Stats.Incr("total-upload")
 
 	if cfg.TriggerUploadFile != "" {
 		ctx.Log.Println("Executing trigger: Uploaded file")
@@ -264,6 +268,10 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
+	ctx.Stats.Incr("total-file-download")
+	ctx.Stats.Incr("current-file-download")
+	defer ctx.Stats.Decr("current-file-download")
+
 	fp, err := ctx.Backend.GetFile(bin, filename)
 	if err != nil {
 		ctx.Log.Println(err)
@@ -296,7 +304,9 @@ func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
-	//// Purging any old content
+	ctx.Stats.Incr("total-bin-delete")
+
+	// Purging any old content
 	if cfg.CacheInvalidation {
 		for _, f := range b.Files {
 			for _, l := range f.Links {
@@ -333,6 +343,8 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
+
+	ctx.Stats.Incr("total-file-delete")
 
 	if cfg.TriggerDeleteFile != "" {
 		ctx.Log.Println("Executing trigger: Delete file")
@@ -445,12 +457,17 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 		return
 	}
 
+	ctx.Stats.Incr("current-archive-download")
+	defer ctx.Stats.Decr("current-archive-download")
+
 	_, _, err = ctx.Backend.GetBinArchive(bin, format, w)
 	if err != nil {
 		ctx.Log.Println(err)
 		http.Error(w, "Bin not found", 404)
 		return
 	}
+
+	ctx.Stats.Incr("total-archive-download")
 
 	if cfg.TriggerDownloadBin != "" {
 		ctx.Log.Println("Executing trigger: Download bin")
@@ -470,6 +487,7 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var status = 200
 	bins := ctx.Backend.GetBinsMetaData()
+	stats := ctx.Stats.GetAll()
 
 	type Out struct {
 		Bins          []fs.Bin
@@ -478,6 +496,9 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 		FilesReadable string
 		Bytes         int64
 		BytesReadable string
+		Stats         map[string]int64
+		Uptime        time.Duration
+		UptimeReadable string
 	}
 
 	var files int
@@ -494,6 +515,9 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 		BytesReadable: humanize.Bytes(uint64(bytes)),
 		BinsReadable:  humanize.Comma(int64(len(bins))),
 		FilesReadable: humanize.Comma(int64(files)),
+		Stats:         stats,
+                Uptime:        ctx.Stats.Uptime(),
+                UptimeReadable: humanize.Time(ctx.Stats.StartTime()),
 	}
 
 	if r.Header.Get("Accept") == "application/json" {
