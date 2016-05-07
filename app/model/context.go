@@ -19,5 +19,5 @@ type Context struct {
 	Log         *log.Logger
 	WorkQueue   chan Job
 	Backend     *fs.Backend
-	Metrics       *metrics.Metrics
+	Metrics     *metrics.Metrics
 }

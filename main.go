@@ -18,8 +18,8 @@ import (
 	"github.com/espebra/filebin/app/api"
 	"github.com/espebra/filebin/app/backend/fs"
 	"github.com/espebra/filebin/app/config"
-	"github.com/espebra/filebin/app/model"
 	"github.com/espebra/filebin/app/metrics"
+	"github.com/espebra/filebin/app/model"
 )
 
 var cfg = config.Global
@@ -29,7 +29,7 @@ var buildstamp = "No buildstamp provided"
 var staticBox *rice.Box
 var templateBox *rice.Box
 var backend fs.Backend
-var st metrics.Stats
+var m metrics.Metrics
 
 // Initiate buffered channel for batch processing
 var WorkQueue = make(chan model.Job, 1000)
@@ -269,7 +269,7 @@ func main() {
 
 	//fmt.Println("Trigger Expired bin: " + cfg.TriggerExpiredBin)
 
-	st = metrics.InitStats()
+	m = metrics.Init()
 
 	startTime := time.Now().UTC()
 	backend, err = fs.InitBackend(cfg.Baseurl, cfg.Filedir, cfg.Tempdir, cfg.Expiration, log)
@@ -343,7 +343,7 @@ func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration
 		ctx.Baseurl = cfg.Baseurl
 		ctx.WorkQueue = WorkQueue
 		ctx.Backend = &backend
-		ctx.Stats = &st
+		ctx.Metrics = &m
 
 		// Initialize logger for this request
 		ctx.Log = log.New(os.Stdout, reqId+" ", log.LstdFlags)

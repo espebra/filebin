@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/espebra/filebin/app/backend/fs"
 	"github.com/espebra/filebin/app/config"
+	"github.com/espebra/filebin/app/metrics"
 	"github.com/espebra/filebin/app/model"
 	"github.com/espebra/filebin/app/output"
 	"github.com/gorilla/mux"
@@ -490,8 +491,11 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 
 func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var status = 200
+	ctx.Metrics.Event("admin-login", r.RemoteAddr+" ("+r.Header.Get("user-agent")+")")
 	bins := ctx.Backend.GetBinsMetaData()
-	metrics := ctx.Metrics.GetCounters()
+	stats := ctx.Metrics.GetStats()
+	events := ctx.Metrics.GetEvents(100)
+	logins := ctx.Metrics.GetEventCategory("admin-login", 3)
 
 	type Out struct {
 		Bins           []fs.Bin
@@ -500,7 +504,9 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 		FilesReadable  string
 		Bytes          int64
 		BytesReadable  string
-		Metrics          map[string]int64
+		Stats          map[string]int64
+		Logins         []metrics.Event
+		Events         []metrics.Event
 		Uptime         time.Duration
 		UptimeReadable string
 	}
@@ -519,7 +525,9 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 		BytesReadable:  humanize.Bytes(uint64(bytes)),
 		BinsReadable:   humanize.Comma(int64(len(bins))),
 		FilesReadable:  humanize.Comma(int64(files)),
-		Metrics:          metrics,
+		Stats:          stats,
+		Events:         events,
+		Logins:         logins,
 		Uptime:         ctx.Metrics.Uptime(),
 		UptimeReadable: humanize.Time(ctx.Metrics.StartTime()),
 	}
