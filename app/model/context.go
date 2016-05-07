@@ -3,7 +3,7 @@ package model
 import (
 	"github.com/GeertJohan/go.rice"
 	"github.com/espebra/filebin/app/backend/fs"
-	"github.com/espebra/filebin/app/stats"
+	"github.com/espebra/filebin/app/metrics"
 	"log"
 )
 
@@ -19,5 +19,5 @@ type Context struct {
 	Log         *log.Logger
 	WorkQueue   chan Job
 	Backend     *fs.Backend
-	Stats       *stats.Stats
+	Metrics       *metrics.Metrics
 }

@@ -59,21 +59,21 @@
             <div class="row">
               <div class="col-md-4">
                 <div class="alert alert-warning">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "current-upload" }}</strong></div>
+                  <div class="text-xs-center"><strong>{{ index .Data.Metrics "current-upload" }}</strong></div>
                   <div class="text-xs-center">File uploads in progress</div>
                 </div>
               </div>
 
               <div class="col-md-4">
                 <div class="alert alert-warning">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "current-file-download" }}</strong></div>
+                  <div class="text-xs-center"><strong>{{ index .Data.Metrics "current-file-download" }}</strong></div>
                   <div class="text-xs-center">File downloads in progress</div>
                 </div>
               </div>
 
               <div class="col-md-4">
                 <div class="alert alert-warning">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "current-archive-download" }}</strong></div>
+                  <div class="text-xs-center"><strong>{{ index .Data.Metrics "current-archive-download" }}</strong></div>
                   <div class="text-xs-center">Archive downloads in progress</div>
                 </div>
               </div>
@@ -82,21 +82,21 @@
             <div class="row">
               <div class="col-md-4">
                 <div class="alert alert-success">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "total-upload" }}</strong></div>
+                  <div class="text-xs-center"><strong>{{ index .Data.Metrics "total-upload" }}</strong></div>
                   <div class="text-xs-center">File uploads since startup</div>
                 </div>
               </div>
 
               <div class="col-md-4">
                 <div class="alert alert-success">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "total-file-download" }}</strong></div>
+                  <div class="text-xs-center"><strong>{{ index .Data.Metrics "total-file-download" }}</strong></div>
                   <div class="text-xs-center">File downloads since startup</div>
                 </div>
               </div>
 
               <div class="col-md-4">
                 <div class="alert alert-success">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "total-archive-download" }}</strong></div>
+                  <div class="text-xs-center"><strong>{{ index .Data.Metrics "total-archive-download" }}</strong></div>
                   <div class="text-xs-center">Archive downloads since startup</div>
                 </div>
               </div>
@@ -105,14 +105,14 @@
             <div class="row">
               <div class="col-md-4">
                 <div class="alert alert-danger">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "total-file-delete" }}</strong></div>
+                  <div class="text-xs-center"><strong>{{ index .Data.Metrics "total-file-delete" }}</strong></div>
                   <div class="text-xs-center">Files deleted since startup</div>
                 </div>
               </div>
 
               <div class="col-md-4">
                 <div class="alert alert-danger">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "total-bin-delete" }}</strong></div>
+                  <div class="text-xs-center"><strong>{{ index .Data.Metrics "total-bin-delete" }}</strong></div>
                   <div class="text-xs-center">Bins deleted since startup</div>
                 </div>
               </div>

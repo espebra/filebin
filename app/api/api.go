@@ -166,8 +166,8 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		return
 	}
 
-	ctx.Stats.Incr("current-upload")
-	defer ctx.Stats.Decr("current-upload")
+	ctx.Metrics.Incr("current-upload")
+	defer ctx.Metrics.Decr("current-upload")
 
 	f, err := ctx.Backend.UploadFile(bin, filename, r.Body)
 	if err != nil {
@@ -176,7 +176,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		return
 	}
 
-	ctx.Stats.Incr("total-upload")
+	ctx.Metrics.Incr("total-upload")
 
 	if cfg.TriggerUploadFile != "" {
 		ctx.Log.Println("Executing trigger: Uploaded file")
@@ -268,9 +268,9 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
-	ctx.Stats.Incr("total-file-download")
-	ctx.Stats.Incr("current-file-download")
-	defer ctx.Stats.Decr("current-file-download")
+	ctx.Metrics.Incr("total-file-download")
+	ctx.Metrics.Incr("current-file-download")
+	defer ctx.Metrics.Decr("current-file-download")
 
 	fp, err := ctx.Backend.GetFile(bin, filename)
 	if err != nil {
@@ -304,7 +304,7 @@ func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
-	ctx.Stats.Incr("total-bin-delete")
+	ctx.Metrics.Incr("total-bin-delete")
 
 	// Purging any old content
 	if cfg.CacheInvalidation {
@@ -344,7 +344,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		return
 	}
 
-	ctx.Stats.Incr("total-file-delete")
+	ctx.Metrics.Incr("total-file-delete")
 
 	if cfg.TriggerDeleteFile != "" {
 		ctx.Log.Println("Executing trigger: Delete file")
@@ -383,7 +383,7 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		return
 	}
 
-	ctx.Stats.Incr("total-view-album")
+	ctx.Metrics.Incr("total-view-album")
 
 	w.Header().Set("Cache-Control", "s-maxage=3600")
 
@@ -419,7 +419,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 		return
 	}
 
-	ctx.Stats.Incr("total-view-bin")
+	ctx.Metrics.Incr("total-view-bin")
 
 	w.Header().Set("Vary", "Content-Type")
 	w.Header().Set("Cache-Control", "s-maxage=3600")
@@ -461,8 +461,8 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 		return
 	}
 
-	ctx.Stats.Incr("current-archive-download")
-	defer ctx.Stats.Decr("current-archive-download")
+	ctx.Metrics.Incr("current-archive-download")
+	defer ctx.Metrics.Decr("current-archive-download")
 
 	_, _, err = ctx.Backend.GetBinArchive(bin, format, w)
 	if err != nil {
@@ -471,7 +471,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 		return
 	}
 
-	ctx.Stats.Incr("total-archive-download")
+	ctx.Metrics.Incr("total-archive-download")
 
 	if cfg.TriggerDownloadBin != "" {
 		ctx.Log.Println("Executing trigger: Download bin")
@@ -491,7 +491,7 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var status = 200
 	bins := ctx.Backend.GetBinsMetaData()
-	stats := ctx.Stats.GetAll()
+	metrics := ctx.Metrics.GetCounters()
 
 	type Out struct {
 		Bins           []fs.Bin
@@ -500,7 +500,7 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 		FilesReadable  string
 		Bytes          int64
 		BytesReadable  string
-		Stats          map[string]int64
+		Metrics          map[string]int64
 		Uptime         time.Duration
 		UptimeReadable string
 	}
@@ -519,9 +519,9 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 		BytesReadable:  humanize.Bytes(uint64(bytes)),
 		BinsReadable:   humanize.Comma(int64(len(bins))),
 		FilesReadable:  humanize.Comma(int64(files)),
-		Stats:          stats,
-		Uptime:         ctx.Stats.Uptime(),
-		UptimeReadable: humanize.Time(ctx.Stats.StartTime()),
+		Metrics:          metrics,
+		Uptime:         ctx.Metrics.Uptime(),
+		UptimeReadable: humanize.Time(ctx.Metrics.StartTime()),
 	}
 
 	if r.Header.Get("Accept") == "application/json" {
