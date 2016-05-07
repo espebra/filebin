@@ -383,6 +383,8 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		return
 	}
 
+	ctx.Stats.Incr("total-view-album")
+
 	w.Header().Set("Cache-Control", "s-maxage=3600")
 
 	var status = 200
@@ -416,6 +418,8 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 		http.Error(w, "This bin expired "+b.ExpiresReadable+".", 410)
 		return
 	}
+
+	ctx.Stats.Incr("total-view-bin")
 
 	w.Header().Set("Vary", "Content-Type")
 	w.Header().Set("Cache-Control", "s-maxage=3600")
@@ -490,14 +494,14 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 	stats := ctx.Stats.GetAll()
 
 	type Out struct {
-		Bins          []fs.Bin
-		BinsReadable  string
-		Files         int
-		FilesReadable string
-		Bytes         int64
-		BytesReadable string
-		Stats         map[string]int64
-		Uptime        time.Duration
+		Bins           []fs.Bin
+		BinsReadable   string
+		Files          int
+		FilesReadable  string
+		Bytes          int64
+		BytesReadable  string
+		Stats          map[string]int64
+		Uptime         time.Duration
 		UptimeReadable string
 	}
 
@@ -509,15 +513,15 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 	}
 
 	data := Out{
-		Bins:          bins,
-		Files:         files,
-		Bytes:         bytes,
-		BytesReadable: humanize.Bytes(uint64(bytes)),
-		BinsReadable:  humanize.Comma(int64(len(bins))),
-		FilesReadable: humanize.Comma(int64(files)),
-		Stats:         stats,
-                Uptime:        ctx.Stats.Uptime(),
-                UptimeReadable: humanize.Time(ctx.Stats.StartTime()),
+		Bins:           bins,
+		Files:          files,
+		Bytes:          bytes,
+		BytesReadable:  humanize.Bytes(uint64(bytes)),
+		BinsReadable:   humanize.Comma(int64(len(bins))),
+		FilesReadable:  humanize.Comma(int64(files)),
+		Stats:          stats,
+		Uptime:         ctx.Stats.Uptime(),
+		UptimeReadable: humanize.Time(ctx.Stats.StartTime()),
 	}
 
 	if r.Header.Get("Accept") == "application/json" {
