@@ -202,6 +202,22 @@ func (be *Backend) GetBins() []string {
 	return bins
 }
 
+func (be *Backend) GetFiles(bin string) []string {
+	var files []string
+	be.RLock()
+	defer be.RUnlock()
+	for _, f := range be.files {
+		if f.Bin != bin {
+			continue
+		}
+		if !stringInSlice(f.Filename, files) {
+			files = append(files, f.Filename)
+		}
+	}
+
+	return files
+}
+
 func (be *Backend) GetBinsMetaData() []Bin {
 	var bins []Bin
 
@@ -535,7 +551,6 @@ func (be *Backend) GenerateThumbnail(bin string, filename string, width int, hei
 	}
 
 	fpath := filepath.Join(be.filedir, bin, filename)
-
 	cachedir := filepath.Join(be.filedir, bin, ".cache")
 	if !isDir(cachedir) {
 		if err := os.Mkdir(cachedir, 0700); err != nil {
@@ -543,6 +558,18 @@ func (be *Backend) GenerateThumbnail(bin string, filename string, width int, hei
 		}
 	}
 	dst := filepath.Join(cachedir, strconv.Itoa(width)+"x"+strconv.Itoa(height)+"-"+filename)
+
+	// Optimize to skip thumbnail generation if the thumbnail file exists
+	// and is newer than the file.
+	fi, err := os.Lstat(dst)
+	if err == nil {
+		if f.CreatedAt.After(fi.ModTime()) {
+			// File newer than thumbnail. Ok to generate.
+		} else {
+			// File older than thumbnail. No need to generate.
+			return nil
+		}
+	}
 
 	s, err := imaging.Open(fpath)
 	if err != nil {

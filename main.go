@@ -283,6 +283,18 @@ func main() {
 	log.Println("Backend: " + backend.Info())
 	log.Println("Filebin server starting...")
 
+	// Sending all files through the batch process to ensure thumbnails
+	// are generated.
+	for _, bin := range backend.GetBins() {
+		files := backend.GetFiles(bin)
+		for _, filename := range files {
+			j := model.Job{}
+			j.Filename = filename
+			j.Bin = bin
+			WorkQueue <- j
+		}
+	}
+
 	router := mux.NewRouter()
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(staticBox.HTTPBox())))

@@ -15,23 +15,19 @@ func StartDispatcher(nworkers int, CacheInvalidation bool, WorkQueue chan Job, l
 }
 
 func StartWorker(CacheInvalidation bool, WorkQueue chan Job, log *log.Logger, backend *fs.Backend) {
-	var err error
 	for {
 		select {
 		case j := <-WorkQueue:
 			startTime := time.Now().UTC()
 
-			log.Print("Batch job starting: " + j.Bin + "/" + j.Filename)
-			err = backend.GenerateThumbnail(j.Bin, j.Filename, 115, 115, true)
-			if err != nil {
-				log.Print(err)
-				continue
+			if err := backend.GenerateThumbnail(j.Bin, j.Filename, 115, 115, true); err != nil {
+				log.Println("Batch job error: " + j.Bin + "/" + j.Filename + " (" + err.Error() + ")")
+				break
 			}
 
-			err = backend.GenerateThumbnail(j.Bin, j.Filename, 1140, 0, false)
-			if err != nil {
-				log.Print(err)
-				continue
+			if err := backend.GenerateThumbnail(j.Bin, j.Filename, 1140, 0, false); err != nil {
+				log.Println("Batch job error: " + j.Bin + "/" + j.Filename + " (" + err.Error() + ")")
+				break
 			}
 
 			//if CacheInvalidation {
@@ -42,7 +38,7 @@ func StartWorker(CacheInvalidation bool, WorkQueue chan Job, log *log.Logger, ba
 
 			finishTime := time.Now().UTC()
 			elapsedTime := finishTime.Sub(startTime)
-			log.Println("Batch job completed: " + elapsedTime.String())
+			log.Println("Batch job completed: " + j.Bin + "/" + j.Filename + " (" + elapsedTime.String() + ")")
 		}
 	}
 }
