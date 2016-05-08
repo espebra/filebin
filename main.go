@@ -283,6 +283,9 @@ func main() {
 	log.Println("Backend: " + backend.Info())
 	log.Println("Filebin server starting...")
 
+	// Start dispatcher that will handle all background processing
+	model.StartDispatcher(cfg.Workers, cfg.CacheInvalidation, WorkQueue, log, &backend)
+
 	// Sending all files through the batch process to ensure thumbnails
 	// are generated.
 	for _, bin := range backend.GetBins() {
@@ -333,9 +336,6 @@ func main() {
 	//router.HandleFunc("/user{_:/?}", user.GetHomePage).Methods("GET")
 	//router.HandleFunc("/user/view/{id:[0-9]+}", user.GetViewPage).Methods("GET")
 	//router.HandleFunc("/user/{id:[0-9]+}", user.GetViewPage).Methods("GET")
-
-	// Start dispatcher that will handle all background processing
-	model.StartDispatcher(cfg.Workers, cfg.CacheInvalidation, WorkQueue, log, &backend)
 
 	err = http.ListenAndServe(cfg.Host+":"+strconv.Itoa(cfg.Port), nil)
 	if err != nil {
