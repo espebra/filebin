@@ -509,6 +509,7 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 		Events         []metrics.Event
 		Uptime         time.Duration
 		UptimeReadable string
+		Now            time.Time
 	}
 
 	var files int
@@ -530,6 +531,7 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 		Logins:         logins,
 		Uptime:         ctx.Metrics.Uptime(),
 		UptimeReadable: humanize.Time(ctx.Metrics.StartTime()),
+		Now:            time.Now().UTC(),
 	}
 
 	if r.Header.Get("Accept") == "application/json" {

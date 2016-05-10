@@ -24,7 +24,12 @@
             <!-- Bin meta information -->
             <div class="row">
                 <div class="col-sm-12">
-                    <div class="text-right text-muted"><small>Uptime: {{ .Data.Uptime }}</small></div>
+                    <div class="text-right text-muted">
+                        <small>
+                            Time: {{ .Data.Now.Format "2006-01-02 15:04:05 UTC" }}<br/>
+                            Up: {{ .Data.Uptime }}
+                        </small>
+                    </div>
                     <div class="text-left">
                         <h1 class="display-2">
                             Filebin dashboard
