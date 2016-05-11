@@ -17,8 +17,6 @@ type Event struct {
 	Timestamp         time.Time
 	TimestampReadable string
 	Category          string
-	//bin       string
-	//filename  string
 	Text string
 }
 
@@ -121,10 +119,11 @@ func (m *Metrics) GetEvents(limit int) []Event {
 	defer m.RUnlock()
 	var r []Event
 	counter := 0
-	for _, e := range m.events {
-		counter += 1
+	for i := len(m.events) - 1; i >= 0; i-- {
+		e := m.events[i]
 		e.TimestampReadable = humanize.Time(e.Timestamp)
 		r = append(r, e)
+		counter += 1
 		if limit != 0 && limit == counter {
 			break
 		}

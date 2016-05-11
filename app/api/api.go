@@ -272,6 +272,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	ctx.Metrics.Incr("total-file-download")
 	ctx.Metrics.Incr("current-file-download")
 	defer ctx.Metrics.Decr("current-file-download")
+	ctx.Metrics.Event("file-download", r.RemoteAddr+" ("+r.Header.Get("user-agent") + ") downloads file " + filename + " from bin " + bin)
 
 	fp, err := ctx.Backend.GetFile(bin, filename)
 	if err != nil {
@@ -385,6 +386,7 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	}
 
 	ctx.Metrics.Incr("total-view-album")
+	ctx.Metrics.Event("view-album", r.RemoteAddr+" ("+r.Header.Get("user-agent") + ") views album of bin " + bin)
 
 	w.Header().Set("Cache-Control", "s-maxage=3600")
 
@@ -421,6 +423,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	}
 
 	ctx.Metrics.Incr("total-view-bin")
+	ctx.Metrics.Event("view-bin", r.RemoteAddr+" ("+r.Header.Get("user-agent") + ") views bin " + bin)
 
 	w.Header().Set("Vary", "Content-Type")
 	w.Header().Set("Cache-Control", "s-maxage=3600")
@@ -464,6 +467,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 
 	ctx.Metrics.Incr("current-archive-download")
 	defer ctx.Metrics.Decr("current-archive-download")
+	ctx.Metrics.Event("archive-download", r.RemoteAddr+" ("+r.Header.Get("user-agent") + ") downloads bin " + b.Bin + " in " + format + " format")
 
 	_, _, err = ctx.Backend.GetBinArchive(bin, format, w)
 	if err != nil {

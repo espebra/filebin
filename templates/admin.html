@@ -16,10 +16,12 @@
         <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.css"/>
         <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/font-awesome.css"/>
         <script src="{{ .Ctx.Baseurl }}/static/js/sorttable.js"></script>
+        <script src="{{ .Ctx.Baseurl }}/static/js/jquery.js"></script>
+        <script src="{{ .Ctx.Baseurl }}/static/bootstrap/js/bootstrap.js"></script>
     </head>
 
     <body>
-        <div class="container">
+        <div class="container-fluid">
 
             <!-- Bin meta information -->
             <div class="row">
@@ -41,7 +43,7 @@
             <h6 class="text-muted">Last logins</h6>
             <div class="row">
               <div class="col-md-12">
-                <table class="table">
+                <table class="table table-sm">
                   <tbody>
                     {{ range $index, $value := .Data.Logins }}
 <tr>
@@ -58,6 +60,7 @@
               </div>
             </div>
 
+            <h6 class="text-muted">Counters</h6>
             <div class="row">
               <div class="col-md-4">
                 <div class="alert alert-info">
@@ -150,32 +153,85 @@
               </div>
             </div>
 
-            <!-- Existing files in the bin -->
-            <table class="sortable table">
-                <thead class="thead-default">
-                    <tr>
-                        <th>Bin</th>
-                        <th>Last updated</th>
-                        <th>Files</th>
-                        <th>Size</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <h6 class="text-muted">Last events <span class="label label-pill label-default">{{ .Data.Events | len }}</span> <small><a href="#" data-toggle="collapse" data-target="#collapseEvents" aria-exanded="false" aria-controls="collapseEvents">toggle</a></small></h6>
 
-                    {{ range $index, $value := .Data.Bins }}
-                    {{ if .Expired }}
-                    <tr class="table-warning">
-                    {{ else }}
-                    <tr>
-                    {{ end }}
-                        <td><a href="{{ $.Ctx.Baseurl }}/{{ .Bin }}">{{ .Bin }}</a></td>
-                        <td sorttable_customkey="{{ .UpdatedAt }}">{{ .UpdatedReadable }}</td>
-                        <td>{{ .Files | len }}</td>
-                        <td sorttable_customkey="{{ .Bytes }}">{{ .BytesReadable }}</td>
-                    </tr>
-                    {{ end }}
-                </tbody>
-            </table>
+            <div class="collapse" id="collapseEvents">
+              <div class="row">
+                <div class="col-md-12">
+                  <table class="table table-sm">
+                    <thead>
+                      <tr>
+                        <th>Time</th>
+                        <th>Category</th>
+                        <th>Event</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {{ range $index, $value := .Data.Events }}
+                        {{ if eq .Category "admin-login" }}
+                        <tr class="table-danger">
+                        {{ else }}
+                          {{ if eq .Category "file-upload" }}
+                            <tr class="table-warning">
+                          {{ else }}
+                             {{ if eq .Category "archive-download" }}
+                               <tr class="table-info">
+                             {{ else }}
+                               {{ if eq .Category "file-download" }}
+                                 <tr class="table-success">
+                               {{ else }}
+                                 <tr>
+                               {{ end }}
+                             {{ end }}
+                          {{ end }}
+                        {{ end }}
+                          <td class="text-muted text-truncate">
+                            <small><em>{{ .TimestampReadable }}</em></small>
+                          </td>
+                          <td class="text-muted">
+                            <small>{{ .Category }}</small>
+                          </td>
+                          <td class="text-muted">
+                            <small>{{ .Text }}</small>
+                          </td>
+                        </tr>
+                      {{ end }}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <h6 class="text-muted">Bins <span class="label label-pill label-default">{{ .Data.Bins | len }}</span> <small><a href="#" data-toggle="collapse" data-target="#collapseBins" aria-exanded="false" aria-controls="collapseBins">toggle</a></small></h6>
+
+            <div class="collapse" id="collapseBins">
+              <!-- Existing files in the bin -->
+              <table class="sortable table">
+                  <thead class="thead-default">
+                      <tr>
+                          <th>Bin</th>
+                          <th>Last updated</th>
+                          <th>Files</th>
+                          <th>Size</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+
+                      {{ range $index, $value := .Data.Bins }}
+                      {{ if .Expired }}
+                      <tr class="table-warning">
+                      {{ else }}
+                      <tr>
+                      {{ end }}
+                          <td><a href="{{ $.Ctx.Baseurl }}/{{ .Bin }}">{{ .Bin }}</a></td>
+                          <td sorttable_customkey="{{ .UpdatedAt }}">{{ .UpdatedReadable }}</td>
+                          <td>{{ .Files | len }}</td>
+                          <td sorttable_customkey="{{ .Bytes }}">{{ .BytesReadable }}</td>
+                      </tr>
+                      {{ end }}
+                  </tbody>
+              </table>
+          </div>
         </div>
     </body>
 </html>
