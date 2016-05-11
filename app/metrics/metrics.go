@@ -17,7 +17,7 @@ type Event struct {
 	Timestamp         time.Time
 	TimestampReadable string
 	Category          string
-	Text string
+	Text              string
 }
 
 func Init() Metrics {
