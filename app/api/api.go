@@ -169,6 +169,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 
 	ctx.Metrics.Incr("current-upload")
 	defer ctx.Metrics.Decr("current-upload")
+	ctx.Metrics.Event("file-upload", r.RemoteAddr+" ("+r.Header.Get("user-agent")+") uploads file "+filename+" to bin "+bin)
 
 	f, err := ctx.Backend.UploadFile(bin, filename, r.Body)
 	if err != nil {
