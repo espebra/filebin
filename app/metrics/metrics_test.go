@@ -2,7 +2,7 @@ package metrics
 
 import (
 	"testing"
-	//"time"
+	"time"
 	"os"
 	"strconv"
 )
@@ -83,14 +83,20 @@ func TestDecr(t *testing.T) {
 }
 
 func TestEvent(t *testing.T) {
-	category := "foo"
-	text := "some bar happened"
-	m.Event(category, text)
+	event := Event {
+		Category: "foo",
+		Text: "som bare happened",
+	}
+	m.AddEvent(event)
+
 	if len(m.events) != 1 {
 		t.Fatal("Unexpected number of events. Not 1.")
 	}
 	for i := 0; i <= 20000; i++ {
-		m.Event(category, text+": "+strconv.Itoa(i))
+		event := Event {
+			Text: "som bare happened: " + strconv.Itoa(i),
+		}
+		m.AddEvent(event)
 	}
 	if len(m.events) != 10000 {
 		t.Fatal("Unexpected number of events. Not 10000.")
@@ -98,11 +104,11 @@ func TestEvent(t *testing.T) {
 }
 
 func TestGetEvents(t *testing.T) {
-	events := m.GetEvents(0)
+	events := m.GetEvents(Event{}, time.Time{}, 0)
 	if len(events) != 10000 {
 		t.Fatal("Unexpected number of events. Not 10000.")
 	}
-	events = m.GetEvents(100)
+	events = m.GetEvents(Event{}, time.Time{}, 100)
 	if len(events) != 100 {
 		t.Fatal("Unexpected number of events. Not 100.")
 	}

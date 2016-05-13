@@ -310,7 +310,9 @@ func main() {
 	// instead of globally.
 	//router.StrictSlash(true)
 
-	router.HandleFunc("/admin", basicAuth(reqHandler(api.Admin))).Methods("GET", "HEAD")
+	router.HandleFunc("/admin", basicAuth(reqHandler(api.AdminDashboard))).Methods("GET", "HEAD")
+	router.HandleFunc("/admin/events", basicAuth(reqHandler(api.AdminEvents))).Methods("GET", "HEAD")
+	router.HandleFunc("/admin/bins", basicAuth(reqHandler(api.AdminBins))).Methods("GET", "HEAD")
 	//router.HandleFunc("/api", reqHandler(api.ViewAPI)).Methods("GET", "HEAD")
 	//router.HandleFunc("/doc", reqHandler(api.ViewDoc)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.ViewIndex)).Methods("GET", "HEAD")

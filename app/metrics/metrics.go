@@ -14,10 +14,13 @@ type Metrics struct {
 }
 
 type Event struct {
-	Timestamp         time.Time
-	TimestampReadable string
+	Bin               string
 	Category          string
+	Filename          string
+	RemoteAddr        string
 	Text              string
+	Timestamp         time.Time
+	URL        string
 }
 
 func Init() Metrics {
@@ -27,6 +30,10 @@ func Init() Metrics {
 	m.stats = make(map[string]int64)
 	m.Unlock()
 	return m
+}
+
+func (e *Event) TimestampReadable() string {
+	return humanize.Time(e.Timestamp)
 }
 
 func (m *Metrics) Uptime() time.Duration {
@@ -84,68 +91,79 @@ func (m *Metrics) Decr(key string) int64 {
 	return newValue
 }
 
-//func (m *Metrics) Event(category string, text string) {
-//	m.Lock()
-//	defer m.Unlock()
-//	e := Event{
-//		Timestamp: time.Now().UTC(),
-//		Category: category,
-//		Text: text,
-//	}
-//	m.events = append(m.events, e)
-//
-//	if len(m.events) > 10000 {
-//		_, m.events = m.events[len(m.events)-1], m.events[:len(m.events)-1]
-//	}
-//}
-
-func (m *Metrics) Event(category string, text string) {
+func (m *Metrics) AddEvent(e Event) {
+	e.Timestamp = time.Now().UTC()
 	m.Lock()
 	defer m.Unlock()
-	e := Event{
-		Timestamp: time.Now().UTC(),
-		Category:  category,
-		Text:      text,
-	}
 	m.events = append(m.events, e)
 
+	// Remove the last event from the ring buffer if the limit is reached.
 	if len(m.events) > 10000 {
 		_, m.events = m.events[len(m.events)-1], m.events[:len(m.events)-1]
 	}
 }
 
-func (m *Metrics) GetEvents(limit int) []Event {
+func (m *Metrics) GetEvents(filter Event, limitTime time.Time, limitCount int) []Event {
 	m.RLock()
 	defer m.RUnlock()
 	var r []Event
 	counter := 0
 	for i := len(m.events) - 1; i >= 0; i-- {
 		e := m.events[i]
-		e.TimestampReadable = humanize.Time(e.Timestamp)
-		r = append(r, e)
-		counter += 1
-		if limit != 0 && limit == counter {
+
+		// Only consider records newer than the time limit
+		if e.Timestamp.IsZero() == false {
+			if e.Timestamp.Before(limitTime) || e.Timestamp.Equal(limitTime) {
+				continue
+			}
+		}
+
+		match := false
+
+		// Empty filter, should match everything
+		if filter == (Event{}) {
+			match = true
+		}
+
+		if filter.Bin != "" {
+			if filter.Bin == e.Bin {
+				match = true
+			}
+		}
+
+		if filter.Category != "" {
+			if filter.Category == e.Category {
+				match = true
+			}
+		}
+
+		if filter.Filename != "" {
+			if filter.Filename == e.Filename {
+				match = true
+			}
+		}
+
+		if filter.RemoteAddr != "" {
+			if filter.RemoteAddr == e.RemoteAddr {
+				match = true
+			}
+		}
+
+		if filter.URL != "" {
+			if filter.URL == e.URL {
+				match = true
+			}
+		}
+
+		if match {
+			r = append(r, e)
+			counter += 1
+		}
+
+		if limitCount != 0 && limitCount == counter {
 			break
 		}
 	}
 	return r
 }
 
-func (m *Metrics) GetEventCategory(category string, limit int) []Event {
-	m.RLock()
-	defer m.RUnlock()
-	var r []Event
-	counter := 0
-	for i := len(m.events) - 1; i >= 0; i-- {
-		e := m.events[i]
-		if e.Category == category {
-			counter += 1
-			e.TimestampReadable = humanize.Time(e.Timestamp)
-			r = append(r, e)
-			if limit != 0 && limit == counter {
-				break
-			}
-		}
-	}
-	return r
-}

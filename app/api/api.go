@@ -169,7 +169,16 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 
 	ctx.Metrics.Incr("current-upload")
 	defer ctx.Metrics.Decr("current-upload")
-	ctx.Metrics.Event("file-upload", r.RemoteAddr+" ("+r.Header.Get("user-agent")+") uploads file "+filename+" to bin "+bin)
+
+	event := metrics.Event {
+	        Bin: bin,
+	        Category: "file-upload",
+	        Filename: filename,
+	        RemoteAddr: r.RemoteAddr,
+	        Text: r.Header.Get("user-agent"),
+	        URL: r.RequestURI,
+	}
+	ctx.Metrics.AddEvent(event)
 
 	f, err := ctx.Backend.UploadFile(bin, filename, r.Body)
 	if err != nil {
@@ -273,7 +282,16 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	ctx.Metrics.Incr("total-file-download")
 	ctx.Metrics.Incr("current-file-download")
 	defer ctx.Metrics.Decr("current-file-download")
-	ctx.Metrics.Event("file-download", r.RemoteAddr+" ("+r.Header.Get("user-agent")+") downloads file "+filename+" from bin "+bin)
+
+	event := metrics.Event {
+	        Bin: bin,
+	        Category: "file-download",
+	        Filename: filename,
+	        RemoteAddr: r.RemoteAddr,
+	        Text: r.Header.Get("user-agent"),
+	        URL: r.RequestURI,
+	}
+	ctx.Metrics.AddEvent(event)
 
 	fp, err := ctx.Backend.GetFile(bin, filename)
 	if err != nil {
@@ -387,7 +405,15 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	}
 
 	ctx.Metrics.Incr("total-view-album")
-	ctx.Metrics.Event("view-album", r.RemoteAddr+" ("+r.Header.Get("user-agent")+") views album of bin "+bin)
+
+	event := metrics.Event {
+	        Bin: bin,
+	        Category: "view-album",
+	        RemoteAddr: r.RemoteAddr,
+	        Text: r.Header.Get("user-agent"),
+	        URL: r.RequestURI,
+	}
+	ctx.Metrics.AddEvent(event)
 
 	w.Header().Set("Cache-Control", "s-maxage=3600")
 
@@ -424,7 +450,15 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	}
 
 	ctx.Metrics.Incr("total-view-bin")
-	ctx.Metrics.Event("view-bin", r.RemoteAddr+" ("+r.Header.Get("user-agent")+") views bin "+bin)
+
+	event := metrics.Event {
+	        Bin: bin,
+	        Category: "view-bin",
+	        RemoteAddr: r.RemoteAddr,
+	        Text: r.Header.Get("user-agent"),
+	        URL: r.RequestURI,
+	}
+	ctx.Metrics.AddEvent(event)
 
 	w.Header().Set("Vary", "Content-Type")
 	w.Header().Set("Cache-Control", "s-maxage=3600")
@@ -468,7 +502,15 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 
 	ctx.Metrics.Incr("current-archive-download")
 	defer ctx.Metrics.Decr("current-archive-download")
-	ctx.Metrics.Event("archive-download", r.RemoteAddr+" ("+r.Header.Get("user-agent")+") downloads bin "+b.Bin+" in "+format+" format")
+
+	event := metrics.Event {
+	        Bin: bin,
+	        Category: "archive-download",
+	        RemoteAddr: r.RemoteAddr,
+	        Text: r.Header.Get("user-agent"),
+	        URL: r.RequestURI,
+	}
+	ctx.Metrics.AddEvent(event)
 
 	_, _, err = ctx.Backend.GetBinArchive(bin, format, w)
 	if err != nil {
@@ -494,24 +536,50 @@ func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	return
 }
 
-func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+func AdminDashboard(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	var status = 200
-	ctx.Metrics.Event("admin-login", r.RemoteAddr+" ("+r.Header.Get("user-agent")+")")
+
+	event := metrics.Event {
+	        Category: "admin-login",
+	        RemoteAddr: r.RemoteAddr,
+	        Text: r.Header.Get("user-agent"),
+	        URL: r.RequestURI,
+	}
+	ctx.Metrics.AddEvent(event)
+
 	bins := ctx.Backend.GetBinsMetaData()
 	stats := ctx.Metrics.GetStats()
-	events := ctx.Metrics.GetEvents(100)
-	logins := ctx.Metrics.GetEventCategory("admin-login", 3)
+
+	filter := metrics.Event {
+	        Category: "admin-login",
+	}
+
+	logins := ctx.Metrics.GetEvents(filter, time.Time{}, 3)
+
+	limitTime := time.Now().UTC().Add(-48 * time.Hour)
+	if len(logins) >= 2 {
+		limitTime = logins[1].Timestamp
+	}
+
+	recentEvents := ctx.Metrics.GetEvents(metrics.Event{}, limitTime, 0)
+	_, recentEvents = recentEvents[0], recentEvents[1:]
+
+	filter = metrics.Event {
+	        Category: "file-upload",
+	}
+	recentUploads := ctx.Metrics.GetEvents(filter, limitTime, 0)
 
 	type Out struct {
 		Bins           []fs.Bin
 		BinsReadable   string
+		Events         []metrics.Event
+		Uploads        []metrics.Event
 		Files          int
 		FilesReadable  string
 		Bytes          int64
 		BytesReadable  string
 		Stats          map[string]int64
 		Logins         []metrics.Event
-		Events         []metrics.Event
 		Uptime         time.Duration
 		UptimeReadable string
 		Now            time.Time
@@ -526,13 +594,14 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 
 	data := Out{
 		Bins:           bins,
+		Events:         recentEvents,
+		Uploads:        recentUploads,
 		Files:          files,
 		Bytes:          bytes,
 		BytesReadable:  humanize.Bytes(uint64(bytes)),
 		BinsReadable:   humanize.Comma(int64(len(bins))),
 		FilesReadable:  humanize.Comma(int64(files)),
 		Stats:          stats,
-		Events:         events,
 		Logins:         logins,
 		Uptime:         ctx.Metrics.Uptime(),
 		UptimeReadable: humanize.Time(ctx.Metrics.StartTime()),
@@ -543,7 +612,99 @@ func Admin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, status, data, ctx)
 	} else {
-		output.HTMLresponse(w, "admin", status, data, ctx)
+		output.HTMLresponse(w, "dashboard", status, data, ctx)
+	}
+	return
+}
+
+func AdminEvents(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	var status = 200
+
+	event := metrics.Event {
+	        Category: "admin-login",
+	        RemoteAddr: r.RemoteAddr,
+	        Text: r.Header.Get("user-agent"),
+	        URL: r.RequestURI,
+	}
+	ctx.Metrics.AddEvent(event)
+
+	u, err := url.Parse(r.RequestURI)
+	if err != nil {
+		ctx.Log.Println(err)
+	}
+
+	queryParams, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		ctx.Log.Println(err)
+	}
+
+	filter := metrics.Event {
+	        Bin: queryParams.Get("bin"),
+	        Category: queryParams.Get("category"),
+	        Filename: queryParams.Get("filename"),
+	        RemoteAddr: queryParams.Get("remoteaddr"),
+	        URL: queryParams.Get("url"),
+	}
+
+	events := ctx.Metrics.GetEvents(filter, time.Time{}, 100)
+
+	type Out struct {
+		Events         []metrics.Event
+		Uptime         time.Duration
+		UptimeReadable string
+		Now            time.Time
+	}
+
+	data := Out{
+		Events:         events,
+		Uptime:         ctx.Metrics.Uptime(),
+		UptimeReadable: humanize.Time(ctx.Metrics.StartTime()),
+		Now:            time.Now().UTC(),
+	}
+
+	if r.Header.Get("Accept") == "application/json" {
+		w.Header().Set("Content-Type", "application/json")
+		output.JSONresponse(w, status, data, ctx)
+	} else {
+		output.HTMLresponse(w, "events", status, data, ctx)
+	}
+	return
+}
+
+func AdminBins(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	var status = 200
+
+	event := metrics.Event {
+	        Category: "admin-login",
+	        RemoteAddr: r.RemoteAddr,
+	        Text: r.Header.Get("user-agent"),
+	        URL: r.RequestURI,
+	}
+	ctx.Metrics.AddEvent(event)
+
+	bins := ctx.Backend.GetBinsMetaData()
+
+	type Out struct {
+		Bins           []fs.Bin
+		BinsReadable   string
+		Uptime         time.Duration
+		UptimeReadable string
+		Now            time.Time
+	}
+
+	data := Out{
+		Bins:           bins,
+		BinsReadable:   humanize.Comma(int64(len(bins))),
+		Uptime:         ctx.Metrics.Uptime(),
+		UptimeReadable: humanize.Time(ctx.Metrics.StartTime()),
+		Now:            time.Now().UTC(),
+	}
+
+	if r.Header.Get("Accept") == "application/json" {
+		w.Header().Set("Content-Type", "application/json")
+		output.JSONresponse(w, status, data, ctx)
+	} else {
+		output.HTMLresponse(w, "bins", status, data, ctx)
 	}
 	return
 }

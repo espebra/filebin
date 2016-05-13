@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta bins *must* come first in the head; any other head content must come *after* these bins -->
+
+        <meta name="description" content="Upload files and make them available for your friends. Think of it as Pastebin for files. Registration is not required.">
+        <meta name="author" content="Espen Braastad">
+        <link rel="icon" href="{{ .Ctx.Baseurl }}/static/img/favicon.png">
+
+        <title>Filebin administrator</title>
+
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/font-awesome.css"/>
+        <script src="{{ .Ctx.Baseurl }}/static/js/sorttable.js"></script>
+        <script src="{{ .Ctx.Baseurl }}/static/js/jquery.js"></script>
+        <script src="{{ .Ctx.Baseurl }}/static/bootstrap/js/bootstrap.js"></script>
+    </head>
+
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+              <div class="col-xs-12 col-md-6">
+                <p class="lead">
+                  <ul class="nav nav-pills">
+                    <li class="nav-item">
+                      <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link active" href="{{ .Ctx.Baseurl }}/admin/events">Events</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin/bins">Bins</a>
+                    </li>
+                  </ul>
+                </p>
+              </div>
+              <div class="col-xs-12 col-md-6">
+                <div class="text-right text-muted">
+                  <small>
+                    Current time: {{ .Data.Now.Format "2006-01-02 15:04:05 UTC" }}<br/>
+                    Uptime: {{ .Data.Uptime }}
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <br/>
+
+            <div class="row">
+              <div class="col-md-12">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th colspan="2">Timestamp</th>
+                      <th>Client</th>
+                      <th>URL</th>
+                      <th>Category</th>
+                      <th>Bin</th>
+                      <th>Filename</th>
+                      <th>Extra</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {{ range $index, $value := .Data.Events }}
+                      {{ if eq .Category "admin-login" }}
+                      <tr class="table-danger">
+                      {{ else }}
+                        {{ if eq .Category "file-upload" }}
+                          <tr class="table-warning">
+                        {{ else }}
+                           {{ if eq .Category "archive-download" }}
+                             <tr class="table-info">
+                           {{ else }}
+                             {{ if eq .Category "file-download" }}
+                               <tr class="table-success">
+                             {{ else }}
+                               <tr>
+                             {{ end }}
+                           {{ end }}
+                        {{ end }}
+                      {{ end }}
+                        <td class="text-muted text-truncate">
+                          <small><em>{{ .TimestampReadable }}</em></small>
+                        </td>
+                        <td class="text-muted text-truncate">
+                          <small>{{ .Timestamp.Format "2006-01-02 15:04:05 UTC" }}</small>
+                        </td>
+                        <td class="text-muted">
+                          <small><a href="?remoteaddr={{ .RemoteAddr }}">{{ .RemoteAddr }}</a></small>
+                        </td>
+                        <td class="text-muted">
+                          <small><a href="?url={{ .URL }}">{{ .URL }}</a></small>
+                        </td>
+                        <td class="text-muted">
+                          <small><a href="?category={{ .Category }}">{{ .Category }}</a></small>
+                        </td>
+                        <td class="text-muted">
+                          <small><a href="?bin={{ .Bin }}">{{ .Bin }}</a></small>
+                        </td>
+                        <td class="text-muted">
+                          <small><a href="?filename={{ .Filename }}">{{ .Filename }}</a></small>
+                        </td>
+                        <td class="text-muted">
+                          <small>{{ .Text }}</small>
+                        </td>
+                      </tr>
+                    {{ end }}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+    </body>
+</html>
