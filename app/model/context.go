@@ -20,4 +20,5 @@ type Context struct {
 	WorkQueue   chan Job
 	Backend     *fs.Backend
 	Metrics     *metrics.Metrics
+	RemoteAddr  string
 }

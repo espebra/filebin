@@ -174,7 +174,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	        Bin: bin,
 	        Category: "file-upload",
 	        Filename: filename,
-	        RemoteAddr: r.RemoteAddr,
+	        RemoteAddr: ctx.RemoteAddr,
 	        Text: r.Header.Get("user-agent"),
 	        URL: r.RequestURI,
 	}
@@ -287,7 +287,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	        Bin: bin,
 	        Category: "file-download",
 	        Filename: filename,
-	        RemoteAddr: r.RemoteAddr,
+	        RemoteAddr: ctx.RemoteAddr,
 	        Text: r.Header.Get("user-agent"),
 	        URL: r.RequestURI,
 	}
@@ -409,7 +409,7 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	event := metrics.Event {
 	        Bin: bin,
 	        Category: "view-album",
-	        RemoteAddr: r.RemoteAddr,
+	        RemoteAddr: ctx.RemoteAddr,
 	        Text: r.Header.Get("user-agent"),
 	        URL: r.RequestURI,
 	}
@@ -454,7 +454,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	event := metrics.Event {
 	        Bin: bin,
 	        Category: "view-bin",
-	        RemoteAddr: r.RemoteAddr,
+	        RemoteAddr: ctx.RemoteAddr,
 	        Text: r.Header.Get("user-agent"),
 	        URL: r.RequestURI,
 	}
@@ -506,7 +506,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 	event := metrics.Event {
 	        Bin: bin,
 	        Category: "archive-download",
-	        RemoteAddr: r.RemoteAddr,
+	        RemoteAddr: ctx.RemoteAddr,
 	        Text: r.Header.Get("user-agent"),
 	        URL: r.RequestURI,
 	}
@@ -541,7 +541,7 @@ func AdminDashboard(w http.ResponseWriter, r *http.Request, cfg config.Configura
 
 	event := metrics.Event {
 	        Category: "admin-login",
-	        RemoteAddr: r.RemoteAddr,
+	        RemoteAddr: ctx.RemoteAddr,
 	        Text: r.Header.Get("user-agent"),
 	        URL: r.RequestURI,
 	}
@@ -622,7 +622,7 @@ func AdminEvents(w http.ResponseWriter, r *http.Request, cfg config.Configuratio
 
 	event := metrics.Event {
 	        Category: "admin-login",
-	        RemoteAddr: r.RemoteAddr,
+	        RemoteAddr: ctx.RemoteAddr,
 	        Text: r.Header.Get("user-agent"),
 	        URL: r.RequestURI,
 	}
@@ -676,7 +676,7 @@ func AdminBins(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 
 	event := metrics.Event {
 	        Category: "admin-login",
-	        RemoteAddr: r.RemoteAddr,
+	        RemoteAddr: ctx.RemoteAddr,
 	        Text: r.Header.Get("user-agent"),
 	        URL: r.RequestURI,
 	}

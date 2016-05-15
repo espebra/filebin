@@ -91,6 +91,9 @@ func init() {
 	flag.IntVar(&cfg.Maxheaderbytes, "maxheaderbytes",
 		cfg.Maxheaderbytes, "Max header size in bytes.")
 
+	flag.StringVar(&cfg.ClientAddrHeader, "client-address-header",
+		cfg.ClientAddrHeader, "Read the client address from the specified request header instad of using the connection remote address.")
+
 	flag.BoolVar(&cfg.CacheInvalidation, "cache-invalidation",
 		cfg.CacheInvalidation,
 		"HTTP PURGE requests will be sent on every change if enabled.")
@@ -359,6 +362,12 @@ func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration
 		ctx.Backend = &backend
 		ctx.Metrics = &m
 
+		if cfg.ClientAddrHeader == "" {
+			ctx.RemoteAddr = r.RemoteAddr
+		} else {
+			ctx.RemoteAddr = r.Header.Get(cfg.ClientAddrHeader)
+		}
+
 		// Initialize logger for this request
 		ctx.Log = log.New(os.Stdout, reqId+" ", log.LstdFlags)
 
@@ -366,7 +375,7 @@ func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration
 		if r.Host != "" {
 			ctx.Log.Println("Host: " + r.Host)
 		}
-		ctx.Log.Println("Remote address: " + r.RemoteAddr)
+		ctx.Log.Println("Remote address: " + ctx.RemoteAddr)
 
 		// Print X-Forwarded-For since we might be behind some TLS
 		// terminator and web cache

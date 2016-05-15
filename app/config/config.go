@@ -17,6 +17,7 @@ type Configuration struct {
 	TriggerDeleteBin    string
 	TriggerDeleteFile   string
 	TriggerExpireBin    string
+	ClientAddrHeader    string
 	DefaultBinLength    int
 	Workers             int
 	Version             bool
@@ -43,5 +44,6 @@ func init() {
 		Workers:           1,
 		CacheInvalidation: false,
 		AdminUsername:     "admin",
+		ClientAddrHeader:    "",
 	}
 }
