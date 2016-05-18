@@ -97,6 +97,7 @@ $ ${GOPATH}/bin/filebin \
   --cache-invalidation \
   --admin-username admin \
   --admin-password changeme \
+  --client-address-header x-client \
   [...]
 ```
 
@@ -125,6 +126,10 @@ Bins expire after some time of inactivity. By default, bins will expire 3 months
 #### Cache invalidation
 
 Enabled with the parameter ``--cache-invalidation``. When enabled, HTTP PURGE requests will be sent to baseurl/path for every change to ensure content is invalidated on any frontend web cache.
+
+#### Client Address Header
+
+The parameter ``--client-address-header`` can specify a request header to read the original client IP address from. This might be useful if having one or more proxies on layer 7 in front of the filebin daemon.
 
 #### Admin username and password
 
