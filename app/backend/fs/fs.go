@@ -524,11 +524,38 @@ func (be *Backend) getFileMetaData(bin string, filename string) (File, error) {
 	}
 	exif, err := exif.Decode(fp)
 	if err != nil {
-		/// XXX: Log
+		// XXX: Log
 	} else {
 		f.DateTime, err = exif.DateTime()
 		if err != nil {
-			/// XXX: Log
+			// Could not read DateTime or DateTimeOriginal.
+			// Certain Android phones (verified on Nexus 6) have a
+			// bug where these fields may be missing from the EXIF
+			// data in pictures. The capture time may be stored in
+			// the GPS info, so let's try to assemble a valid
+			// DateTime from it.
+			dStamp, dErr := exif.Get("GPSDateStamp")
+			tStamp, tErr := exif.Get("GPSTimeStamp")
+			if dErr == nil && tErr == nil {
+				s := dStamp.String() + " " + tStamp.String()
+				s = strings.Replace(s, "\"", "", -1)
+				s = strings.Replace(s, "[", "", -1)
+				s = strings.Replace(s, "]", "", -1)
+				s = strings.Replace(s, ":", "-", -1)
+				s = strings.Replace(s, ",", " ", -1)
+				s = strings.Replace(s, "/1", "", -1)
+				be.Log.Println("String to parse: " + s)
+
+				// After removing the special characters above, the
+				// string to parse is on the following format:
+				// 2016-05-21 12 26 12
+				dt, err := time.Parse("2006-01-02 15 04 05", s)
+				if err != nil {
+					be.Log.Println("Unable to parse: ", err)
+				} else {
+					f.DateTime = dt
+				}
+			}
 		}
 
 		f.Latitude, f.Longitude, err = exif.LatLong()
@@ -667,7 +694,34 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	} else {
 		f.DateTime, err = exif.DateTime()
 		if err != nil {
-			/// XXX: Log
+			// Could not read DateTime or DateTimeOriginal.
+			// Certain Android phones (verified on Nexus 6) have a
+			// bug where these fields may be missing from the EXIF
+			// data in pictures. The capture time may be stored in
+			// the GPS info, so let's try to assemble a valid
+			// DateTime from it.
+			dStamp, dErr := exif.Get("GPSDateStamp")
+			tStamp, tErr := exif.Get("GPSTimeStamp")
+			if dErr == nil && tErr == nil {
+				s := dStamp.String() + " " + tStamp.String()
+				s = strings.Replace(s, "\"", "", -1)
+				s = strings.Replace(s, "[", "", -1)
+				s = strings.Replace(s, "]", "", -1)
+				s = strings.Replace(s, ":", "-", -1)
+				s = strings.Replace(s, ",", " ", -1)
+				s = strings.Replace(s, "/1", "", -1)
+				be.Log.Println("String to parse: " + s)
+
+				// After removing the special characters above, the
+				// string to parse is on the following format:
+				// 2016-05-21 12 26 12
+				dt, err := time.Parse("2006-01-02 15 04 05", s)
+				if err != nil {
+					be.Log.Println("Unable to parse: ", err)
+				} else {
+					f.DateTime = dt
+				}
+			}
 		}
 
 		f.Latitude, f.Longitude, err = exif.LatLong()
