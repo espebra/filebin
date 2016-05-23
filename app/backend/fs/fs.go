@@ -553,7 +553,7 @@ func (be *Backend) getFileMetaData(bin string, filename string) (File, error) {
 				if err != nil {
 					be.Log.Println("Unable to parse: ", err)
 				} else {
-					f.DateTime = dt
+					f.DateTime = dt.Local()
 				}
 			}
 		}
@@ -690,7 +690,7 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	}
 	exif, err := exif.Decode(fp)
 	if err != nil {
-		/// XXX: Log
+		// XXX: Log
 	} else {
 		f.DateTime, err = exif.DateTime()
 		if err != nil {
@@ -719,7 +719,7 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 				if err != nil {
 					be.Log.Println("Unable to parse: ", err)
 				} else {
-					f.DateTime = dt
+					f.DateTime = dt.Local()
 				}
 			}
 		}
