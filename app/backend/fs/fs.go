@@ -549,7 +549,7 @@ func (be *Backend) getFileMetaData(bin string, filename string) (File, error) {
 				// After removing the special characters above, the
 				// string to parse is on the following format:
 				// 2016-05-21 12 26 12
-				dt, err := time.Parse("2006-01-02 15 04 05", s)
+				dt, err := time.Parse("2006-01-02 15 4 5", s)
 				if err != nil {
 					be.Log.Println("Unable to parse: ", err)
 				} else {
@@ -715,7 +715,7 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 				// After removing the special characters above, the
 				// string to parse is on the following format:
 				// 2016-05-21 12 26 12
-				dt, err := time.Parse("2006-01-02 15 04 05", s)
+				dt, err := time.Parse("2006-01-02 15 4 5", s)
 				if err != nil {
 					be.Log.Println("Unable to parse: ", err)
 				} else {
