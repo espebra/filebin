@@ -313,6 +313,7 @@ func main() {
 	// instead of globally.
 	//router.StrictSlash(true)
 
+	router.HandleFunc("/filebin-status", reqHandler(api.FilebinStatus)).Methods("GET", "HEAD")
 	router.HandleFunc("/admin", basicAuth(reqHandler(api.AdminDashboard))).Methods("GET", "HEAD")
 	router.HandleFunc("/admin/events", basicAuth(reqHandler(api.AdminEvents))).Methods("GET", "HEAD")
 	router.HandleFunc("/admin/bins", basicAuth(reqHandler(api.AdminBins))).Methods("GET", "HEAD")
@@ -340,7 +341,6 @@ func main() {
 
 	//router.HandleFunc("/user{_:/?}", user.GetHomePage).Methods("GET")
 	//router.HandleFunc("/user/view/{id:[0-9]+}", user.GetViewPage).Methods("GET")
-	//router.HandleFunc("/user/{id:[0-9]+}", user.GetViewPage).Methods("GET")
 
 	err = http.ListenAndServe(cfg.Host+":"+strconv.Itoa(cfg.Port), nil)
 	if err != nil {

@@ -731,3 +731,22 @@ func PurgeHandler(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 //	var status = 200
 //	output.HTMLresponse(w, "doc", status, headers, t, ctx)
 //}
+
+func FilebinStatus(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	var status = 200
+	bins := ctx.Backend.GetBinsMetaData()
+
+	type Out struct {
+		Bins           int
+		Now            time.Time
+	}
+
+	data := Out{
+		Bins:           len(bins),
+		Now:            time.Now().UTC(),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	output.JSONresponse(w, status, data, ctx)
+	return
+}
