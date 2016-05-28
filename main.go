@@ -313,7 +313,9 @@ func main() {
 	// instead of globally.
 	//router.StrictSlash(true)
 
-	router.HandleFunc("/filebin-status", reqHandler(api.FilebinStatus)).Methods("GET", "HEAD")
+	// Skip reqHandler to avoid logging of requests to this endpoint
+	router.HandleFunc("/filebin-status", api.FilebinStatus).Methods("GET", "HEAD")
+
 	router.HandleFunc("/admin", basicAuth(reqHandler(api.AdminDashboard))).Methods("GET", "HEAD")
 	router.HandleFunc("/admin/events", basicAuth(reqHandler(api.AdminEvents))).Methods("GET", "HEAD")
 	router.HandleFunc("/admin/bins", basicAuth(reqHandler(api.AdminBins))).Methods("GET", "HEAD")
