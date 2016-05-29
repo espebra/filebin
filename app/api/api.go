@@ -215,6 +215,9 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 }
 
 func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	w.Header().Set("Cache-Control", "s-maxage=3600")
+	w.Header().Set("Vary", "Content-Type")
+
 	// Query parameters
 	u, err := url.Parse(r.RequestURI)
 	if err != nil {
@@ -258,8 +261,6 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
-	w.Header().Set("Vary", "Content-Type")
-	w.Header().Set("Cache-Control", "s-maxage=3600")
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, 200, f, ctx)
@@ -339,6 +340,7 @@ func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	}
 
 	ctx.Log.Println("Bin deleted successfully.")
+	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	http.Error(w, "Bin Deleted Successfully", 200)
 	return
 
@@ -381,10 +383,14 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		}
 	}
 
+	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	http.Error(w, "File deleted successfully", 200)
+	return
 }
 
 func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	w.Header().Set("Cache-Control", "s-maxage=3600")
+
 	params := mux.Vars(r)
 	bin := params["bin"]
 	if err := verifyBin(bin); err != nil {
@@ -415,14 +421,15 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	}
 	ctx.Metrics.AddEvent(event)
 
-	w.Header().Set("Cache-Control", "s-maxage=3600")
-
 	var status = 200
 	output.HTMLresponse(w, "viewalbum", status, b, ctx)
 	return
 }
 
 func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	w.Header().Set("Cache-Control", "s-maxage=3600")
+	w.Header().Set("Vary", "Content-Type")
+
 	params := mux.Vars(r)
 	bin := params["bin"]
 	if err := verifyBin(bin); err != nil {
@@ -460,11 +467,10 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	}
 	ctx.Metrics.AddEvent(event)
 
-	w.Header().Set("Vary", "Content-Type")
-	w.Header().Set("Cache-Control", "s-maxage=3600")
-
 	var status = 200
 
+	w.Header().Set("Cache-Control", "s-maxage=3600")
+	w.Header().Set("Vary", "Content-Type")
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, status, b, ctx)
@@ -480,6 +486,9 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 }
 
 func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	w.Header().Set("Cache-Control", "s-maxage=3600")
+	w.Header().Set("Vary", "Content-Type")
+
 	params := mux.Vars(r)
 	format := params["format"]
 	bin := params["bin"]
@@ -525,18 +534,19 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 		ctx.Log.Println("Executing trigger: Download bin")
 		triggerDownloadBinHandler(cfg.TriggerDownloadBin, bin)
 	}
-
-	w.Header().Set("Cache-Control", "s-maxage=3600")
 }
 
 func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	bin := randomString(cfg.DefaultBinLength)
 	w.Header().Set("Location", ctx.Baseurl+"/"+bin)
+	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	http.Error(w, "Generated bin: "+bin, 302)
 	return
 }
 
 func AdminDashboard(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	w.Header().Set("Vary", "Content-Type")
+	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	var status = 200
 
 	event := metrics.Event {
@@ -618,6 +628,8 @@ func AdminDashboard(w http.ResponseWriter, r *http.Request, cfg config.Configura
 }
 
 func AdminEvents(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	w.Header().Set("Vary", "Content-Type")
+	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	var status = 200
 
 	event := metrics.Event {
@@ -662,6 +674,7 @@ func AdminEvents(w http.ResponseWriter, r *http.Request, cfg config.Configuratio
 		Now:            time.Now().UTC(),
 	}
 
+	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, status, data, ctx)
@@ -672,6 +685,8 @@ func AdminEvents(w http.ResponseWriter, r *http.Request, cfg config.Configuratio
 }
 
 func AdminBins(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	w.Header().Set("Vary", "Content-Type")
+	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	var status = 200
 
 	event := metrics.Event {
@@ -700,6 +715,7 @@ func AdminBins(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		Now:            time.Now().UTC(),
 	}
 
+	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, status, data, ctx)
@@ -733,6 +749,7 @@ func PurgeHandler(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 //}
 
 func FilebinStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	http.Error(w, "OK", 200)
 	return
 }
