@@ -344,5 +344,4 @@ $ ln -s tools/git/pre-commit .git/hooks/pre-commit
 
 * Automatically clean up expired bins.
 * Avoid reuse of expired bins.
-* Administrator dashboard.
 * Trigger cache invalidation on bin expiration.
