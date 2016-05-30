@@ -674,7 +674,6 @@ func AdminEvents(w http.ResponseWriter, r *http.Request, cfg config.Configuratio
 		Now:            time.Now().UTC(),
 	}
 
-	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, status, data, ctx)
@@ -715,7 +714,6 @@ func AdminBins(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		Now:            time.Now().UTC(),
 	}
 
-	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, status, data, ctx)
