@@ -59,3 +59,7 @@ sub vcl_backend_error {
     synthetic({"Filebin is currently not available ("} + beresp.status + {")"});
     return (deliver);
 }
+
+sub vcl_pipe {
+    set bereq.http.connection = "close";
+}
