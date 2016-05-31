@@ -2,7 +2,7 @@
 
 ![Viewing a bin](doc/screenshot-web-interface-bin.png)
 
-Filebin is a web application that facilitates convenient file sharing over the web. It is the software that makes [http://filebin.net](http://filebin.net) possible.
+Filebin is a web application that facilitates convenient file sharing over the web. It is the software behind [https://filebin.net](https://filebin.net).
 
 ## Table of contents
 
@@ -20,7 +20,7 @@ Filebin is a web application that facilitates convenient file sharing over the w
 * Responsive and mobile friendly [web interface](#web-interface).
 * All functionality available through an [HTTP API](#web-service).
 * Upload files using drag and drop, select files from a dialog box or use cURL ([examples below](#web-service))
-* Large file support. 10 GB file upload has been tested, but it should work fine with larger files as well.
+* Large file support. 30 GB file upload has been tested, but it should work fine with larger files as well.
 * Archive (tar and zip) download to make it easy to download multiple files in one go.
 * Files expire automatically after a configurable period of time.
 * Files and entire bins can be deleted manually.
