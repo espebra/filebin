@@ -1,4 +1,4 @@
-function FileAPI (c, t, d, f, tag, url) {
+function FileAPI (c, t, d, f, bin, uploadURL, binURL) {
 
     var fileCount = c,
         fileList = t,
@@ -42,7 +42,7 @@ function FileAPI (c, t, d, f, tag, url) {
             box.className = "alert alert-success";
 
             // Automatic refresh when uploads complete
-            location.reload(true);
+            window.location.assign(binURL)
         }
 
         if ((counter_completed + counter_failed) != counter_queue) {
@@ -174,7 +174,6 @@ function FileAPI (c, t, d, f, tag, url) {
         return (speed.toFixed(1) + unit);
     };
 
-
     var uploadFile = function (file, container) {
         if (container && file) {
             counter_uploading += 1;
@@ -251,13 +250,13 @@ function FileAPI (c, t, d, f, tag, url) {
 
             xhr.open(
                 "POST",
-                url
+                uploadURL
             );
             xhr.setRequestHeader("Cache-Control", "no-cache");
             xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
             xhr.setRequestHeader("Filename", file.name.replace(/[^A-Za-z0-9-_=,.]/g, "_"));
             xhr.setRequestHeader("Size", file.size);
-            xhr.setRequestHeader("Bin", tag);
+            xhr.setRequestHeader("Bin", bin);
             xhr.send(file);
         }
     }

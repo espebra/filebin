@@ -536,11 +536,32 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 	}
 }
 
-func ViewIndex(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	bin := randomString(cfg.DefaultBinLength)
-	w.Header().Set("Location", ctx.Baseurl+"/"+bin)
+func NewBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
-	http.Error(w, "Generated bin: "+bin, 302)
+	w.Header().Set("Vary", "Content-Type")
+
+	// XXX: Should ensure that the bin does not exist from before.
+	bin := randomString(cfg.DefaultBinLength)
+	b := ctx.Backend.NewBin(bin)
+
+	ctx.Metrics.Incr("total-new-bin")
+
+	event := metrics.Event {
+	        Bin: bin,
+	        Category: "new-bin",
+	        RemoteAddr: ctx.RemoteAddr,
+	        Text: r.Header.Get("user-agent"),
+	        URL: r.RequestURI,
+	}
+	ctx.Metrics.AddEvent(event)
+	var status = 200
+
+	if r.Header.Get("Accept") == "application/json" {
+		w.Header().Set("Content-Type", "application/json")
+		output.JSONresponse(w, status, b, ctx)
+	} else {
+		output.HTMLresponse(w, "newbin", status, b, ctx)
+	}
 	return
 }
 
@@ -729,22 +750,23 @@ func PurgeHandler(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 	return
 }
 
-//func ViewAPI(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-//	t := model.Bin{}
-//
-//	w.Header().Set("Cache-Control", "s-maxage=3600")
-//
-//	var status = 200
-//	output.HTMLresponse(w, "api", status, t, ctx)
-//}
+func Readme(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	var status = 200
+	w.Header().Set("Cache-Control", "s-maxage=3600")
 
-//func ViewDoc(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-//	t := model.Bin {}
-//	headers := make(map[string]string)
-//	headers["Cache-Control"] = "s-maxage=1"
-//	var status = 200
-//	output.HTMLresponse(w, "doc", status, headers, t, ctx)
-//}
+	type Out struct {
+		Uptime         time.Duration
+		UptimeReadable string
+		Now            time.Time
+	}
+
+	data := Out{
+		Uptime:         ctx.Metrics.Uptime(),
+		UptimeReadable: humanize.Time(ctx.Metrics.StartTime()),
+		Now:            time.Now().UTC(),
+	}
+	output.HTMLresponse(w, "readme", status, data, ctx)
+}
 
 func FilebinStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")

@@ -30,14 +30,16 @@
                 var fileDrop = document.body;
                 var fileField = document.getElementById("fileField");
                 var bin = "{{ .Data.Bin }}";
-                var url = "{{ .Ctx.Baseurl }}/";
+                var uploadURL = "{{ .Ctx.Baseurl }}/";
+                var binURL = "{{ .Ctx.Baseurl }}/{{ .Data.Bin }}";
                 FileAPI = new FileAPI(
                     fileCount,
                     fileList,
                     fileDrop,
                     fileField,
                     bin,
-                    url
+                    uploadURL,
+                    binURL
                 );
                 FileAPI.init();
                 // Automatically start upload when using the drop zone
