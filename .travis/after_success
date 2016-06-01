@@ -6,5 +6,5 @@ echo "Binary: ${FILE}"
 CHECKSUM=$(sha256sum ${FILE} | cut -d ' ' -f1)
 echo "Checksum: ${CHECKSUM}"
 
-/usr/bin/curl -v --data-binary "@${FILE}" http://87.238.35.133/ -H "Host: dev.filebin.net" -H "Filename: filebin" -H "Bin: filebin-ci" -H "Content-SHA256: ${CHECKSUM}"
+/usr/bin/curl -v --data-binary "@${FILE}" https://dev.filebin.net/ -H "Filename: filebin" -H "Bin: filebin-ci" -H "Content-SHA256: ${CHECKSUM}"
 
