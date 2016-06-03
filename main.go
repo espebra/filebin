@@ -381,9 +381,15 @@ func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration
 		// Print X-Forwarded-For since we might be behind some TLS
 		// terminator and web cache
 		xff := r.Header.Get("X-Forwarded-For")
-		if xff != "" {
+		if xff != "" && xff != ctx.RemoteAddr {
 			ctx.Log.Println("X-Forwarded-For: " + xff)
 		}
+
+		referer := r.Header.Get("Referer")
+		if ua != "" {
+			ctx.Log.Println("Referer: " + referer)
+		}
+
 		ua := r.Header.Get("User-Agent")
 		if ua != "" {
 			ctx.Log.Println("User-Agent: " + ua)
