@@ -50,28 +50,9 @@
 
             <br/>
 
-            <div class="row">
-              <div class="col-md-4">
-                <div class="alert alert-info">
-                  <div class="text-xs-center"><strong>{{ .Data.FilesReadable }}</strong></div>
-                  <div class="text-xs-center">Total file count</div>
-                </div>
-              </div>
-
-              <div class="col-md-4">
-                <div class="alert alert-info">
-                  <div class="text-xs-center"><strong>{{ .Data.BinsReadable }}</strong></div>
-                  <div class="text-xs-center">Total bin count</div>
-                </div>
-              </div>
-
-              <div class="col-md-4">
-                <div class="alert alert-info">
-                  <div class="text-xs-center"><strong>{{ .Data.BytesReadable }}</strong></div>
-                  <div class="text-xs-center">Storage size</div>
-                </div>
-              </div>
-            </div>
+            <h6 class="text-muted">Counters
+              <a href="#" data-toggle="collapse" data-target="#collapseCounters" aria-exanded="false" aria-controls="collapseCounters"><i class="fa fa-toggle-down"></i></a>
+            </h6>
 
             <div class="row">
               <div class="col-md-4">
@@ -96,48 +77,73 @@
               </div>
             </div>
 
-            <div class="row">
-              <div class="col-md-4">
-                <div class="alert alert-success">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "total-upload" }}</strong></div>
-                  <div class="text-xs-center">File uploads since startup</div>
+            <div class="collapse" id="collapseCounters">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="alert alert-info">
+                    <div class="text-xs-center"><strong>{{ .Data.FilesReadable }}</strong></div>
+                    <div class="text-xs-center">Total file count</div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="alert alert-info">
+                    <div class="text-xs-center"><strong>{{ .Data.BinsReadable }}</strong></div>
+                    <div class="text-xs-center">Total bin count</div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="alert alert-info">
+                    <div class="text-xs-center"><strong>{{ .Data.BytesReadable }}</strong></div>
+                    <div class="text-xs-center">Storage size</div>
+                  </div>
                 </div>
               </div>
 
-              <div class="col-md-4">
-                <div class="alert alert-success">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "total-file-download" }}</strong></div>
-                  <div class="text-xs-center">File downloads since startup</div>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="alert alert-success">
+                    <div class="text-xs-center"><strong>{{ index .Data.Stats "total-upload" }}</strong></div>
+                    <div class="text-xs-center">File uploads since startup</div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="alert alert-success">
+                    <div class="text-xs-center"><strong>{{ index .Data.Stats "total-file-download" }}</strong></div>
+                    <div class="text-xs-center">File downloads since startup</div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="alert alert-success">
+                    <div class="text-xs-center"><strong>{{ index .Data.Stats "total-archive-download" }}</strong></div>
+                    <div class="text-xs-center">Archive downloads since startup</div>
+                  </div>
                 </div>
               </div>
 
-              <div class="col-md-4">
-                <div class="alert alert-success">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "total-archive-download" }}</strong></div>
-                  <div class="text-xs-center">Archive downloads since startup</div>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="alert alert-danger">
+                    <div class="text-xs-center"><strong>{{ index .Data.Stats "total-file-delete" }}</strong></div>
+                    <div class="text-xs-center">Files deleted since startup</div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div class="row">
-              <div class="col-md-4">
-                <div class="alert alert-danger">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "total-file-delete" }}</strong></div>
-                  <div class="text-xs-center">Files deleted since startup</div>
+                <div class="col-md-4">
+                  <div class="alert alert-danger">
+                    <div class="text-xs-center"><strong>{{ index .Data.Stats "total-bin-delete" }}</strong></div>
+                    <div class="text-xs-center">Bins deleted since startup</div>
+                  </div>
                 </div>
-              </div>
 
-              <div class="col-md-4">
-                <div class="alert alert-danger">
-                  <div class="text-xs-center"><strong>{{ index .Data.Stats "total-bin-delete" }}</strong></div>
-                  <div class="text-xs-center">Bins deleted since startup</div>
-                </div>
-              </div>
-
-              <div class="col-md-4">
-                <div class="alert alert-info">
-                  <div class="text-xs-center"><strong>{{ index .Data.UptimeReadable }}</strong></div>
-                  <div class="text-xs-center">Service start</div>
+                <div class="col-md-4">
+                  <div class="alert alert-info">
+                    <div class="text-xs-center"><strong>{{ index .Data.UptimeReadable }}</strong></div>
+                    <div class="text-xs-center">Service start</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -209,9 +215,13 @@
               </div>
             </div>
 
-            <h6 class="text-muted">New events <span class="label label-pill label-default">{{ .Data.Events | len }}</span>
+            <h6 class="text-muted">New events
             {{ if gt (.Data.Events | len) 0 }}
-              <small><a href="#" data-toggle="collapse" data-target="#collapseEvents" aria-exanded="false" aria-controls="collapseEvents">toggle</a></small>
+              <a href="#" data-toggle="collapse" data-target="#collapseEvents" aria-exanded="false" aria-controls="collapseEvents">
+            {{ end }}
+            <span class="label label-pill label-default">{{ .Data.Events | len }}</span>
+            {{ if gt (.Data.Events | len) 0 }}
+              </a>
             {{ end }}
             </h6>
 
