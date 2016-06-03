@@ -386,7 +386,7 @@ func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration
 		}
 
 		referer := r.Header.Get("Referer")
-		if ua != "" {
+		if referer != "" {
 			ctx.Log.Println("Referer: " + referer)
 		}
 
