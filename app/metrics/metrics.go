@@ -99,7 +99,8 @@ func (m *Metrics) AddEvent(e Event) {
 
 	// Remove the last event from the ring buffer if the limit is reached.
 	if len(m.events) > 10000 {
-		_, m.events = m.events[len(m.events)-1], m.events[:len(m.events)-1]
+		// The last event is the first entry in the slice.
+		_, m.events = m.events[0], m.events[1:]
 	}
 }
 
