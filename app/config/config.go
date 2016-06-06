@@ -24,6 +24,7 @@ type Configuration struct {
 	CacheInvalidation   bool
 	AdminUsername       string
 	AdminPassword       string
+	AccessLog           string
 }
 
 var Global Configuration
@@ -44,6 +45,7 @@ func init() {
 		Workers:           1,
 		CacheInvalidation: false,
 		AdminUsername:     "admin",
-		ClientAddrHeader:    "",
+		ClientAddrHeader:  "",
+		AccessLog:         "/var/log/filebin/access.log",
 	}
 }

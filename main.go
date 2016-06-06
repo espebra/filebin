@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/GeertJohan/go.rice"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
 	"github.com/espebra/filebin/app/api"
@@ -153,6 +154,11 @@ func init() {
 		cfg.AdminPassword,
 		"Administrator password.")
 
+	flag.StringVar(&cfg.AccessLog,
+		"access-log",
+		cfg.AccessLog,
+		"Path to combined format access log file.")
+
 	//	flag.StringVar(&cfg.TriggerExpiredBin, "trigger-expired-bin",
 	//		cfg.TriggerExpiredBin,
 	//		"Trigger to execute when a bin expires.")
@@ -223,6 +229,7 @@ func main() {
 		strconv.Itoa(cfg.Writetimeout) + " seconds")
 	log.Println("Max header size: " +
 		strconv.Itoa(cfg.Maxheaderbytes) + " bytes")
+	log.Println("Access log file: " + cfg.AccessLog)
 	log.Println("Cache invalidation enabled: " +
 		strconv.FormatBool(cfg.CacheInvalidation))
 	log.Println("Workers: " +
@@ -272,6 +279,12 @@ func main() {
 
 	//fmt.Println("Trigger Expired bin: " + cfg.TriggerExpiredBin)
 
+	accessLogWriter, err := os.OpenFile(cfg.AccessLog, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		fmt.Println("Unable to open access log file: " + err.Error())
+		os.Exit(2)
+	}
+
 	m = metrics.Init()
 
 	startTime := time.Now().UTC()
@@ -303,7 +316,7 @@ func main() {
 
 	router := mux.NewRouter()
 
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(staticBox.HTTPBox())))
+	router.Handle("/static/{path:.*}", http.StripPrefix("/static/", http.FileServer(staticBox.HTTPBox()))).Methods("GET", "HEAD")
 
 	http.Handle("/", httpInterceptor(router))
 
@@ -330,20 +343,8 @@ func main() {
 	router.HandleFunc("/{bin:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.DeleteFile)).Methods("DELETE")
 	router.HandleFunc("/{path:.*}", reqHandler(api.PurgeHandler)).Methods("PURGE")
 
-	//router.HandleFunc("/dashboard{_:/?}", ViewDashboard).Methods("GET", "HEAD")
-
-	//router.HandleFunc("/", ViewIndex).Methods("GET", "HEAD")
-	//router.HandleFunc("/upload{_:/?}", RedirectToNewBin).Methods("GET", "HEAD")
-	//router.HandleFunc("/upload/{bin:[A-Za-z0-9_-]+}", RedirectOldBin)
-
-	//router.HandleFunc("/{bin:[A-Za-z0-9_-]+}/page/{page:[0-9]+}{_:/?}",
-	//    ViewBin).Methods("GET", "HEAD")
-	//router.HandleFunc("/{bin:[A-Za-z0-9_-]+}{_:/?}", ViewBin).Methods("GET", "HEAD")
-
-	//router.HandleFunc("/user{_:/?}", user.GetHomePage).Methods("GET")
-	//router.HandleFunc("/user/view/{id:[0-9]+}", user.GetViewPage).Methods("GET")
-
-	err = http.ListenAndServe(cfg.Host+":"+strconv.Itoa(cfg.Port), nil)
+	logRouter := handlers.CombinedLoggingHandler(accessLogWriter, router)
+	err = http.ListenAndServe(cfg.Host+":"+strconv.Itoa(cfg.Port), logRouter)
 	if err != nil {
 		log.Panicln(err.Error())
 	}

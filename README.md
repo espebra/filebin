@@ -98,6 +98,7 @@ $ ${GOPATH}/bin/filebin \
   --admin-username admin \
   --admin-password changeme \
   --client-address-header x-client \
+  --access-log /var/log/filebin/access.log \
   [...]
 ```
 
@@ -134,6 +135,10 @@ The parameter ``--client-address-header`` can specify a request header to read t
 #### Admin username and password
 
 The parameters ``--admin-username`` and ``--admin-password`` will, if set, enable the administrator page. It is available at the URL baseurl/admin, with the specified username and password for login.
+
+#### Access log
+
+The parameter ``--access-log`` is used to set a full path for the access log. The access log is written in the [Combined Log Format](http://httpd.apache.org/docs/2.2/logs.html#combined).
 
 #### Triggers
 
