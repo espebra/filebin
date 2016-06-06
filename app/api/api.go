@@ -276,6 +276,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 			http.Error(w, "Image not found", 404)
 			return
 		}
+		ctx.Metrics.Incr("total-thumbnails-viewed")
 		http.ServeContent(w, r, f.Filename, f.CreatedAt, fp)
 		return
 	}
@@ -283,6 +284,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	ctx.Metrics.Incr("total-file-download")
 	ctx.Metrics.Incr("current-file-download")
 	defer ctx.Metrics.Decr("current-file-download")
+	ctx.Metrics.Incr("file-download bin=" + bin + " filename=" + filename + " referer=" + r.Header.Get("Referer"))
 
 	event := metrics.Event{
 		Bin:        bin,
@@ -328,6 +330,15 @@ func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 
 	ctx.Metrics.Incr("total-bin-delete")
 
+	event := metrics.Event{
+		Bin:        bin,
+		Category:   "delete-bin",
+		RemoteAddr: ctx.RemoteAddr,
+		Text:       r.Header.Get("user-agent"),
+		URL:        r.RequestURI,
+	}
+	ctx.Metrics.AddEvent(event)
+
 	// Purging any old content
 	if cfg.CacheInvalidation {
 		for _, f := range b.Files {
@@ -368,6 +379,16 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	}
 
 	ctx.Metrics.Incr("total-file-delete")
+
+	event := metrics.Event{
+		Bin:        bin,
+		Category:   "delete-file",
+		Filename:   filename,
+		RemoteAddr: ctx.RemoteAddr,
+		Text:       r.Header.Get("user-agent"),
+		URL:        r.RequestURI,
+	}
+	ctx.Metrics.AddEvent(event)
 
 	if cfg.TriggerDeleteFile != "" {
 		ctx.Log.Println("Executing trigger: Delete file")
@@ -411,6 +432,7 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	}
 
 	ctx.Metrics.Incr("total-view-album")
+	ctx.Metrics.Incr("album-view bin=" + bin + " referer=" + r.Header.Get("Referer"))
 
 	event := metrics.Event{
 		Bin:        bin,
@@ -457,6 +479,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	}
 
 	ctx.Metrics.Incr("total-view-bin")
+	ctx.Metrics.Incr("bin-view bin=" + bin + " referer=" + r.Header.Get("Referer"))
 
 	event := metrics.Event{
 		Bin:        bin,
@@ -529,6 +552,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 	}
 
 	ctx.Metrics.Incr("total-archive-download")
+	ctx.Metrics.Incr("archive-download bin=" + bin + " format=" + format + " referer=" + r.Header.Get("Referer"))
 
 	if cfg.TriggerDownloadBin != "" {
 		ctx.Log.Println("Executing trigger: Download bin")
@@ -644,6 +668,44 @@ func AdminDashboard(w http.ResponseWriter, r *http.Request, cfg config.Configura
 		output.JSONresponse(w, status, data, ctx)
 	} else {
 		output.HTMLresponse(w, "dashboard", status, data, ctx)
+	}
+	return
+}
+
+func AdminCounters(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	w.Header().Set("Vary", "Content-Type")
+	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
+	var status = 200
+
+	event := metrics.Event{
+		Category:   "admin-login",
+		RemoteAddr: ctx.RemoteAddr,
+		Text:       r.Header.Get("user-agent"),
+		URL:        r.RequestURI,
+	}
+	ctx.Metrics.AddEvent(event)
+
+	stats := ctx.Metrics.GetStats()
+
+	type Out struct {
+		Counters       map[string]int64
+		Uptime         time.Duration
+		UptimeReadable string
+		Now            time.Time
+	}
+
+	data := Out{
+		Counters:       stats,
+		Uptime:         ctx.Metrics.Uptime(),
+		UptimeReadable: humanize.Time(ctx.Metrics.StartTime()),
+		Now:            time.Now().UTC(),
+	}
+
+	if r.Header.Get("Accept") == "application/json" {
+		w.Header().Set("Content-Type", "application/json")
+		output.JSONresponse(w, status, data, ctx)
+	} else {
+		output.HTMLresponse(w, "counters", status, data, ctx)
 	}
 	return
 }

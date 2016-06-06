@@ -33,10 +33,10 @@
                       <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin/events">Events</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link active" href="{{ .Ctx.Baseurl }}/admin/bins">Bins</a>
+                      <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin/bins">Bins</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin/counters">Counters</a>
+                      <a class="nav-link active" href="{{ .Ctx.Baseurl }}/admin/counters">Counters</a>
                     </li>
                   </ul>
                 </p>
@@ -53,35 +53,32 @@
 
             <br/>
 
-            <div class="row">
-              <div class="col-sm-12">
-                <table class="sortable table table-sm">
-                    <thead class="thead-default">
-                        <tr>
-                            <th>Bin</th>
-                            <th>Last updated</th>
-                            <th>Files</th>
-                            <th>Size</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+            <p class="lead">Showing {{ .Data.Counters|len }} system counters.</p>
 
-                        {{ range $index, $value := .Data.Bins }}
-                        {{ if .Expired }}
-                        <tr class="table-warning">
-                        {{ else }}
-                        <tr>
-                        {{ end }}
-                            <td><a href="{{ $.Ctx.Baseurl }}/{{ .Bin }}">{{ .Bin }}</a></td>
-                            <td sorttable_customkey="{{ .UpdatedAt }}">{{ .UpdatedReadable }}</td>
-                            <td>{{ .Files | len }}</td>
-                            <td sorttable_customkey="{{ .Bytes }}">{{ .BytesReadable }}</td>
-                        </tr>
-                        {{ end }}
-                    </tbody>
+            <div class="row">
+              <div class="col-md-12">
+                <table class="sortable table table-sm">
+                  <thead class="thead-default">
+                    <tr>
+                      <th>Key</th>
+                      <th>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {{ range $index, $value := .Data.Counters }}
+                        <td>
+                          <code>{{ $index }}</code>
+                        </td>
+                        <td>
+                          {{ $value }}
+                        </td>
+                      </tr>
+                    {{ end }}
+                  </tbody>
                 </table>
               </div>
             </div>
           </div>
+        </div>
     </body>
 </html>

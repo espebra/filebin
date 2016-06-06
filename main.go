@@ -332,6 +332,7 @@ func main() {
 	router.HandleFunc("/admin", basicAuth(reqHandler(api.AdminDashboard))).Methods("GET", "HEAD")
 	router.HandleFunc("/admin/events", basicAuth(reqHandler(api.AdminEvents))).Methods("GET", "HEAD")
 	router.HandleFunc("/admin/bins", basicAuth(reqHandler(api.AdminBins))).Methods("GET", "HEAD")
+	router.HandleFunc("/admin/counters", basicAuth(reqHandler(api.AdminCounters))).Methods("GET", "HEAD")
 	router.HandleFunc("/readme", reqHandler(api.Readme)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.NewBin)).Methods("GET", "HEAD")
 	router.HandleFunc("/", reqHandler(api.Upload)).Methods("POST")
