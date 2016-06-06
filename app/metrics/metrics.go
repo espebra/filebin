@@ -14,12 +14,12 @@ type Metrics struct {
 }
 
 type Event struct {
-	Bin               string
-	Category          string
-	Filename          string
-	RemoteAddr        string
-	Text              string
-	Timestamp         time.Time
+	Bin        string
+	Category   string
+	Filename   string
+	RemoteAddr string
+	Text       string
+	Timestamp  time.Time
 	URL        string
 }
 
@@ -167,4 +167,3 @@ func (m *Metrics) GetEvents(filter Event, limitTime time.Time, limitCount int) [
 	}
 	return r
 }
-

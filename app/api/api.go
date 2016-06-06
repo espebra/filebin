@@ -170,13 +170,13 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	ctx.Metrics.Incr("current-upload")
 	defer ctx.Metrics.Decr("current-upload")
 
-	event := metrics.Event {
-	        Bin: bin,
-	        Category: "file-upload",
-	        Filename: filename,
-	        RemoteAddr: ctx.RemoteAddr,
-	        Text: r.Header.Get("user-agent"),
-	        URL: r.RequestURI,
+	event := metrics.Event{
+		Bin:        bin,
+		Category:   "file-upload",
+		Filename:   filename,
+		RemoteAddr: ctx.RemoteAddr,
+		Text:       r.Header.Get("user-agent"),
+		URL:        r.RequestURI,
 	}
 	ctx.Metrics.AddEvent(event)
 
@@ -284,13 +284,13 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	ctx.Metrics.Incr("current-file-download")
 	defer ctx.Metrics.Decr("current-file-download")
 
-	event := metrics.Event {
-	        Bin: bin,
-	        Category: "file-download",
-	        Filename: filename,
-	        RemoteAddr: ctx.RemoteAddr,
-	        Text: r.Header.Get("user-agent"),
-	        URL: r.RequestURI,
+	event := metrics.Event{
+		Bin:        bin,
+		Category:   "file-download",
+		Filename:   filename,
+		RemoteAddr: ctx.RemoteAddr,
+		Text:       r.Header.Get("user-agent"),
+		URL:        r.RequestURI,
 	}
 	ctx.Metrics.AddEvent(event)
 
@@ -412,12 +412,12 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 
 	ctx.Metrics.Incr("total-view-album")
 
-	event := metrics.Event {
-	        Bin: bin,
-	        Category: "view-album",
-	        RemoteAddr: ctx.RemoteAddr,
-	        Text: r.Header.Get("user-agent"),
-	        URL: r.RequestURI,
+	event := metrics.Event{
+		Bin:        bin,
+		Category:   "view-album",
+		RemoteAddr: ctx.RemoteAddr,
+		Text:       r.Header.Get("user-agent"),
+		URL:        r.RequestURI,
 	}
 	ctx.Metrics.AddEvent(event)
 
@@ -458,12 +458,12 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 
 	ctx.Metrics.Incr("total-view-bin")
 
-	event := metrics.Event {
-	        Bin: bin,
-	        Category: "view-bin",
-	        RemoteAddr: ctx.RemoteAddr,
-	        Text: r.Header.Get("user-agent"),
-	        URL: r.RequestURI,
+	event := metrics.Event{
+		Bin:        bin,
+		Category:   "view-bin",
+		RemoteAddr: ctx.RemoteAddr,
+		Text:       r.Header.Get("user-agent"),
+		URL:        r.RequestURI,
 	}
 	ctx.Metrics.AddEvent(event)
 
@@ -512,12 +512,12 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 	ctx.Metrics.Incr("current-archive-download")
 	defer ctx.Metrics.Decr("current-archive-download")
 
-	event := metrics.Event {
-	        Bin: bin,
-	        Category: "archive-download",
-	        RemoteAddr: ctx.RemoteAddr,
-	        Text: r.Header.Get("user-agent"),
-	        URL: r.RequestURI,
+	event := metrics.Event{
+		Bin:        bin,
+		Category:   "archive-download",
+		RemoteAddr: ctx.RemoteAddr,
+		Text:       r.Header.Get("user-agent"),
+		URL:        r.RequestURI,
 	}
 	ctx.Metrics.AddEvent(event)
 
@@ -546,12 +546,12 @@ func NewBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 
 	ctx.Metrics.Incr("total-new-bin")
 
-	event := metrics.Event {
-	        Bin: bin,
-	        Category: "new-bin",
-	        RemoteAddr: ctx.RemoteAddr,
-	        Text: r.Header.Get("user-agent"),
-	        URL: r.RequestURI,
+	event := metrics.Event{
+		Bin:        bin,
+		Category:   "new-bin",
+		RemoteAddr: ctx.RemoteAddr,
+		Text:       r.Header.Get("user-agent"),
+		URL:        r.RequestURI,
 	}
 	ctx.Metrics.AddEvent(event)
 	var status = 200
@@ -570,19 +570,19 @@ func AdminDashboard(w http.ResponseWriter, r *http.Request, cfg config.Configura
 	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	var status = 200
 
-	event := metrics.Event {
-	        Category: "admin-login",
-	        RemoteAddr: ctx.RemoteAddr,
-	        Text: r.Header.Get("user-agent"),
-	        URL: r.RequestURI,
+	event := metrics.Event{
+		Category:   "admin-login",
+		RemoteAddr: ctx.RemoteAddr,
+		Text:       r.Header.Get("user-agent"),
+		URL:        r.RequestURI,
 	}
 	ctx.Metrics.AddEvent(event)
 
 	bins := ctx.Backend.GetBinsMetaData()
 	stats := ctx.Metrics.GetStats()
 
-	filter := metrics.Event {
-	        Category: "admin-login",
+	filter := metrics.Event{
+		Category: "admin-login",
 	}
 
 	logins := ctx.Metrics.GetEvents(filter, time.Time{}, 3)
@@ -595,8 +595,8 @@ func AdminDashboard(w http.ResponseWriter, r *http.Request, cfg config.Configura
 	recentEvents := ctx.Metrics.GetEvents(metrics.Event{}, limitTime, 0)
 	_, recentEvents = recentEvents[0], recentEvents[1:]
 
-	filter = metrics.Event {
-	        Category: "file-upload",
+	filter = metrics.Event{
+		Category: "file-upload",
 	}
 	recentUploads := ctx.Metrics.GetEvents(filter, limitTime, 0)
 
@@ -653,11 +653,11 @@ func AdminEvents(w http.ResponseWriter, r *http.Request, cfg config.Configuratio
 	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	var status = 200
 
-	event := metrics.Event {
-	        Category: "admin-login",
-	        RemoteAddr: ctx.RemoteAddr,
-	        Text: r.Header.Get("user-agent"),
-	        URL: r.RequestURI,
+	event := metrics.Event{
+		Category:   "admin-login",
+		RemoteAddr: ctx.RemoteAddr,
+		Text:       r.Header.Get("user-agent"),
+		URL:        r.RequestURI,
 	}
 	ctx.Metrics.AddEvent(event)
 
@@ -671,12 +671,12 @@ func AdminEvents(w http.ResponseWriter, r *http.Request, cfg config.Configuratio
 		ctx.Log.Println(err)
 	}
 
-	filter := metrics.Event {
-	        Bin: queryParams.Get("bin"),
-	        Category: queryParams.Get("category"),
-	        Filename: queryParams.Get("filename"),
-	        RemoteAddr: queryParams.Get("remoteaddr"),
-	        URL: queryParams.Get("url"),
+	filter := metrics.Event{
+		Bin:        queryParams.Get("bin"),
+		Category:   queryParams.Get("category"),
+		Filename:   queryParams.Get("filename"),
+		RemoteAddr: queryParams.Get("remoteaddr"),
+		URL:        queryParams.Get("url"),
 	}
 
 	events := ctx.Metrics.GetEvents(filter, time.Time{}, 100)
@@ -709,11 +709,11 @@ func AdminBins(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
 	var status = 200
 
-	event := metrics.Event {
-	        Category: "admin-login",
-	        RemoteAddr: ctx.RemoteAddr,
-	        Text: r.Header.Get("user-agent"),
-	        URL: r.RequestURI,
+	event := metrics.Event{
+		Category:   "admin-login",
+		RemoteAddr: ctx.RemoteAddr,
+		Text:       r.Header.Get("user-agent"),
+		URL:        r.RequestURI,
 	}
 	ctx.Metrics.AddEvent(event)
 

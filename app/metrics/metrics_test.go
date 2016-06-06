@@ -1,10 +1,10 @@
 package metrics
 
 import (
-	"testing"
-	"time"
 	"os"
 	"strconv"
+	"testing"
+	"time"
 )
 
 var (
@@ -83,9 +83,9 @@ func TestDecr(t *testing.T) {
 }
 
 func TestEvent(t *testing.T) {
-	event := Event {
+	event := Event{
 		Category: "foo",
-		Text: "som bare happened",
+		Text:     "som bare happened",
 	}
 	m.AddEvent(event)
 
@@ -93,7 +93,7 @@ func TestEvent(t *testing.T) {
 		t.Fatal("Unexpected number of events. Not 1.")
 	}
 	for i := 0; i <= 20000; i++ {
-		event := Event {
+		event := Event{
 			Text: "som bare happened: " + strconv.Itoa(i),
 		}
 		m.AddEvent(event)
