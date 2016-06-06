@@ -12,6 +12,7 @@ check:
 get-deps:
 	go get github.com/dustin/go-humanize
 	go get github.com/gorilla/mux
+	go get github.com/gorilla/handlers
 	go get github.com/rwcarlsen/goexif/exif
 	go get github.com/disintegration/imaging
 	go get github.com/GeertJohan/go.rice
