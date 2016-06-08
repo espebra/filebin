@@ -438,7 +438,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	params := mux.Vars(r)
 	bin := params["bin"]
 	if err := verifyBin(bin); err != nil {
-		http.Error(w, "Invalid bin", 404)
+		http.Error(w, "Invalid bin", 400)
 		return
 	}
 
