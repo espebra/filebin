@@ -215,7 +215,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 }
 
 func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	w.Header().Set("Cache-Control", "s-maxage=3600")
+	w.Header().Set("Cache-Control", "s-maxage=30")
 	w.Header().Set("Vary", "Content-Type")
 
 	// Query parameters
@@ -410,7 +410,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 }
 
 func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	w.Header().Set("Cache-Control", "s-maxage=3600")
+	w.Header().Set("Cache-Control", "s-maxage=30")
 
 	params := mux.Vars(r)
 	bin := params["bin"]
@@ -449,7 +449,7 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 }
 
 func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	w.Header().Set("Cache-Control", "s-maxage=3600")
+	w.Header().Set("Cache-Control", "s-maxage=30")
 	w.Header().Set("Vary", "Content-Type")
 
 	params := mux.Vars(r)
@@ -492,7 +492,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 
 	var status = 200
 
-	w.Header().Set("Cache-Control", "s-maxage=3600")
+	w.Header().Set("Cache-Control", "s-maxage=30")
 	w.Header().Set("Vary", "Content-Type")
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
@@ -509,7 +509,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 }
 
 func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	w.Header().Set("Cache-Control", "s-maxage=3600")
+	w.Header().Set("Cache-Control", "s-maxage=30")
 	w.Header().Set("Vary", "Content-Type")
 
 	params := mux.Vars(r)
