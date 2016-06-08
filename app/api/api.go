@@ -2,9 +2,9 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"github.com/espebra/filebin/app/backend/fs"
 	"github.com/espebra/filebin/app/config"
+	"github.com/espebra/filebin/app/shared"
 	"github.com/espebra/filebin/app/metrics"
 	"github.com/espebra/filebin/app/model"
 	"github.com/espebra/filebin/app/output"
@@ -125,27 +125,6 @@ func sanitizeFilename(s string) string {
 	return s
 }
 
-func purgeURL(url string) error {
-	timeout := time.Duration(2 * time.Second)
-	client := &http.Client{
-		Timeout: timeout,
-	}
-	fmt.Println("Purged " + url)
-
-	// Invalidate the file
-	req, err := http.NewRequest("PURGE", url, nil)
-	if err != nil {
-		return err
-	}
-
-	_, err = client.Do(req)
-	if err != nil {
-		return err
-	}
-	// Should probably log the URL and response code
-	return nil
-}
-
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	bin := r.Header.Get("bin")
 	if err := verifyBin(bin); err != nil {
@@ -197,7 +176,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	// Purging any old content
 	if cfg.CacheInvalidation {
 		for _, l := range f.Links {
-			if err := purgeURL(l.Href); err != nil {
+			if err := shared.PurgeURL(l.Href, ctx.Log); err != nil {
 				ctx.Log.Println(err)
 			}
 		}
@@ -343,7 +322,7 @@ func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	if cfg.CacheInvalidation {
 		for _, f := range b.Files {
 			for _, l := range f.Links {
-				if err := purgeURL(l.Href); err != nil {
+				if err := shared.PurgeURL(l.Href, ctx.Log); err != nil {
 					ctx.Log.Println(err)
 				}
 			}
@@ -398,7 +377,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	// Purging any old content
 	if cfg.CacheInvalidation {
 		for _, l := range f.Links {
-			if err := purgeURL(l.Href); err != nil {
+			if err := shared.PurgeURL(l.Href, ctx.Log); err != nil {
 				ctx.Log.Println(err)
 			}
 		}
@@ -449,7 +428,7 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 }
 
 func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	w.Header().Set("Cache-Control", "s-maxage=30")
+	w.Header().Set("Cache-Control", "s-maxage=15")
 	w.Header().Set("Vary", "Content-Type")
 
 	params := mux.Vars(r)
