@@ -4,10 +4,10 @@ import (
 	"errors"
 	"github.com/espebra/filebin/app/backend/fs"
 	"github.com/espebra/filebin/app/config"
-	"github.com/espebra/filebin/app/shared"
 	"github.com/espebra/filebin/app/metrics"
 	"github.com/espebra/filebin/app/model"
 	"github.com/espebra/filebin/app/output"
+	"github.com/espebra/filebin/app/shared"
 	"github.com/gorilla/mux"
 	"math/rand"
 	"net/http"
@@ -185,6 +185,8 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	j := model.Job{}
 	j.Filename = f.Filename
 	j.Bin = f.Bin
+	j.Log = ctx.Log
+	j.Cfg = &cfg
 	ctx.WorkQueue <- j
 
 	w.Header().Set("Content-Type", "application/json")

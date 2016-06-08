@@ -516,7 +516,7 @@ func (be *Backend) getFileMetaData(bin string, filename string) (File, error) {
 		return f, err
 	}
 	f.MIME = http.DetectContentType(buffer)
-	f.Links = generateLinks(be.filedir, be.baseurl, bin, filename)
+	f.Links = be.GenerateLinks(bin, filename)
 
 	// Exif
 	if _, err = fp.Seek(0, 0); err != nil {
@@ -611,7 +611,7 @@ func (be *Backend) GenerateThumbnail(bin string, filename string, width int, hei
 		err = imaging.Save(im, dst)
 	}
 
-	f.Links = generateLinks(be.filedir, be.baseurl, f.Bin, f.Filename)
+	f.Links = be.GenerateLinks(f.Bin, f.Filename)
 	be.Lock()
 	defer be.Unlock()
 	id := bin + filename
@@ -782,7 +782,7 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	}
 
 	f.CreatedAt = fi.ModTime()
-	f.Links = generateLinks(be.filedir, be.baseurl, bin, f.Filename)
+	f.Links = be.GenerateLinks(bin, f.Filename)
 
 	be.Lock()
 	defer be.Unlock()
@@ -808,6 +808,42 @@ func (be *Backend) DeleteFile(bin string, filename string) (File, error) {
 	id := bin + filename
 	delete(be.files, id)
 	return f, nil
+}
+
+func (be *Backend) GenerateLinks(bin string, filename string) []link {
+	links := []link{}
+
+	// Links
+	fileLink := link{}
+	fileLink.Rel = "file"
+	fileLink.Href = be.baseurl + "/" + bin + "/" + filename
+	links = append(links, fileLink)
+
+	binLink := link{}
+	binLink.Rel = "bin"
+	binLink.Href = be.baseurl + "/" + bin
+	links = append(links, binLink)
+
+	cachedir := filepath.Join(be.filedir, bin, ".cache")
+	if isFile(filepath.Join(cachedir, "115x115-"+filename)) {
+		thumbLink := link{}
+		thumbLink.Rel = "thumbnail"
+		thumbLink.Href = be.baseurl + "/" + bin + "/" + filename + "?width=115&height=115"
+		links = append(links, thumbLink)
+	}
+
+	if isFile(filepath.Join(cachedir, "1140x0-"+filename)) {
+		albumItemLink := link{}
+		albumItemLink.Rel = "album item"
+		albumItemLink.Href = be.baseurl + "/" + bin + "/" + filename + "?width=1140"
+		links = append(links, albumItemLink)
+
+		albumLink := link{}
+		albumLink.Rel = "album"
+		albumLink.Href = be.baseurl + "/album/" + bin
+		links = append(links, albumLink)
+	}
+	return links
 }
 
 func (f File) BytesReadable() string {
@@ -933,43 +969,6 @@ func isDir(path string) bool {
 	} else {
 		return false
 	}
-}
-
-func generateLinks(filedir string, baseurl string, bin string, filename string) []link {
-	links := []link{}
-
-	// Links
-	fileLink := link{}
-	fileLink.Rel = "file"
-	fileLink.Href = baseurl + "/" + bin + "/" + filename
-	links = append(links, fileLink)
-
-	binLink := link{}
-	binLink.Rel = "bin"
-	binLink.Href = baseurl + "/" + bin
-	links = append(links, binLink)
-
-	cachedir := filepath.Join(filedir, bin, ".cache")
-	if isFile(filepath.Join(cachedir, "115x115-"+filename)) {
-		thumbLink := link{}
-		thumbLink.Rel = "thumbnail"
-		thumbLink.Href = baseurl + "/" + bin + "/" + filename + "?width=115&height=115"
-		links = append(links, thumbLink)
-	}
-
-	if isFile(filepath.Join(cachedir, "1140x0-"+filename)) {
-		albumItemLink := link{}
-		albumItemLink.Rel = "album item"
-		albumItemLink.Href = baseurl + "/" + bin + "/" + filename + "?width=1140"
-		links = append(links, albumItemLink)
-
-		albumLink := link{}
-		albumLink.Rel = "album"
-		albumLink.Href = baseurl + "/album/" + bin
-		links = append(links, albumLink)
-	}
-	return links
-
 }
 
 // Sort files by DateTime

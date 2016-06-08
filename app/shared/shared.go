@@ -1,9 +1,9 @@
 package shared
 
 import (
+	"log"
 	"net/http"
 	"time"
-	"log"
 )
 
 func PurgeURL(url string, log *log.Logger) error {

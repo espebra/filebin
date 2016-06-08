@@ -300,7 +300,7 @@ func main() {
 	log.Println("Filebin server starting...")
 
 	// Start dispatcher that will handle all background processing
-	model.StartDispatcher(cfg.Workers, cfg.CacheInvalidation, WorkQueue, log, &backend)
+	model.StartDispatcher(cfg.Workers, WorkQueue, &backend)
 
 	// Sending all files through the batch process to ensure thumbnails
 	// are generated.
@@ -310,6 +310,8 @@ func main() {
 			j := model.Job{}
 			j.Filename = filename
 			j.Bin = bin
+			j.Log = log
+			j.Cfg = &cfg
 			WorkQueue <- j
 		}
 	}
