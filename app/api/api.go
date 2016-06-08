@@ -433,10 +433,12 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	w.Header().Set("Cache-Control", "s-maxage=15")
 	w.Header().Set("Vary", "Content-Type")
 
+	var status = 200
+
 	params := mux.Vars(r)
 	bin := params["bin"]
 	if err := verifyBin(bin); err != nil {
-		http.Error(w, "Invalid bin", 400)
+		http.Error(w, "Invalid bin", 404)
 		return
 	}
 
@@ -449,7 +451,8 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		} else {
-			// This bin needs to be created
+			// This bin does not exist (but can be created)
+			status = 404
 			b = ctx.Backend.NewBin(bin)
 		}
 	}
@@ -471,10 +474,6 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	}
 	ctx.Metrics.AddEvent(event)
 
-	var status = 200
-
-	w.Header().Set("Cache-Control", "s-maxage=30")
-	w.Header().Set("Vary", "Content-Type")
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
 		output.JSONresponse(w, status, b, ctx)
