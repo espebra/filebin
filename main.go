@@ -83,14 +83,14 @@ func init() {
 	flag.IntVar(&cfg.Port, "port",
 		cfg.Port, "Listen port.")
 
-	flag.IntVar(&cfg.Readtimeout, "readtimeout",
-		cfg.Readtimeout, "Request read timeout in seconds.")
+	flag.IntVar(&cfg.ReadTimeout, "readtimeout",
+		cfg.ReadTimeout, "Request read timeout in seconds.")
 
-	flag.IntVar(&cfg.Writetimeout, "writetimeout",
-		cfg.Writetimeout, "Response write timeout in seconds.")
+	flag.IntVar(&cfg.WriteTimeout, "writetimeout",
+		cfg.WriteTimeout, "Response write timeout in seconds.")
 
-	flag.IntVar(&cfg.Maxheaderbytes, "maxheaderbytes",
-		cfg.Maxheaderbytes, "Max header size in bytes.")
+	flag.IntVar(&cfg.MaxHeaderBytes, "maxheaderbytes",
+		cfg.MaxHeaderBytes, "Max header size in bytes.")
 
 	flag.StringVar(&cfg.ClientAddrHeader, "client-address-header",
 		cfg.ClientAddrHeader, "Read the client address from the specified request header instad of using the connection remote address.")
@@ -184,16 +184,16 @@ func init() {
 		log.Fatalln("Invalid port number, aborting.")
 	}
 
-	if cfg.Readtimeout < 1 || cfg.Readtimeout > 86400 {
+	if cfg.ReadTimeout < 1 || cfg.ReadTimeout > 86400 {
 		log.Fatalln("Invalid read timeout, aborting.")
 	}
 
-	if cfg.Writetimeout < 1 || cfg.Writetimeout > 86400 {
+	if cfg.WriteTimeout < 1 || cfg.WriteTimeout > 86400 {
 		log.Fatalln("Invalid write timeout, aborting.")
 	}
 
-	if cfg.Maxheaderbytes < 1 ||
-		cfg.Maxheaderbytes > 2<<40 {
+	if cfg.MaxHeaderBytes < 1 ||
+		cfg.MaxHeaderBytes > 2<<40 {
 		log.Fatalln("Invalid max header bytes, aborting.")
 	}
 
@@ -224,11 +224,11 @@ func main() {
 	log.Println("Listen host: " + cfg.Host)
 	log.Println("Listen port: " + strconv.Itoa(cfg.Port))
 	log.Println("Read timeout: " +
-		strconv.Itoa(cfg.Readtimeout) + " seconds")
+		strconv.Itoa(cfg.ReadTimeout) + " seconds")
 	log.Println("Write timeout: " +
-		strconv.Itoa(cfg.Writetimeout) + " seconds")
+		strconv.Itoa(cfg.WriteTimeout) + " seconds")
 	log.Println("Max header size: " +
-		strconv.Itoa(cfg.Maxheaderbytes) + " bytes")
+		strconv.Itoa(cfg.MaxHeaderBytes) + " bytes")
 	log.Println("Access log file: " + cfg.AccessLog)
 	log.Println("Cache invalidation enabled: " +
 		strconv.FormatBool(cfg.CacheInvalidation))
@@ -347,7 +347,16 @@ func main() {
 	router.HandleFunc("/{path:.*}", reqHandler(api.PurgeHandler)).Methods("PURGE")
 
 	logRouter := handlers.CombinedLoggingHandler(accessLogWriter, router)
-	err = http.ListenAndServe(cfg.Host+":"+strconv.Itoa(cfg.Port), logRouter)
+
+	server := &http.Server{
+		Addr:           cfg.Host+":" + strconv.Itoa(cfg.Port),
+		Handler:        logRouter,
+		ReadTimeout:    time.Duration(cfg.ReadTimeout) * time.Second,
+		WriteTimeout:   time.Duration(cfg.WriteTimeout) * time.Second,
+		MaxHeaderBytes: cfg.MaxHeaderBytes,
+	}
+
+	err = server.ListenAndServe()
 	if err != nil {
 		log.Panicln(err.Error())
 	}

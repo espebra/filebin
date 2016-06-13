@@ -3,9 +3,9 @@ package config
 type Configuration struct {
 	Host                string
 	Port                int
-	Readtimeout         int
-	Writetimeout        int
-	Maxheaderbytes      int
+	ReadTimeout         int
+	WriteTimeout        int
+	MaxHeaderBytes      int
 	Filedir             string
 	Baseurl             string
 	Tempdir             string
@@ -33,9 +33,9 @@ func init() {
 	Global = Configuration{
 		Host:           "127.0.0.1",
 		Port:           31337,
-		Readtimeout:    3600,
-		Writetimeout:   3600,
-		Maxheaderbytes: 1 << 20,
+		ReadTimeout:    3600,
+		WriteTimeout:   3600,
+		MaxHeaderBytes: 1 << 20,
 		// 7776000 = 3 months
 		Expiration:        7776000,
 		Baseurl:           "http://localhost:31337",
