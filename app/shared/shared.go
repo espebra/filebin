@@ -20,6 +20,10 @@ func PurgeURL(url string, log *log.Logger) error {
 	}
 
 	resp, err := client.Do(req)
+	if err == nil {
+		defer resp.Body.Close()
+	}
+
 	if err != nil {
 		log.Println("Unable to purge " + url + ": " + err.Error())
 		return err

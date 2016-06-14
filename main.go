@@ -349,7 +349,7 @@ func main() {
 	logRouter := handlers.CombinedLoggingHandler(accessLogWriter, router)
 
 	server := &http.Server{
-		Addr:           cfg.Host+":" + strconv.Itoa(cfg.Port),
+		Addr:           cfg.Host + ":" + strconv.Itoa(cfg.Port),
 		Handler:        logRouter,
 		ReadTimeout:    time.Duration(cfg.ReadTimeout) * time.Second,
 		WriteTimeout:   time.Duration(cfg.WriteTimeout) * time.Second,

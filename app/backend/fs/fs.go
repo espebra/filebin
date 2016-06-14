@@ -642,7 +642,7 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 
 	bytes, err := io.Copy(fp, data)
 	if err != nil {
-		be.Log.Println(err)
+		be.Log.Println("Error occurred during io.Copy: " + err.Error())
 		return f, err
 	}
 	be.Log.Println("Uploaded " + strconv.FormatInt(bytes, 10) + " bytes")

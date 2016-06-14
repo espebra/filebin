@@ -126,6 +126,8 @@ func sanitizeFilename(s string) string {
 }
 
 func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	r.Close = true
+
 	bin := r.Header.Get("bin")
 	if err := verifyBin(bin); err != nil {
 		http.Error(w, "Invalid bin", 400)
