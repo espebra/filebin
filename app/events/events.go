@@ -43,13 +43,14 @@ func (s *Events) New(source string, tags []string, bin string, filename string) 
 	s.Lock()
 	defer s.Unlock()
 	s.events = append(s.events, &e)
-	return &e
 
 	// Remove the last event from the ring buffer if the limit is reached.
-	//if len(m.events) > 10000 {
-	//	// The last event is the first entry in the slice.
-	//	_, m.events = m.events[0], m.events[1:]
-	//}
+	if len(s.events) > 50000 {
+		// The last event is the first entry in the slice.
+		_, s.events = s.events[0], s.events[1:]
+	}
+
+	return &e
 }
 
 func (s *Events) GetEventsInProgress(offset int, limit int) []Event {
