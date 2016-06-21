@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -19,6 +20,7 @@ import (
 	"github.com/espebra/filebin/app/api"
 	"github.com/espebra/filebin/app/backend/fs"
 	"github.com/espebra/filebin/app/config"
+	"github.com/espebra/filebin/app/events"
 	"github.com/espebra/filebin/app/metrics"
 	"github.com/espebra/filebin/app/model"
 )
@@ -31,6 +33,7 @@ var staticBox *rice.Box
 var templateBox *rice.Box
 var backend fs.Backend
 var m metrics.Metrics
+var e events.Events
 
 // Initiate buffered channel for batch processing
 var WorkQueue = make(chan model.Job, 1000)
@@ -375,9 +378,16 @@ func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration
 		ctx.WorkQueue = WorkQueue
 		ctx.Backend = &backend
 		ctx.Metrics = &m
+		ctx.Events = &e
 
 		if cfg.ClientAddrHeader == "" {
-			ctx.RemoteAddr = r.RemoteAddr
+			// Extract the IP address only
+			ip, _, err := net.SplitHostPort(r.RemoteAddr)
+			if err == nil {
+				ctx.RemoteAddr = ip
+			} else {
+				ctx.RemoteAddr = r.RemoteAddr
+			}
 		} else {
 			ctx.RemoteAddr = r.Header.Get(cfg.ClientAddrHeader)
 		}

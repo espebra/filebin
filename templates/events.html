@@ -58,57 +58,65 @@
                 <table class="table table-sm">
                   <thead class="thead-default">
                     <tr>
-                      <th colspan="2">Timestamp</th>
+                      <th></th>
+                      <th>Time</th>
+                      <th>Duration</th>
+                      <th>Tags</th>
                       <th>Client</th>
-                      <th>URL</th>
-                      <th>Category</th>
                       <th>Bin</th>
                       <th>Filename</th>
-                      <th>Extra</th>
                     </tr>
                   </thead>
                   <tbody>
                     {{ range $index, $value := .Data.Events }}
-                      {{ if eq .Category "admin-login" }}
-                      <tr class="table-danger">
-                      {{ else }}
-                        {{ if eq .Category "file-upload" }}
-                          <tr class="table-warning">
-                        {{ else }}
-                           {{ if eq .Category "archive-download" }}
-                             <tr class="table-info">
-                           {{ else }}
-                             {{ if eq .Category "file-download" }}
-                               <tr class="table-success">
-                             {{ else }}
-                               <tr>
-                             {{ end }}
-                           {{ end }}
-                        {{ end }}
-                      {{ end }}
-                        <td class="text-muted text-truncate">
-                          <small><em>{{ .TimestampReadable }}</em></small>
+                      <tr>
+                        <td>
+                          {{ if .IsDone }}
+                            <span class="text text-success"><i class="fa fa-check"></i></span>
+
+                          {{ else}}
+                            <span class="text text-info"><i class="fa fa-spinner fa-spin"></i></span>
+                          {{ end }}
                         </td>
                         <td class="text-muted text-truncate">
-                          <small>{{ .Timestamp.Format "2006-01-02 15:04:05 UTC" }}</small>
+                          <small><em>{{ .DurationReadable }}</em></small>
+                        </td>
+                        <td class="text-muted text-truncate">
+                          <small>
+                            {{ .Duration }}
+                          </small>
+<!--
+                          <small>{{ .StartTime.Format "2006-01-02 15:04:05 UTC" }}</small>
+-->
                         </td>
                         <td class="text-muted">
-                          <small><a href="?remoteaddr={{ .RemoteAddr }}">{{ .RemoteAddr }}</a></small>
+                          <small>
+                            {{ range $_, $tag := .Tags }}
+                              {{ if eq $tag "admin" }}
+                                <span class="label label-danger">
+                              {{ else }}
+                                {{ if eq $tag "upload" }}
+                                  <span class="label label-success">
+                                {{ else }}
+                                  {{ if eq $tag "download" }}
+                                    <span class="label label-primary">
+                                  {{ else }}
+                                    <span class="label label-default">
+                                  {{ end }}
+                                {{ end }}
+                              {{ end }}
+                              {{ $tag }}</span>
+                            {{ end }}
+                          </small>
                         </td>
                         <td class="text-muted">
-                          <small><a href="?url={{ .URL }}">{{ .URL }}</a></small>
+                          <small>{{ .Source }}</small>
                         </td>
                         <td class="text-muted">
-                          <small><a href="?category={{ .Category }}">{{ .Category }}</a></small>
+                          <small><a href="{{ $.Ctx.Baseurl }}/{{ .Bin }}">{{ .Bin }}</a></small>
                         </td>
                         <td class="text-muted">
-                          <small><a href="?bin={{ .Bin }}">{{ .Bin }}</a></small>
-                        </td>
-                        <td class="text-muted">
-                          <small><a href="?filename={{ .Filename }}">{{ .Filename }}</a></small>
-                        </td>
-                        <td class="text-muted">
-                          <small>{{ .Text }}</small>
+                          <small><a href="{{ $.Ctx.Baseurl }}/{{ .Bin }}/{{ .Filename }}">{{ .Filename }}</a></small>
                         </td>
                       </tr>
                     {{ end }}

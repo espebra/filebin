@@ -276,6 +276,7 @@ func (be *Backend) GetBinMetaData(bin string) (Bin, error) {
 		b.Expired = true
 	}
 
+	sort.Sort(FilesByFilename(b.Files))
 	sort.Sort(FilesByDateTime(b.Files))
 	if len(b.Files) == 0 {
 		err := errors.New("Bin " + bin + " does not exist")
@@ -969,6 +970,21 @@ func isDir(path string) bool {
 	} else {
 		return false
 	}
+}
+
+// Sort files by filename
+type FilesByFilename []File
+
+func (a FilesByFilename) Len() int {
+	return len(a)
+}
+
+func (a FilesByFilename) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+
+func (a FilesByFilename) Less(i, j int) bool {
+	return a[i].Filename < a[j].Filename
 }
 
 // Sort files by DateTime

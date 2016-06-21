@@ -2,9 +2,7 @@ package metrics
 
 import (
 	"os"
-	"strconv"
 	"testing"
-	"time"
 )
 
 var (
@@ -79,37 +77,5 @@ func TestDecr(t *testing.T) {
 	}
 	if m.Decr("bar") != 0 {
 		t.Fatal("The value is not 0")
-	}
-}
-
-func TestEvent(t *testing.T) {
-	event := Event{
-		Category: "foo",
-		Text:     "som bare happened",
-	}
-	m.AddEvent(event)
-
-	if len(m.events) != 1 {
-		t.Fatal("Unexpected number of events. Not 1.")
-	}
-	for i := 0; i <= 20000; i++ {
-		event := Event{
-			Text: "som bare happened: " + strconv.Itoa(i),
-		}
-		m.AddEvent(event)
-	}
-	if len(m.events) != 10000 {
-		t.Fatal("Unexpected number of events. Not 10000.")
-	}
-}
-
-func TestGetEvents(t *testing.T) {
-	events := m.GetEvents(Event{}, time.Time{}, 0)
-	if len(events) != 10000 {
-		t.Fatal("Unexpected number of events. Not 10000.")
-	}
-	events = m.GetEvents(Event{}, time.Time{}, 100)
-	if len(events) != 100 {
-		t.Fatal("Unexpected number of events. Not 100.")
 	}
 }

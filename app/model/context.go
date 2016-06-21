@@ -4,6 +4,7 @@ import (
 	"github.com/GeertJohan/go.rice"
 	"github.com/espebra/filebin/app/backend/fs"
 	"github.com/espebra/filebin/app/config"
+	"github.com/espebra/filebin/app/events"
 	"github.com/espebra/filebin/app/metrics"
 	"log"
 )
@@ -23,5 +24,6 @@ type Context struct {
 	WorkQueue   chan Job
 	Backend     *fs.Backend
 	Metrics     *metrics.Metrics
+	Events      *events.Events
 	RemoteAddr  string
 }
