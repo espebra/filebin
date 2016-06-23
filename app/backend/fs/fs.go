@@ -3,7 +3,6 @@ package fs
 import (
 	"archive/tar"
 	"archive/zip"
-	"compress/flate"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -331,10 +330,6 @@ func (be *Backend) GetBinArchive(bin string, format string, w http.ResponseWrite
 		w.Header().Set("Content-Type", "application/zip")
 		w.Header().Set("Content-Disposition", `attachment; filename="`+bin+`.zip"`)
 		zw := zip.NewWriter(w)
-		zw.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
-			return flate.NewWriter(out, flate.BestSpeed)
-		})
-
 		for _, path := range paths {
 			// Extract the filename from the absolute path
 			fname := filepath.Base(path)

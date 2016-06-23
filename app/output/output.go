@@ -1,16 +1,10 @@
 package output
 
 import (
-	"archive/tar"
-	"archive/zip"
-	"compress/flate"
-
 	"encoding/json"
 	"html/template"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 
 	"github.com/espebra/filebin/app/model"
@@ -57,123 +51,4 @@ func HTMLresponse(w http.ResponseWriter, tpl string, status int, d interface{}, 
 	if err != nil {
 		ctx.Log.Panicln(err)
 	}
-}
-
-func TARresponse(w http.ResponseWriter, bin string, paths []string, ctx model.Context) {
-	ctx.Log.Println("Generating tar archive")
-
-	w.Header().Set("Content-Type", "application/x-tar")
-	w.Header().Set("Content-Disposition", `attachment; filename="`+bin+`.tar"`)
-
-	tw := tar.NewWriter(w)
-
-	for _, path := range paths {
-		// Extract the filename from the absolute path
-		fname := filepath.Base(path)
-		ctx.Log.Println("Adding to tar archive: " + fname)
-
-		// Get stat info for modtime etc
-		info, err := os.Stat(path)
-		if err != nil {
-			ctx.Log.Println(err)
-			return
-		}
-
-		// Generate the tar header for this file based on the stat info
-		header, err := tar.FileInfoHeader(info, info.Name())
-		if err != nil {
-			ctx.Log.Println(err)
-			return
-		}
-
-		if err := tw.WriteHeader(header); err != nil {
-			ctx.Log.Println(err)
-			return
-		}
-
-		file, err := os.Open(path)
-		if err != nil {
-			ctx.Log.Println(err)
-			return
-		}
-		defer file.Close()
-		bytes, err := io.Copy(tw, file)
-		if err != nil {
-			ctx.Log.Println(err)
-			return
-		}
-		ctx.Log.Println("Added " + strconv.FormatInt(bytes, 10) + " bytes to the archive.")
-	}
-
-	if err := tw.Close(); err != nil {
-		ctx.Log.Println(err)
-		return
-	}
-
-	ctx.Log.Println("Tar archive successfully generated")
-	return
-}
-
-func ZIPresponse(w http.ResponseWriter, bin string, paths []string, ctx model.Context) {
-	ctx.Log.Println("Generating zip archive")
-
-	w.Header().Set("Content-Type", "application/zip")
-	w.Header().Set("Content-Disposition", `attachment; filename="`+bin+`.zip"`)
-
-	zw := zip.NewWriter(w)
-
-	zw.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
-		return flate.NewWriter(out, flate.BestSpeed)
-	})
-
-	for _, path := range paths {
-		// Extract the filename from the absolute path
-		fname := filepath.Base(path)
-		ctx.Log.Println("Adding to zip archive: " + fname)
-
-		// Get stat info for modtime etc
-		info, err := os.Stat(path)
-		if err != nil {
-			ctx.Log.Println(err)
-			return
-		}
-
-		// Generate the Zip info header for this file based on the stat info
-		header, err := zip.FileInfoHeader(info)
-		if err != nil {
-			ctx.Log.Println(err)
-			return
-		}
-
-		ze, err := zw.CreateHeader(header)
-		if err != nil {
-			ctx.Log.Println(err)
-			return
-		}
-
-		file, err := os.Open(path)
-		if err != nil {
-			ctx.Log.Println(err)
-			return
-		}
-		bytes, err := io.Copy(ze, file)
-		if err != nil {
-			ctx.Log.Println(err)
-			return
-		}
-		if err := file.Close(); err != nil {
-			ctx.Log.Println(err)
-			return
-		}
-		ctx.Log.Println("Added " + strconv.FormatInt(bytes, 10) + " bytes to the archive.")
-	}
-
-	err := zw.Close()
-	if err != nil {
-		ctx.Log.Println(err)
-		return
-	}
-
-	ctx.Log.Println("Zip archive successfully generated")
-	return
 }
