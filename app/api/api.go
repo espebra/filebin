@@ -547,7 +547,9 @@ func AdminDashboard(w http.ResponseWriter, r *http.Request, cfg config.Configura
 	uploads := ctx.Events.GetEventsByTags([]string{"upload"}, 0, 0)
 	for _, f := range uploads {
 		if f.StartTime().After(limitTime) {
-			recentUploads = append(recentUploads, f)
+			if f.IsDone() && f.Status() == 0 {
+				recentUploads = append(recentUploads, f)
+			}
 		}
 	}
 
