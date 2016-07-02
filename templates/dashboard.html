@@ -286,6 +286,7 @@
                   <table class="table table-sm">
                     <thead>
                       <tr>
+                        <th></th>
                         <th>Time</th>
                         <th>Client</th>
                         <th>Bin</th>
@@ -295,6 +296,9 @@
                     <tbody>
                       {{ range $index, $value := .Data.Uploads }}
                         <tr>
+                          <td>
+                            <span class="text text-success"><i class="fa fa-check"></i></span>
+                          </td>
                           <td class="text-muted text-truncate">
                             <small><em>{{ .DurationReadable }}</em></small>
                           </td>
@@ -345,13 +349,20 @@
                       </thead>
                       <tbody>
                         {{ range $index, $value := .Data.Events }}
+                          {{ if eq .Status 0 }}
                           <tr>
+                          {{ else }}
+                          <tr class="table-warning">
+                          {{ end }}
                             <td>
                               {{ if .IsDone }}
-                                <span class="text text-success"><i class="fa fa-check"></i></span>
-
-                              {{ else}}
-                                <span class="text text-info"><i class="fa fa-spinner fa-spin"></i></span>
+                                {{ if eq .Status 0 }}
+                                  <span class="text text-success"><i class="fa fa-fw fa-check"></i></span>
+                                {{ else }}
+                                  <span class="text text-warning"><i class="fa fa-fw fa-exclamation"></i></span>
+                                {{ end }}
+                              {{ else }}
+                                <span class="text text-info"><i class="fa fa-fw fa-spinner fa-spin"></i></span>
                               {{ end }}
                             </td>
                             <td class="text-muted text-truncate">
