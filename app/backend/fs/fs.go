@@ -630,7 +630,10 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	}
 
 	fp, err := ioutil.TempFile(be.tempdir, "upload")
+	// Defer removal of the tempfile to clean up partially uploaded files.
+	defer os.Remove(fp.Name())
 	defer fp.Close()
+
 	if err != nil {
 		be.Log.Println(err)
 		return f, err
@@ -761,12 +764,6 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	dst := filepath.Join(bindir, f.Filename)
 	be.Log.Println("Copying contents to " + dst)
 	if err := CopyFile(fp.Name(), dst); err != nil {
-		be.Log.Println(err)
-		return f, err
-	}
-
-	be.Log.Println("Removing " + fp.Name())
-	if err := os.Remove(fp.Name()); err != nil {
 		be.Log.Println(err)
 		return f, err
 	}
