@@ -305,6 +305,9 @@ func DeleteBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 
 	ctx.Metrics.Incr("total-bin-delete")
 
+	event := ctx.Events.New(ctx.RemoteAddr, []string{"bin", "delete"}, bin, "")
+	defer event.Done()
+
 	// Purging any old content
 	if cfg.CacheInvalidation {
 		for _, f := range b.Files {
@@ -345,6 +348,9 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	}
 
 	ctx.Metrics.Incr("total-file-delete")
+
+	event := ctx.Events.New(ctx.RemoteAddr, []string{"file", "delete"}, bin, filename)
+	defer event.Done()
 
 	if cfg.TriggerDeleteFile != "" {
 		ctx.Log.Println("Executing trigger: Delete file")
