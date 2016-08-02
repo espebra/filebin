@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"github.com/dustin/go-humanize"
 	"github.com/espebra/filebin/app/backend/fs"
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/events"
@@ -17,7 +18,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"github.com/dustin/go-humanize"
 )
 
 func triggerNewBinHandler(c string, bin string) error {
@@ -138,6 +138,13 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		if b.Expired {
 			http.Error(w, "This bin expired "+b.ExpiresReadable+".", 410)
 			return
+		}
+	}
+
+	if ctx.Backend.BinExists(bin) == false {
+		if cfg.TriggerNewBin != "" {
+			ctx.Log.Println("Executing trigger: New bin")
+			triggerNewBinHandler(cfg.TriggerNewBin, bin)
 		}
 	}
 
