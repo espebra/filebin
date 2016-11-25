@@ -34,7 +34,7 @@ Filebin is a web application that facilitates convenient file sharing over the w
 
 To build Filebin, a Golang build environment (Go version 1.4 or higher) and some Golang packages are needed. The build procedure will produce a statically linked binary that doesn't require any external dependencies to run. It even comes with its own web server bundled.
 
-The build process requires quite a bit of memory to complete successfully. Rough experiments show that up to 4 GB of memory is needed. At runtime, though, the memory requirements are modest.
+The build process requires quite a bit of memory to complete successfully. Rough experiments show that up to 4 GB of memory is needed. At runtime, though, the memory requirements are modest. It seems that with the more memory requirements have droppet with recent releases of Go.
 
 It is recommended but not required to run it behind a TLS/SSL proxy such as [Hitch](http://hitch-tls.org/) and web cache such as [Varnish Cache](https://www.varnish-cache.org/). Example configurations for these [are provided](etc/).
 
@@ -46,12 +46,7 @@ Install Golang:
 $ sudo yum/apt-get/brew install golang
 ```
 
-Ensure that the Go version is 1.4 or higher:
-
-```bash
-$ go version
-go version go1.6 darwin/amd64
-```
+Last verified with Go 1.7.
 
 Create the Go workspace and set the ``GOPATH`` environment variable:
 
