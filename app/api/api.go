@@ -141,13 +141,6 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		}
 	}
 
-	if ctx.Backend.BinExists(bin) == false {
-		if cfg.TriggerNewBin != "" {
-			ctx.Log.Println("Executing trigger: New bin")
-			triggerNewBinHandler(cfg.TriggerNewBin, bin)
-		}
-	}
-
 	filename := sanitizeFilename(r.Header.Get("filename"))
 	if err := verifyFilename(filename); err != nil {
 		http.Error(w, "Invalid filename", 400)
@@ -173,6 +166,13 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	}
 
 	ctx.Metrics.Incr("total-upload")
+
+	if ctx.Backend.BinExists(bin) == false {
+		if cfg.TriggerNewBin != "" {
+			ctx.Log.Println("Executing trigger: New bin")
+			triggerNewBinHandler(cfg.TriggerNewBin, bin)
+		}
+	}
 
 	if cfg.TriggerUploadFile != "" {
 		ctx.Log.Println("Executing trigger: Uploaded file")
