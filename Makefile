@@ -1,5 +1,4 @@
 HASH=`git rev-parse HEAD`
-TIME=`date -u '+%Y-%m-%d %H:%M:%S'`
 
 prepare:
 	rm -f templates.rice-box.go
@@ -14,7 +13,7 @@ get-deps:
 	go get github.com/GeertJohan/go.rice/rice
 
 build: prepare
-	go build -ldflags "-X \"main.buildstamp=${TIME}\" -X \"main.githash=${HASH}\""
+	go build -ldflags "-X main.githash=${HASH}"
 
 install: prepare
-	go install -ldflags "-X \"main.buildstamp=${TIME}\" -X \"main.githash=${HASH}\""
+	go install -ldflags "-X main.githash=${HASH}"
