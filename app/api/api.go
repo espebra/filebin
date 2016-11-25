@@ -63,7 +63,7 @@ func triggerExpiredBinHandler(c string, bin string) error {
 }
 
 func cmdHandler(cmd *exec.Cmd) error {
-	err := cmd.Start()
+	err := cmd.Run()
 	return err
 }
 
@@ -157,6 +157,13 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 		event.Update("Size: "+humanize.Bytes(uint64(i)), 0)
 	}
 
+	if ctx.Backend.BinExists(bin) == false {
+		if cfg.TriggerNewBin != "" {
+			ctx.Log.Println("Executing trigger: New bin")
+			triggerNewBinHandler(cfg.TriggerNewBin, bin)
+		}
+	}
+
 	f, err := ctx.Backend.UploadFile(bin, filename, r.Body)
 	if err != nil {
 		ctx.Log.Println(err)
@@ -166,13 +173,6 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	}
 
 	ctx.Metrics.Incr("total-upload")
-
-	if ctx.Backend.BinExists(bin) == false {
-		if cfg.TriggerNewBin != "" {
-			ctx.Log.Println("Executing trigger: New bin")
-			triggerNewBinHandler(cfg.TriggerNewBin, bin)
-		}
-	}
 
 	if cfg.TriggerUploadFile != "" {
 		ctx.Log.Println("Executing trigger: Uploaded file")
