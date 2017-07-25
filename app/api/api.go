@@ -128,6 +128,10 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	r.Close = true
 
 	bin := r.Header.Get("bin")
+	if bin == "" {
+		// XXX: Should ensure that the bin does not exist from before.
+		bin = randomString(cfg.DefaultBinLength)
+	}
 	if err := verifyBin(bin); err != nil {
 		http.Error(w, "Invalid bin", 400)
 		return
