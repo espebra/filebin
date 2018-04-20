@@ -169,6 +169,9 @@ func init() {
 	flag.BoolVar(&cfg.Version, "version",
 		cfg.Version, "Show the version information.")
 
+	flag.Var(&cfg.Filters, "filter",
+		"Filter to reject specific content-type uploads.")
+
 	flag.Parse()
 
 	if cfg.Version {
@@ -291,7 +294,7 @@ func main() {
 	m = metrics.Init()
 
 	startTime := time.Now().UTC()
-	backend, err = fs.InitBackend(cfg.Baseurl, cfg.Filedir, cfg.Tempdir, cfg.Expiration, log)
+	backend, err = fs.InitBackend(cfg.Baseurl, cfg.Filedir, cfg.Tempdir, cfg.Expiration, log, cfg.Filters)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}

@@ -40,7 +40,7 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
-	be, err = InitBackend(baseurl, filedir, tempdir, int64(EXPIRATION), log)
+	be, err = InitBackend(baseurl, filedir, tempdir, int64(EXPIRATION), log, []string{})
 	if err != nil {
 		log.Println(err)
 		os.Exit(2)

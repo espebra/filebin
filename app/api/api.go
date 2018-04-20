@@ -171,7 +171,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	f, err := ctx.Backend.UploadFile(bin, filename, r.Body)
 	if err != nil {
 		ctx.Log.Println(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		event.Update(err.Error(), 2)
 		return
 	}

@@ -1,5 +1,16 @@
 package config
 
+type filters []string
+
+func (i *filters) String() string {
+	return "string representation"
+}
+
+func (i *filters) Set(value string) error {
+	*i = append(*i, value)
+	return nil
+}
+
 type Configuration struct {
 	Host                string
 	Port                int
@@ -25,6 +36,7 @@ type Configuration struct {
 	AdminUsername       string
 	AdminPassword       string
 	AccessLog           string
+	Filters             filters
 }
 
 var Global Configuration
@@ -47,5 +59,6 @@ func init() {
 		AdminUsername:     "admin",
 		ClientAddrHeader:  "",
 		AccessLog:         "/var/log/filebin/access.log",
+		Filters:           []string{},
 	}
 }

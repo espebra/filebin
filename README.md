@@ -128,6 +128,14 @@ Bins expire after some time of inactivity. By default, bins will expire 3 months
 
 ``--expiration 86400`` will expire bins 24 hours after the last file has been uploaded.
 
+#### Content-type filtering
+
+To limit abuse it can be necessary to reject certain content-types. The ``--filter`` option can be applied multiple times in order to filter on multiple content-types. The filters are considered for each file upload using a sub string match on the content-type that is detected by the uploaded file.
+
+``--filter text/html`` fill reject file uploads matching the content-type ``text/html``, including ``text/html; charset=utf-8``.
+
+``--filter text/html --filter image`` fill reject file uploads matching the content-type ``text/html`` and all image files such as ``image/jpeg`` and ``image/png``.
+
 #### Cache invalidation
 
 Enabled with the parameter ``--cache-invalidation``. When enabled, HTTP PURGE requests will be sent to baseurl/path for every change to ensure content is invalidated on any frontend web cache.

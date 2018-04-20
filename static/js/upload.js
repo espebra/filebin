@@ -222,13 +222,14 @@ function FileAPI (c, t, d, f, bin, uploadURL, binURL) {
             xhr.onload = function(e) {
                 progress.value = 100;
                 counter_uploading -= 1;
+		var body = xhr.response;
                 if (xhr.status == 201 && xhr.readyState == 4) {
                     progress.className = "progress progress-success";
                     speed.textContent = "Complete (" + filesize + ")";
                     counter_completed += 1;
                 } else {
                     progress.className = "progress progress-danger";
-                    speed.textContent = "Failed with status " + xhr.status + " (" + filesize + ")";
+                    speed.textContent = body + " (" + filesize + ")";
                     console.log("Unexpected response code: " + xhr.status);
                     console.log("Response body: " + xhr.response);
                     counter_failed += 1;

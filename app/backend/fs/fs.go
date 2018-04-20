@@ -31,6 +31,7 @@ type Backend struct {
 	expiration int64
 	Bytes      int64 `json:"bytes"`
 	files      map[string]File
+	filters    []string
 	Log        *log.Logger `json:"-"`
 }
 
@@ -67,7 +68,7 @@ type link struct {
 	Href string `json:"href"`
 }
 
-func InitBackend(baseurl string, filedir string, tempdir string, expiration int64, log *log.Logger) (Backend, error) {
+func InitBackend(baseurl string, filedir string, tempdir string, expiration int64, log *log.Logger, filters []string) (Backend, error) {
 	be := Backend{}
 
 	fi, err := os.Lstat(filedir)
@@ -89,6 +90,7 @@ func InitBackend(baseurl string, filedir string, tempdir string, expiration int6
 	be.baseurl = baseurl
 	be.expiration = expiration
 	be.tempdir = tempdir
+	be.filters = filters
 	err = be.getAllMetaData()
 	be.Unlock()
 	return be, err
@@ -628,6 +630,8 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 
 	if !isDir(be.tempdir) {
 		if err := os.Mkdir(be.tempdir, 0700); err != nil {
+			be.Log.Println("Unable to create directory: " + be.tempdir + ":", err)
+			err := errors.New("Unable to save file")
 			return f, err
 		}
 	}
@@ -639,12 +643,14 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 
 	if err != nil {
 		be.Log.Println(err)
+		err = errors.New("Unable to save file. Please try again later")
 		return f, err
 	}
 
 	bytes, err := io.Copy(fp, data)
 	if err != nil {
 		be.Log.Println("Error occurred during io.Copy: " + err.Error())
+		err = errors.New("Unable to save file. Please try again later")
 		return f, err
 	}
 	be.Log.Println("Uploaded " + strconv.FormatInt(bytes, 10) + " bytes")
@@ -655,31 +661,62 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 
 		if err := os.Remove(fp.Name()); err != nil {
 			be.Log.Println(err)
+			// This should not happen
+			err = errors.New("Internal Server Error")
 			return f, err
 		}
 
-		err := errors.New("No content. The file size must be more than 0 bytes")
+		err := errors.New("The file size must be more than 0 bytes")
 		return f, err
 	}
 
 	buffer := make([]byte, 512)
 	_, err = fp.Seek(0, 0)
 	if err != nil {
+		be.Log.Println(err)
+		// This should not happen
+		err = errors.New("Internal Server Error")
 		return f, err
 	}
 	_, err = fp.Read(buffer)
 	if err != nil {
+		be.Log.Println(err)
+		// This should not happen
+		err = errors.New("Internal Server Error")
 		return f, err
 	}
 	f.MIME = http.DetectContentType(buffer)
+	be.Log.Println("Detected content-type: " + f.MIME)
+
+	// Filter and reject unwanted content-types here
+	for _, filter := range be.filters {
+		if strings.Contains(f.MIME, filter) {
+			be.Log.Println("Matched content-type filter: " + filter)
+			if err := os.Remove(fp.Name()); err != nil {
+				be.Log.Println(err)
+				// This should not happen
+				err = errors.New("Internal Server Error")
+				return f, err
+			}
+
+			err := errors.New("Illegal content-type")
+			return f, err
+		}
+	}
 
 	hash := sha256.New()
 	fp.Seek(0, 0)
 	if err != nil {
+		be.Log.Println(err)
+		// This should not happen
+		err = errors.New("Internal Server Error")
 		return f, err
 	}
 	_, err = io.Copy(hash, fp)
 	if err != nil {
+		be.Log.Println(err)
+		// Possibly due to full disk
+		err = errors.New("Unable to save file. Please try again later")
 		return f, err
 	}
 
@@ -689,6 +726,9 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	// Exif
 	if strings.Split(f.MIME, "/")[0] == "image" {
 		if _, err = fp.Seek(0, 0); err != nil {
+			be.Log.Println(err)
+			// This should not happen
+			err = errors.New("Internal Server Error")
 			return f, err
 		}
 		exif, err := exif.Decode(fp)
@@ -762,6 +802,9 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	bindir := filepath.Join(be.filedir, bin)
 	if !isDir(bindir) {
 		if err := os.Mkdir(bindir, 0700); err != nil {
+			be.Log.Println(err)
+			// Possibly due to full disk
+			err = errors.New("Unable to save file. Please try again later")
 			return f, err
 		}
 	}
@@ -770,12 +813,16 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 	be.Log.Println("Copying contents to " + dst)
 	if err := CopyFile(fp.Name(), dst); err != nil {
 		be.Log.Println(err)
+		// Possibly due to full disk
+		err = errors.New("Unable to save file. Please try again later")
 		return f, err
 	}
 
 	fi, err := os.Lstat(dst)
 	if err != nil {
 		be.Log.Println(err)
+		// This should not happen
+		err = errors.New("Internal Server Error")
 		return f, err
 	}
 
