@@ -279,7 +279,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	ctx.Metrics.Incr("total-file-download")
 	ctx.Metrics.Incr("current-file-download")
 	defer ctx.Metrics.Decr("current-file-download")
-	ctx.Metrics.Incr("file-download bin=" + bin + " filename=" + filename + " referer=" + r.Header.Get("Referer"))
+	ctx.Metrics.Incr("file-download bin=" + bin + " filename=" + filename)
 
 	fp, err := ctx.Backend.GetFile(bin, filename)
 	if err != nil {
@@ -405,7 +405,7 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 	}
 
 	ctx.Metrics.Incr("total-view-album")
-	ctx.Metrics.Incr("album-view bin=" + bin + " referer=" + r.Header.Get("Referer"))
+	ctx.Metrics.Incr("album-view bin=" + bin)
 
 	var status = 200
 	output.HTMLresponse(w, "viewalbum", status, b, ctx)
@@ -451,7 +451,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	}
 
 	ctx.Metrics.Incr("total-view-bin")
-	ctx.Metrics.Incr("bin-view bin=" + bin + " referer=" + r.Header.Get("Referer"))
+	ctx.Metrics.Incr("bin-view bin=" + bin)
 
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
@@ -509,7 +509,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 	}
 
 	ctx.Metrics.Incr("total-archive-download")
-	ctx.Metrics.Incr("archive-download bin=" + bin + " format=" + format + " referer=" + r.Header.Get("Referer"))
+	ctx.Metrics.Incr("archive-download bin=" + bin + " format=" + format)
 
 	if cfg.TriggerDownloadBin != "" {
 		ctx.Log.Println("Executing trigger: Download bin")
