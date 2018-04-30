@@ -117,7 +117,7 @@ function FileAPI (c, t, d, f, bin, uploadURL, binURL) {
             var nameText = document.createTextNode(file.name);
             strong.appendChild(nameText);
             name.appendChild(strong);
-	    name.className = "col-md-8";
+	    name.className = "col";
             meta.appendChild(name);
 
             var filesize = getReadableFileSizeString(file.size);
@@ -130,26 +130,33 @@ function FileAPI (c, t, d, f, bin, uploadURL, binURL) {
             var speed = document.createElement("div");
             //var mimeText = document.createTextNode(mimetype);
             speed.textContent = "Pending (" + filesize + ")";
-            speed.className = "col-md-4 text-right";
+            speed.className = "col text-right";
             meta.appendChild(speed)
 
             // Progressbar
-            var barcontainer = document.createElement("div");
-            barcontainer.className = "row";
+            var bar_row = document.createElement("div");
+            bar_row.className = "row";
+
+            var bar_col = document.createElement("div");
+	    bar_col.className = "col-12";
+
+            var progress = document.createElement("div");
+            progress.className = "progress";
 
             var bar = document.createElement("div");
-	    bar.className = "col-md-12";
+            bar.className = "progress-bar";
 
-            var progress = document.createElement("progress");
-            progress.max = 100;
-            progress.value = 0;
-            progress.className = "progress";
-            bar.appendChild(progress);
+            bar.setAttribute("style", "width: 0%");
+            bar.setAttribute("aria-valuemin", 0);
+            bar.setAttribute("aria-valuemax", 100);
+            bar.setAttribute("aria-valuenow", 0);
 
-            barcontainer.appendChild(bar);
+            progress.appendChild(bar);
+            bar_col.appendChild(progress);
+            bar_row.appendChild(bar_col);
 
             container.appendChild(meta)
-            container.appendChild(barcontainer)
+            container.appendChild(bar_row)
 
             fileList.insertBefore(container, fileList.childNodes[0]);
             updateFileCount();
@@ -180,8 +187,7 @@ function FileAPI (c, t, d, f, bin, uploadURL, binURL) {
 
             var filesize = getReadableFileSizeString(file.size);
             var speed = container.getElementsByTagName("div")[2];
-            var bar = container.getElementsByTagName("div")[4];
-            var progress = bar.getElementsByTagName("progress")[0];
+            var bar = container.getElementsByTagName("div")[6];
 
             var xhr = new XMLHttpRequest();
             upload = xhr.upload;
@@ -192,9 +198,10 @@ function FileAPI (c, t, d, f, bin, uploadURL, binURL) {
             // Upload in progress
             upload.addEventListener("progress", function (e) {
                 if (e.lengthComputable) {
-                    progress.value = (e.loaded / e.total) * 100;
-                    progress.max = 100;
-                    progress.className = "progress progress-info progress-striped progress-animated";
+                    bar.className = "progress-bar progress-bar-striped progress-bar-animated";
+                    progress_in_percent = (e.loaded / e.total) * 100;
+                    bar.setAttribute("aria-valuenow", progress_in_percent);
+                    bar.setAttribute("style", "width: " + progress_in_percent + "%");
 
                     if (e.loaded == e.total && e.total > 0) {
                         // Upload complete
@@ -220,15 +227,15 @@ function FileAPI (c, t, d, f, bin, uploadURL, binURL) {
 
             // Upload complete
             xhr.onload = function(e) {
-                progress.value = 100;
+                bar.setAttribute("aria-valuenow", 100);
                 counter_uploading -= 1;
 		var body = xhr.response;
                 if (xhr.status == 201 && xhr.readyState == 4) {
-                    progress.className = "progress progress-success";
+                    bar.className = "progress-bar bg-success";
                     speed.textContent = "Complete (" + filesize + ")";
                     counter_completed += 1;
                 } else {
-                    progress.className = "progress progress-danger";
+                    bar.className = "progress-bar bg-danger";
                     speed.textContent = body + " (" + filesize + ")";
                     console.log("Unexpected response code: " + xhr.status);
                     console.log("Response body: " + xhr.response);
@@ -241,8 +248,8 @@ function FileAPI (c, t, d, f, bin, uploadURL, binURL) {
             xhr.onerror = function (e) {
                 console.log("onerror: status: " + xhr.status + ", readystate: " + xhr.readyState);
                 console.log(e);
-                progress.className = "progress progress-danger";
-                progress.value = 100;
+                bar.className = "progress progress-danger";
+                bar.setAttribute("aria-valuenow", 100);
                 speed.textContent = "Failed due to network error (" + filesize + ")";
                 counter_failed += 1;
                 counter_uploading -= 1;
@@ -281,7 +288,7 @@ function deleteURL (url, messageBoxID) {
     var box = document.getElementById(messageBoxID);
 
     box.textContent = "Delete in progress ..."
-    box.className = "alert alert-info";
+    box.className = "alert alert-dark";
 
     xhr.onload = function(e) {
         if (xhr.status == 200 && xhr.readyState == 4) {
@@ -290,7 +297,7 @@ function deleteURL (url, messageBoxID) {
             box.className = "alert alert-success";
         } else if (xhr.status  == 404 && xhr.readyState == 4) {
             box.textContent = "Not found.";
-            box.className = "alert alert-info";
+            box.className = "alert alert-warning";
         } else {
             console.log("Failed to delete");
             box.textContent = "Error " + xhr.status + ". Unable to verify the operation.";

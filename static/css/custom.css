@@ -1,3 +1,15 @@
+.nav-pills>li+li {
+  margin-left: 10px; // 2px by default
+} 
+
+.thumbnails {
+    margin-top: 10px;
+}
+
+.table {
+    margin-top: 10px;
+}
+
 .thumb {
     padding: 1px 1px 1px 1px;
 }

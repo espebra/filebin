@@ -13,11 +13,11 @@
         <title>Filebin administrator</title>
 
         <!-- Bootstrap -->
-        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.min.css"/>
         <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/font-awesome.css"/>
         <script src="{{ .Ctx.Baseurl }}/static/js/sorttable.js"></script>
         <script src="{{ .Ctx.Baseurl }}/static/js/jquery.js"></script>
-        <script src="{{ .Ctx.Baseurl }}/static/bootstrap/js/bootstrap.js"></script>
+        <script src="{{ .Ctx.Baseurl }}/static/bootstrap/js/bootstrap.min.js"></script>
     </head>
 
     <body>
@@ -101,15 +101,15 @@
                           <small>
                             {{ range $_, $tag := .Tags }}
                               {{ if eq $tag "admin" }}
-                                <span class="label label-danger">
+                                <span class="badge badge-pill badge-danger">
                               {{ else }}
                                 {{ if eq $tag "upload" }}
-                                  <span class="label label-success">
+                                  <span class="badge badge-pill badge-success">
                                 {{ else }}
                                   {{ if eq $tag "download" }}
-                                    <span class="label label-primary">
+                                    <span class="badge badge-pill badge-primary">
                                   {{ else }}
-                                    <span class="label label-default">
+                                    <span class="badge badge-pill badge-dark">
                                   {{ end }}
                                 {{ end }}
                               {{ end }}

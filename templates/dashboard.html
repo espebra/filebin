@@ -13,11 +13,11 @@
         <title>Filebin administrator</title>
 
         <!-- Bootstrap -->
-        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.min.css"/>
         <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/font-awesome.css"/>
         <script src="{{ .Ctx.Baseurl }}/static/js/sorttable.js"></script>
         <script src="{{ .Ctx.Baseurl }}/static/js/jquery.js"></script>
-        <script src="{{ .Ctx.Baseurl }}/static/bootstrap/js/bootstrap.js"></script>
+        <script src="{{ .Ctx.Baseurl }}/static/bootstrap/js/bootstrap.min.js"></script>
     </head>
 
     <body>
@@ -212,7 +212,7 @@
               </div>
             </div>
 
-            <h6 class="text-muted">On-going transfers <span class="label label-pill label-default">{{ .Data.EventsInProgress | len }}</span></h6>
+            <h6 class="text-muted">On-going transfers <span class="badge badge-pill badge-dark">{{ .Data.EventsInProgress | len }}</span></h6>
             <div class="row">
               <div class="col-md-12">
                 {{ if eq (.Data.EventsInProgress | len) 0 }}
@@ -245,12 +245,12 @@
                             <small>
                               {{ range $_, $tag := .Tags }}
                                 {{ if eq $tag "upload" }}
-                                  <span class="label label-success">
+                                  <span class="badge badge-pill badge-success">
                                 {{ else }}
                                   {{ if eq $tag "download" }}
-                                    <span class="label label-primary">
+                                    <span class="badge badge-pill badge-primary">
                                   {{ else }}
-                                    <span class="label label-default">
+                                    <span class="badge badge-pill badge-dark">
                                   {{ end }}
                                 {{ end }}
                                 {{ $tag }}</span>
@@ -278,7 +278,7 @@
             </div>
 
 
-            <h6 class="text-muted">New file uploads <span class="label label-pill label-default">{{ .Data.Uploads | len }}</span></h6>
+            <h6 class="text-muted">New file uploads <span class="badge badge-pill badge-dark">{{ .Data.Uploads | len }}</span></h6>
             <div class="row">
               <div class="col-md-12">
                 {{ if eq (.Data.Uploads | len) 0 }}
@@ -323,7 +323,7 @@
             {{ if gt (.Data.Events | len) 0 }}
               <a href="#" data-toggle="collapse" data-target="#collapseEvents" aria-exanded="false" aria-controls="collapseEvents">
             {{ end }}
-            <span class="label label-pill label-default">{{ .Data.Events | len }}</span>
+            <span class="badge badge-pill badge-dark">{{ .Data.Events | len }}</span>
             {{ if gt (.Data.Events | len) 0 }}
               </a>
             {{ end }}
@@ -382,15 +382,15 @@
                               <small>
                                 {{ range $_, $tag := .Tags }}
                                   {{ if eq $tag "admin" }}
-                                    <span class="label label-danger">
+                                    <span class="badge badge-pill badge-danger">
                                   {{ else }}
                                     {{ if eq $tag "upload" }}
-                                      <span class="label label-success">
+                                      <span class="badge badge-pill badge-success">
                                     {{ else }}
                                       {{ if eq $tag "download" }}
-                                        <span class="label label-primary">
+                                        <span class="badge badge-pill badge-primary">
                                       {{ else }}
-                                        <span class="label label-default">
+                                        <span class="badge badge-pill badge-dark">
                                       {{ end }}
                                     {{ end }}
                                   {{ end }}
