@@ -86,13 +86,13 @@ func TestGetEventsInProgress(t *testing.T) {
 	}
 
 	count = len(ev.GetEventsInProgress(0, 100000))
-	if count != 19999 {
-		t.Fatal("Unexpected number of open events. Not 19999: ", count)
+	if count != 5000 {
+		t.Fatal("Unexpected number of open events. Not 5000: ", count)
 	}
 
 	count = len(ev.GetAllEvents(0, 100000))
-	if count != 20003 {
-		t.Fatal("Unexpected number of events. Not 20003: ", count)
+	if count != 5000 {
+		t.Fatal("Unexpected number of events. Not 5000: ", count)
 	}
 
 	events := ev.GetEventsInProgress(0, 100000)
