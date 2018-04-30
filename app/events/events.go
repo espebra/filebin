@@ -45,7 +45,7 @@ func (s *Events) New(source string, tags []string, bin string, filename string) 
 	s.events = append(s.events, &e)
 
 	// Remove the last event from the ring buffer if the limit is reached.
-	if len(s.events) > 50000 {
+	if len(s.events) > 5000 {
 		// The last event is the first entry in the slice.
 		_, s.events = s.events[0], s.events[1:]
 	}
