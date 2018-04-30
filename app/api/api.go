@@ -289,8 +289,6 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
-	w.Header().Set("Content-SHA256", f.Checksum)
-
 	if cfg.TriggerDownloadFile != "" {
 		ctx.Log.Println("Executing trigger: Download file")
 		triggerDownloadFileHandler(cfg.TriggerDownloadFile, bin, filename)

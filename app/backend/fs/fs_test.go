@@ -105,9 +105,6 @@ func TestGetFileMetaData(t *testing.T) {
 	if f.Bytes != 12 {
 		t.Fatal("Unexpected file size: " + strconv.FormatInt(f.Bytes, 10))
 	}
-	if f.Checksum != "9c6609fc5111405ea3f5bb3d1f6b5a5efd19a0cec53d85893fd96d265439cd5b" {
-		t.Fatal("Unexpected checksum: " + f.Checksum)
-	}
 	if f.MIME != "application/octet-stream" {
 		t.Fatal("Unexpected MIME: " + f.MIME)
 	}

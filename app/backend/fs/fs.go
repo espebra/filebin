@@ -3,8 +3,6 @@ package fs
 import (
 	"archive/tar"
 	"archive/zip"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -54,7 +52,6 @@ type File struct {
 	Bytes     int64     `json:"bytes"`
 	MIME      string    `json:"mime"`
 	CreatedAt time.Time `json:"created"`
-	Checksum  string    `json:"checksum,omitempty"`
 	Links     []link    `json:"links"`
 
 	// Image specific attributes
@@ -498,13 +495,6 @@ func (be *Backend) getFileMetaData(bin string, filename string) (File, error) {
 	}
 	defer fp.Close()
 
-	hash := sha256.New()
-	if _, err = io.Copy(hash, fp); err != nil {
-		return f, err
-	}
-	var result []byte
-	f.Checksum = hex.EncodeToString(hash.Sum(result))
-
 	// MIME
 	buffer := make([]byte, 512)
 	if _, err = fp.Seek(0, 0); err != nil {
@@ -703,25 +693,6 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 			return f, err
 		}
 	}
-
-	hash := sha256.New()
-	fp.Seek(0, 0)
-	if err != nil {
-		be.Log.Println(err)
-		// This should not happen
-		err = errors.New("Internal Server Error")
-		return f, err
-	}
-	_, err = io.Copy(hash, fp)
-	if err != nil {
-		be.Log.Println(err)
-		// Possibly due to full disk
-		err = errors.New("Unable to save file. Please try again later")
-		return f, err
-	}
-
-	var result []byte
-	f.Checksum = hex.EncodeToString(hash.Sum(result))
 
 	// Exif
 	if strings.Split(f.MIME, "/")[0] == "image" {
