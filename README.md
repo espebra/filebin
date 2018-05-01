@@ -215,7 +215,7 @@ The parameter ``--trigger-delete-file <command>`` makes sure ``<command> <bin> <
 | **Method**		| ``POST``					|
 | **URL**		| /						|
 | **URL parameters**	| *None*					|
-| **Request headers**	| ``filename``, ``bin``, ``content-sha256``	|
+| **Request headers**	| ``filename``, ``bin``				|
 | **Request body**	| File content in binary form			|
 | **Success response**	| ``201``					|
 | **Error response**	| ``400``					|
@@ -224,10 +224,10 @@ The parameter ``--trigger-delete-file <command>`` makes sure ``<command> <bin> <
 
 In all examples, the local file ``/path/to/some file`` will be uploaded.
 
-Using the following command, the ``bin`` will be automatically generated and the ``filename`` will be set to the SHA256 checksum of the content. The checksum of the content will not be verified.
+Using the following command, the ``bin`` will be automatically generated and the ``filename`` of the uploaded file will be ``myfilename``:
 
 ```bash
-$ curl --data-binary "@/path/to/some file" https://filebin.example.com/
+$ curl --data-binary "@/path/to/some file" -H "filename: myfilename" https://filebin.example.com/
 ```
 
 Using the following command, ``bin`` will be set to ``custombin`` and ``filename`` will be set to ``myfile``.
@@ -235,14 +235,6 @@ Using the following command, ``bin`` will be set to ``custombin`` and ``filename
 ```bash
 $ curl --data-binary "@/path/to/some file" https://filebin.example.com/ \
   -H "bin: custombin" -H "filename: myfile"
-```
-
-Using the following command, ``filebin`` will verify the checksum of the uploaded file and discard the upload if the checksum does not match the specified checksum:
-
-```bash
-$ curl --data-binary "@/path/to/some file" https://filebin.example.com/ \
-  -H "bin: custombin" -H "filename: myfile" \
-  -H "content-sha256: 82b5f1d5d38641752d6cbb4b80f3ccae502973f8b77f1c712bd68d5324e67e33"
 ```
 
 ### Fetch bin details
