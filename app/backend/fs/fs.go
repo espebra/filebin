@@ -488,7 +488,6 @@ func (be *Backend) getFileMetaData(bin string, filename string) (File, error) {
 	f.Bytes = fi.Size()
 	f.CreatedAt = fi.ModTime()
 
-	// Calculate checksum
 	fp, err := os.Open(path)
 	if err != nil {
 		return f, err
