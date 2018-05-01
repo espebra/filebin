@@ -287,7 +287,7 @@ function deleteURL (url, messageBoxID) {
     var xhr = new XMLHttpRequest();
     var box = document.getElementById(messageBoxID);
 
-    box.textContent = "Delete in progress ..."
+    box.textContent = "Delete operation in progress ..."
     box.className = "alert alert-dark";
 
     xhr.onload = function(e) {
