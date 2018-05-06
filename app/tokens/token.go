@@ -55,28 +55,23 @@ func (t *Tokens) Verify(token string) bool {
 	return found
 }
 
-func (t *Tokens) removeToken(token string) {
-	t.Lock()
-	for i, data := range t.tokens {
-		if data.Id == token {
-			t.tokens = append(t.tokens[:i], t.tokens[i+1:]...)
-		}
-	}
-	t.Unlock()
-}
-
 func (t *Tokens) Cleanup() {
+	var valid []Token
+	t.Lock()
 	if len(t.tokens) > 500 {
 		now := time.Now().UTC()
-		before := len(t.tokens)
 		for _, data := range t.tokens {
-			if now.After(data.ValidTo) {
-				t.removeToken(data.Id)
+			if now.Before(data.ValidTo) {
+				valid = append(valid, data)
 			}
 		}
+		before := len(t.tokens)
+		t.tokens = valid
 		after := len(t.tokens)
 		log.Println("Token clean up:", before-after, "tokens have been removed.")
 	}
+	t.Unlock()
+
 }
 
 func (t *Tokens) GetAllTokens() []Token {
