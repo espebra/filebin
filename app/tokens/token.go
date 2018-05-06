@@ -31,7 +31,7 @@ func (t *Tokens) Generate() string {
 	var token Token
 	token.Id = RandomString(8)
 	now := time.Now().UTC()
-	token.ValidTo = now.Add(1 * time.Minute)
+	token.ValidTo = now.Add(5 * time.Minute)
 
 	t.Lock()
 	t.tokens = append([]Token{token}, t.tokens...)
