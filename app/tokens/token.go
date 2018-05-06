@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"sync"
 	"time"
+	"log"
 )
 
 type Token struct {
@@ -30,7 +31,7 @@ func (t *Tokens) Generate() string {
 	var token Token
 	token.Id = RandomString(8)
 	now := time.Now().UTC()
-	token.ValidTo = now.Add(5 * time.Minute)
+	token.ValidTo = now.Add(1 * time.Minute)
 
 	t.Lock()
 	t.tokens = append([]Token{token}, t.tokens...)
@@ -54,16 +55,27 @@ func (t *Tokens) Verify(token string) bool {
 	return found
 }
 
+func (t *Tokens) removeToken(token string) {
+	t.Lock()
+	for i, data := range t.tokens {
+		if data.Id == token {
+			t.tokens = append(t.tokens[:i], t.tokens[i+1:]...)
+		}
+	}
+	t.Unlock()
+}
+
 func (t *Tokens) Cleanup() {
-	if len(t.tokens) > 250 {
+	if len(t.tokens) > 500 {
 		now := time.Now().UTC()
-		t.Lock()
-		for i, data := range t.tokens {
+		before := len(t.tokens)
+		for _, data := range t.tokens {
 			if now.After(data.ValidTo) {
-				t.tokens[len(t.tokens)-1], t.tokens[i] = t.tokens[i], t.tokens[len(t.tokens)-1]
+				t.removeToken(data.Id)
 			}
 		}
-		t.Unlock()
+		after := len(t.tokens)
+		log.Println("Token clean up:", before-after, "tokens have been removed.")
 	}
 }
 
