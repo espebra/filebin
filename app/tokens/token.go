@@ -33,7 +33,7 @@ func (t *Tokens) Generate() string {
 	token.ValidTo = now.Add(5 * time.Minute)
 
 	t.Lock()
-	t.tokens = append(t.tokens, token)
+	t.tokens = append([]Token{token}, t.tokens...)
 	t.Unlock()
 	return token.Id
 }
@@ -55,7 +55,7 @@ func (t *Tokens) Verify(token string) bool {
 }
 
 func (t *Tokens) Cleanup() {
-	if len(t.tokens) > 500 {
+	if len(t.tokens) > 250 {
 		now := time.Now().UTC()
 		t.Lock()
 		for i, data := range t.tokens {
