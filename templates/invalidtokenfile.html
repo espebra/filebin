@@ -37,10 +37,10 @@
                                                 <dd class="col">{{ .Data.Filename }}</dd>
                                                 <dt class="col">File size</dt>
                                                 <dd class="col">{{ .Data.BytesReadable }}</dd>
-                                                <dt class="col">Created at</dt>
-                                                <dd class="col">{{ .Data.CreatedAt.Format "2006-01-02 15:04:05 UTC"}}</dd>
                                                 <dt class="col">Content type</dt>
                                                 <dd class="col">{{ .Data.MIME }}</dd>
+                                                <dt class="col">Uploaded</dt>
+                                                <dd class="col">{{ .Data.CreatedReadable }}</dd>
                                             </dl>
                                         </small>
                                     </p>
@@ -61,6 +61,7 @@
                                     {{- range $index, $l := .Data.Links -}}
                                         {{- if eq $l.Rel "file" -}}
                                             <a href="{{ $l.Href }}" class="btn btn-primary">
+                                                <i class="fa fa-cloud-download"></i>
                                                 Download
                                             </a>
                                         {{- end -}}
@@ -68,6 +69,7 @@
                                     {{- range $index, $l := .Data.Links -}}
                                         {{- if eq $l.Rel "bin" -}}
                                             <a href="{{ $l.Href }}" class="btn btn-light">
+                                                <i class="fa fa-list-ul"></i>
                                                 File listing
                                             </a>
                                         {{- end -}}

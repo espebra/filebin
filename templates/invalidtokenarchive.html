@@ -33,9 +33,9 @@
                                     <dl class="row">
                                         <dt class="col">Bin name</dt>
                                         <dd class="col">{{ $.Data.Bin }}</dd>
-                                        <dt class="col">Files</dt>
+                                        <dt class="col">Number of files</dt>
                                         <dd class="col">{{ len $.Data.Files }}</dd>
-                                        <dt class="col">Size</dt>
+                                        <dt class="col">Total size</dt>
                                         <dd class="col">{{ $.Data.BytesReadable }}</dd>
                                         <dt class="col">Updated</dt>
                                         <dd class="col">{{ .Data.UpdatedReadable }}</dd>
@@ -50,9 +50,11 @@
                             <p class="card-text">
                                 <div class="text-center">
                                     <a href="?t={{ .Ctx.Token }}" class="btn btn-primary">
+                                        <i class="fa fa-cloud-download"></i>
                                         Download
                                     </a>
                                     <a href="{{ .Ctx.Baseurl }}/{{ .Data.Bin }}" class="btn btn-light">
+                                        <i class="fa fa-list-ul"></i>
                                         File listing
                                     </a>
                                 </div>

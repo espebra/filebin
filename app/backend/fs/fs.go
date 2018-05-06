@@ -865,7 +865,7 @@ func (f File) BytesReadable() string {
 	return humanize.Bytes(uint64(f.Bytes))
 }
 
-func (f *File) CreatedReadable() string {
+func (f File) CreatedReadable() string {
 	return humanize.Time(f.CreatedAt)
 }
 

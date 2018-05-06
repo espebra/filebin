@@ -397,7 +397,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 }
 
 func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	w.Header().Set("Cache-Control", "s-maxage=30")
+	w.Header().Set("Cache-Control", "s-maxage=1")
 
 	params := mux.Vars(r)
 	bin := params["bin"]
@@ -450,7 +450,7 @@ func UpdateLinks(links []fs.Link, token string) []fs.Link {
 }
 
 func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	w.Header().Set("Cache-Control", "s-maxage=15")
+	w.Header().Set("Cache-Control", "s-maxage=1")
 	w.Header().Set("Vary", "Content-Type")
 
 	var status = 200
@@ -510,7 +510,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 }
 
 func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	w.Header().Set("Cache-Control", "s-maxage=30")
+	w.Header().Set("Cache-Control", "s-maxage=1")
 	w.Header().Set("Vary", "Content-Type")
 
 	params := mux.Vars(r)
