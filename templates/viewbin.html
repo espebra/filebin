@@ -153,7 +153,7 @@
                             {{ $file := .GetLink "file" }}
                             {{ if $thumbnail }}
                                 <a href="{{ $file }}">
-                                     <img class="thumb float-left" alt="{{ .Filename }} thumbnail" src="{{ $thumbnail }}"/>
+                                    <img class="thumb float-left" alt="{{ .Filename }} thumbnail" src="{{ $thumbnail }}"/>
                                 </a>
                             {{ end }}
                         {{ end }}
@@ -490,10 +490,18 @@
 
                         <ul class="nav nav-pills">
                             <li class="nav-item">
-                                <a class="nav-link btn-primary" href="{{ .Ctx.Baseurl }}/archive/{{ $.Data.Bin }}/tar"><i class="fa fa-file-archive-o"></i> Tar</a>
+				{{ if eq .Ctx.Token "" }}
+                                    <a class="nav-link btn-primary" href="{{ .Ctx.Baseurl }}/archive/{{ $.Data.Bin }}/tar"><i class="fa fa-file-archive-o"></i> Tar</a>
+				{{ else }}
+                                    <a class="nav-link btn-primary" href="{{ .Ctx.Baseurl }}/archive/{{ $.Data.Bin }}/tar?t={{ .Ctx.Token }}"><i class="fa fa-file-archive-o"></i> Tar</a>
+				{{ end }}
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link btn-primary" href="{{ .Ctx.Baseurl }}/archive/{{ $.Data.Bin }}/zip"><i class="fa fa-file-archive-o"></i> Zip</a>
+				{{ if eq .Ctx.Token "" }}
+                                    <a class="nav-link btn-primary" href="{{ .Ctx.Baseurl }}/archive/{{ $.Data.Bin }}/zip"><i class="fa fa-file-archive-o"></i> Zip</a>
+                                {{ else }}
+                                    <a class="nav-link btn-primary" href="{{ .Ctx.Baseurl }}/archive/{{ $.Data.Bin }}/zip?t={{ .Ctx.Token }}"><i class="fa fa-file-archive-o"></i> Zip</a>
+                                {{ end }}
                             </li>
                         </nav>
                     </div>

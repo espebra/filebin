@@ -38,6 +38,11 @@
                     <li class="nav-item">
                       <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin/counters">Counters</a>
                     </li>
+                    {{ if not .Cfg.HotLinking }}
+                       <li class="nav-item">
+                         <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin/tokens">Tokens</a>
+                       </li>
+                    {{ end }}
                   </ul>
                 </p>
               </div>
@@ -146,6 +151,15 @@
                   <div class="alert alert-info">
                     <div class="text-xs-center"><strong>{{ index .Data.UptimeReadable }}</strong></div>
                     <div class="text-xs-center">Service start</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="alert alert-success">
+                    <div class="text-xs-center"><strong>{{ index .Data.Tokens }}</strong></div>
+                    <div class="text-xs-center">Active tokens</div>
                   </div>
                 </div>
               </div>

@@ -152,6 +152,10 @@ The parameters ``--admin-username`` and ``--admin-password`` will, if set, enabl
 
 The parameter ``--access-log`` is used to set a full path for the access log. The access log is written in the [Combined Log Format](http://httpd.apache.org/docs/2.2/logs.html#combined).
 
+#### Hot Linking
+
+The parameter ``--hot-linking`` is enabled by default and allows hot linking of files. Hot linking is convenient sice it allows easy and direct access to files from other computers, but it also makes it easy to abuse the service. Starting Filebin with ``--hot-linking=false`` is a compromise that enables hot linking using tokens that are valid only for a short period of time.
+
 #### Triggers
 
 Triggers enable external scripts to be executed at certain events.

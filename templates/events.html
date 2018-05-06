@@ -38,6 +38,11 @@
                     <li class="nav-item">
                       <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin/counters">Counters</a>
                     </li>
+                    {{ if not .Cfg.HotLinking }}
+                       <li class="nav-item">
+                         <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin/tokens">Tokens</a>
+                       </li>
+                    {{ end }}
                   </ul>
                 </p>
               </div>

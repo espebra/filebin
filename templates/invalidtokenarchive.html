@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta bins *must* come first in the head; any other head content must come *after* these bins -->
+
+        <meta name="description" content="Upload files and make them available for your friends. Think of it as Pastebin for files. Registration is not required. Large files are supported.">
+        <meta name="author" content="Espen Braastad">
+        <link rel="icon" href="{{ .Ctx.Baseurl }}/static/img/favicon.png">
+
+        <title>Filebin</title>
+
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/upload.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/custom.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/font-awesome.css"/>
+    </head>
+
+    <body>
+        <div class="container h-100">
+            <div class="row h-100 align-items-center">
+                <div class="col-12">
+                    <div class="card mx-auto" style="max-width: 30rem;">
+                        <h5 class="card-header text-center">
+                            Archive download
+                        </h5>
+                        <div class="card-body">
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <dl class="row">
+                                        <dt class="col">Bin name</dt>
+                                        <dd class="col">{{ $.Data.Bin }}</dd>
+                                        <dt class="col">Files</dt>
+                                        <dd class="col">{{ len $.Data.Files }}</dd>
+                                        <dt class="col">Size</dt>
+                                        <dd class="col">{{ $.Data.BytesReadable }}</dd>
+                                        <dt class="col">Updated</dt>
+                                        <dd class="col">{{ .Data.UpdatedReadable }}</dd>
+                                        <dt class="col">Expires</dt>
+                                        <dd class="col">{{ .Data.ExpiresReadable }}</dd>
+                                    </dl>
+                                </small>
+                            </p>
+                        </div>
+
+                        <div class="card-footer">
+                            <p class="card-text">
+                                <div class="text-center">
+                                    <a href="?t={{ .Ctx.Token }}" class="btn btn-primary">
+                                        Download
+                                    </a>
+                                    <a href="{{ .Ctx.Baseurl }}/{{ .Data.Bin }}" class="btn btn-light">
+                                        File listing
+                                    </a>
+                                </div>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

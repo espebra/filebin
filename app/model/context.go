@@ -6,6 +6,7 @@ import (
 	"github.com/espebra/filebin/app/config"
 	"github.com/espebra/filebin/app/events"
 	"github.com/espebra/filebin/app/metrics"
+	"github.com/espebra/filebin/app/tokens"
 	"log"
 )
 
@@ -25,5 +26,7 @@ type Context struct {
 	Backend     *fs.Backend
 	Metrics     *metrics.Metrics
 	Events      *events.Events
+	Tokens      *tokens.Tokens
+	Token       string
 	RemoteAddr  string
 }

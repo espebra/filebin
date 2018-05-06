@@ -9,6 +9,7 @@ import (
 	"github.com/espebra/filebin/app/model"
 	"github.com/espebra/filebin/app/output"
 	"github.com/espebra/filebin/app/shared"
+	"github.com/espebra/filebin/app/tokens"
 	"github.com/gorilla/mux"
 	"math/rand"
 	"net/http"
@@ -206,7 +207,7 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 }
 
 func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
-	w.Header().Set("Cache-Control", "s-maxage=30")
+	w.Header().Set("Cache-Control", "s-maxage=1")
 	w.Header().Set("Vary", "Content-Type")
 
 	// Query parameters
@@ -270,6 +271,21 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		ctx.Metrics.Incr("total-thumbnails-viewed")
 		http.ServeContent(w, r, f.Filename, f.CreatedAt, fp)
 		return
+	}
+
+	if cfg.HotLinking == false {
+		token := r.URL.Query().Get("t")
+		if token == "" {
+			token = r.Header.Get("token")
+		}
+		if ctx.Tokens.Verify(token) == false {
+			ctx.Token = ctx.Tokens.Generate()
+			f.Links = UpdateLinks(f.Links, ctx.Token)
+
+			status := 200
+			output.HTMLresponse(w, "invalidtokenfile", status, f, ctx)
+			return
+		}
 	}
 
 	event := ctx.Events.New(ctx.RemoteAddr, []string{"file", "download"}, bin, filename)
@@ -402,12 +418,35 @@ func FetchAlbum(w http.ResponseWriter, r *http.Request, cfg config.Configuration
 		return
 	}
 
+	if cfg.HotLinking == false {
+		ctx.Token = ctx.Tokens.Generate()
+		for i, f := range b.Files {
+			b.Files[i].Links = UpdateLinks(f.Links, ctx.Token)
+		}
+	}
+
 	ctx.Metrics.Incr("total-view-album")
 	ctx.Metrics.Incr("album-view bin=" + bin)
 
 	var status = 200
 	output.HTMLresponse(w, "viewalbum", status, b, ctx)
 	return
+}
+
+func UpdateLinks(links []fs.Link, token string) []fs.Link {
+	for i, l := range links {
+		if l.Rel == "file" {
+			u, err := url.Parse(l.Href)
+			if err != nil {
+				panic(err)
+			}
+			q := u.Query()
+			q.Set("t", token)
+			u.RawQuery = q.Encode()
+			links[i].Href = u.String()
+		}
+	}
+	return links
 }
 
 func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
@@ -425,8 +464,6 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 
 	event := ctx.Events.New(ctx.RemoteAddr, []string{"bin", "view"}, bin, "")
 	defer event.Done()
-
-	var err error
 
 	b, err := ctx.Backend.GetBinMetaData(bin)
 	if err != nil {
@@ -446,6 +483,13 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 	if b.Expired {
 		http.Error(w, "This bin expired "+b.ExpiresReadable+".", 410)
 		return
+	}
+
+	if cfg.HotLinking == false {
+		ctx.Token = ctx.Tokens.Generate()
+		for i, f := range b.Files {
+			b.Files[i].Links = UpdateLinks(f.Links, ctx.Token)
+		}
 	}
 
 	ctx.Metrics.Incr("total-view-bin")
@@ -493,6 +537,20 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 		http.Error(w, "This bin expired "+b.ExpiresReadable+".", 410)
 		event.Update("This bin expired"+b.ExpiresReadable, 2)
 		return
+	}
+
+	if cfg.HotLinking == false {
+		token := r.URL.Query().Get("t")
+		if token == "" {
+			token = r.Header.Get("token")
+		}
+		if ctx.Tokens.Verify(token) == false {
+			// Token not set or invalid
+			status := 200
+			ctx.Token = ctx.Tokens.Generate()
+			output.HTMLresponse(w, "invalidtokenarchive", status, b, ctx)
+			return
+		}
 	}
 
 	ctx.Metrics.Incr("current-archive-download")
@@ -589,6 +647,7 @@ func AdminDashboard(w http.ResponseWriter, r *http.Request, cfg config.Configura
 		Stats            map[string]int64
 		Logins           []events.Event
 		Uptime           time.Duration
+		Tokens           int
 		UptimeReadable   string
 		Now              time.Time
 	}
@@ -614,6 +673,7 @@ func AdminDashboard(w http.ResponseWriter, r *http.Request, cfg config.Configura
 		Logins:           logins,
 		Uptime:           ctx.Metrics.Uptime(),
 		UptimeReadable:   humanize.Time(ctx.Metrics.StartTime()),
+		Tokens:           len(ctx.Tokens.GetAllTokens()),
 		Now:              time.Now().UTC(),
 	}
 
@@ -669,24 +729,6 @@ func AdminEvents(w http.ResponseWriter, r *http.Request, cfg config.Configuratio
 	event.Update(r.Header.Get("user-agent"), 0)
 	defer event.Done()
 
-	//u, err := url.Parse(r.RequestURI)
-	//if err != nil {
-	//	ctx.Log.Println(err)
-	//}
-
-	//queryParams, err := url.ParseQuery(u.RawQuery)
-	//if err != nil {
-	//	ctx.Log.Println(err)
-	//}
-
-	//filter := metrics.Event{
-	//	Bin:        queryParams.Get("bin"),
-	//	Category:   queryParams.Get("category"),
-	//	Filename:   queryParams.Get("filename"),
-	//	RemoteAddr: queryParams.Get("remoteaddr"),
-	//	URL:        queryParams.Get("url"),
-	//}
-
 	type Out struct {
 		Events         []events.Event
 		Uptime         time.Duration
@@ -710,6 +752,38 @@ func AdminEvents(w http.ResponseWriter, r *http.Request, cfg config.Configuratio
 	return
 }
 
+func AdminTokens(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
+	w.Header().Set("Vary", "Content-Type")
+	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
+	var status = 200
+
+	event := ctx.Events.New(ctx.RemoteAddr, []string{"admin", "tokens"}, "", "")
+	event.Update(r.Header.Get("user-agent"), 0)
+	defer event.Done()
+
+	type Out struct {
+		Tokens         []tokens.Token
+		Uptime         time.Duration
+		UptimeReadable string
+		Now            time.Time
+	}
+
+	data := Out{
+		Tokens:         ctx.Tokens.GetAllTokens(),
+		Uptime:         ctx.Metrics.Uptime(),
+		UptimeReadable: humanize.Time(ctx.Metrics.StartTime()),
+		Now:            time.Now().UTC(),
+	}
+
+	if r.Header.Get("Accept") == "application/json" {
+		w.Header().Set("Content-Type", "application/json")
+		output.JSONresponse(w, status, data, ctx)
+	} else {
+		output.HTMLresponse(w, "tokens", status, data, ctx)
+	}
+	return
+}
+
 func AdminBins(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ctx model.Context) {
 	w.Header().Set("Vary", "Content-Type")
 	w.Header().Set("Cache-Control", "s-maxage=0, max-age=0")
@@ -718,14 +792,6 @@ func AdminBins(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 	event := ctx.Events.New(ctx.RemoteAddr, []string{"admin", "bins"}, "", "")
 	event.Update(r.Header.Get("user-agent"), 0)
 	defer event.Done()
-
-	//event := metrics.Event{
-	//	Category:   "admin-login",
-	//	RemoteAddr: ctx.RemoteAddr,
-	//	Text:       r.Header.Get("user-agent"),
-	//	URL:        r.RequestURI,
-	//}
-	//ctx.Metrics.AddEvent(event)
 
 	bins := ctx.Backend.GetBinsMetaData()
 

@@ -33,16 +33,14 @@
                       <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin/events">Events</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link active" href="{{ .Ctx.Baseurl }}/admin/bins">Bins</a>
+                      <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin/bins">Bins</a>
                     </li>
                     <li class="nav-item">
                       <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin/counters">Counters</a>
                     </li>
-                    {{ if not .Cfg.HotLinking }}
-                       <li class="nav-item">
-                         <a class="nav-link" href="{{ .Ctx.Baseurl }}/admin/tokens">Tokens</a>
-                       </li>
-                    {{ end }}
+                    <li class="nav-item">
+                      <a class="nav-link active" href="{{ .Ctx.Baseurl }}/admin/tokens">Tokens</a>
+                    </li>
                   </ul>
                 </p>
               </div>
@@ -58,29 +56,26 @@
 
             <br/>
 
+            <p class="lead">{{ len .Data.Tokens }} active tokens.</p>
+
             <div class="row">
               <div class="col-sm-12">
                 <table class="sortable table table-sm">
                     <thead class="thead-default">
                         <tr>
-                            <th>Bin</th>
-                            <th>Last updated</th>
-                            <th>Files</th>
-                            <th>Size</th>
+                            <th>Token</th>
+                            <th>Verified count</th>
+                            <th>Expires</th>
+                            <th>Valid to</th>
                         </tr>
                     </thead>
                     <tbody>
-
-                        {{ range $index, $value := .Data.Bins }}
-                        {{ if .Expired }}
-                        <tr class="table-warning">
-                        {{ else }}
+                        {{ range $i, $t := .Data.Tokens }}
                         <tr>
-                        {{ end }}
-                            <td><a href="{{ $.Ctx.Baseurl }}/{{ .Bin }}">{{ .Bin }}</a></td>
-                            <td sorttable_customkey="{{ .UpdatedAt }}">{{ .UpdatedReadable }}</td>
-                            <td>{{ .Files | len }}</td>
-                            <td sorttable_customkey="{{ .Bytes }}">{{ .BytesReadable }}</td>
+                            <td>{{ $t.Id }}</td>
+                            <td>{{ $t.VerifiedCount }}</td>
+                            <td>{{ $t.ExpiresReadable }}</td>
+                            <td>{{ $t.ValidTo.Format "2006-01-02 15:04:05 UTC" }}</td>
                         </tr>
                         {{ end }}
                     </tbody>

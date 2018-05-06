@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta bins *must* come first in the head; any other head content must come *after* these bins -->
+
+        <meta name="description" content="Upload files and make them available for your friends. Think of it as Pastebin for files. Registration is not required. Large files are supported.">
+        <meta name="author" content="Espen Braastad">
+        <link rel="icon" href="{{ .Ctx.Baseurl }}/static/img/favicon.png">
+
+        <title>Filebin</title>
+
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/bootstrap/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/upload.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/custom.css"/>
+        <link rel="stylesheet" href="{{ .Ctx.Baseurl }}/static/css/font-awesome.css"/>
+    </head>
+
+    <body>
+        <div class="container h-100">
+            <div class="row h-100 align-items-center">
+                <div class="col-12">
+                    <div class="card mx-auto" style="max-width: 30rem;">
+                        <h5 class="card-header text-center">
+                            File download
+                        </h5>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            <dl class="row">
+                                                <dt class="col">File name</dt>
+                                                <dd class="col">{{ .Data.Filename }}</dd>
+                                                <dt class="col">File size</dt>
+                                                <dd class="col">{{ .Data.BytesReadable }}</dd>
+                                                <dt class="col">Created at</dt>
+                                                <dd class="col">{{ .Data.CreatedAt.Format "2006-01-02 15:04:05 UTC"}}</dd>
+                                                <dt class="col">Content type</dt>
+                                                <dd class="col">{{ .Data.MIME }}</dd>
+                                            </dl>
+                                        </small>
+                                    </p>
+                                </div>
+                                    {{- range $index, $l := .Data.Links -}}
+                                        {{- if eq $l.Rel "thumbnail" -}}
+                                            <div class="col text-center">
+                                                <img class="img-thumbnail" src="{{ $l.Href }}"/>
+                                            </div>
+                                        {{- end -}}
+                                    {{- end -}}
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <p class="card-text">
+                                <div class="text-center">
+                                    {{- range $index, $l := .Data.Links -}}
+                                        {{- if eq $l.Rel "file" -}}
+                                            <a href="{{ $l.Href }}" class="btn btn-primary">
+                                                Download
+                                            </a>
+                                        {{- end -}}
+                                    {{- end -}}
+                                    {{- range $index, $l := .Data.Links -}}
+                                        {{- if eq $l.Rel "bin" -}}
+                                            <a href="{{ $l.Href }}" class="btn btn-light">
+                                                File listing
+                                            </a>
+                                        {{- end -}}
+                                    {{- end -}}
+                                </div>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

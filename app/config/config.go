@@ -37,6 +37,7 @@ type Configuration struct {
 	AdminPassword       string
 	AccessLog           string
 	Filters             filters
+	HotLinking          bool
 }
 
 var Global Configuration
@@ -60,5 +61,6 @@ func init() {
 		ClientAddrHeader:  "",
 		AccessLog:         "/var/log/filebin/access.log",
 		Filters:           []string{},
+		HotLinking:        true,
 	}
 }

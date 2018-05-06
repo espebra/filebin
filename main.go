@@ -23,6 +23,7 @@ import (
 	"github.com/espebra/filebin/app/events"
 	"github.com/espebra/filebin/app/metrics"
 	"github.com/espebra/filebin/app/model"
+	"github.com/espebra/filebin/app/tokens"
 )
 
 var cfg = config.Global
@@ -34,6 +35,7 @@ var templateBox *rice.Box
 var backend fs.Backend
 var m metrics.Metrics
 var e events.Events
+var t tokens.Tokens
 
 // Initiate buffered channel for batch processing
 var WorkQueue = make(chan model.Job, 1000)
@@ -48,15 +50,6 @@ func isDir(path string) bool {
 	} else {
 		return false
 	}
-}
-
-func generateReqId(n int) string {
-	var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
 }
 
 func init() {
@@ -171,6 +164,10 @@ func init() {
 
 	flag.Var(&cfg.Filters, "filter",
 		"Filter to reject specific content-type uploads.")
+
+	flag.BoolVar(&cfg.HotLinking, "hot-linking",
+		cfg.HotLinking,
+		"Enable hotlinking by using tokens for file downloads.")
 
 	flag.Parse()
 
@@ -292,6 +289,7 @@ func main() {
 	}
 
 	m = metrics.Init()
+	t = tokens.Init()
 
 	startTime := time.Now().UTC()
 	backend, err = fs.InitBackend(cfg.Baseurl, cfg.Filedir, cfg.Tempdir, cfg.Expiration, log, cfg.Filters)
@@ -303,6 +301,13 @@ func main() {
 	backend.Log.Println("Backend initialized in: " + elapsedTime.String())
 
 	log.Println("Backend: " + backend.Info())
+
+	if cfg.HotLinking {
+		log.Println("Hotlinking: enabled")
+	} else {
+		log.Println("Hotlinking: disabled")
+	}
+
 	log.Println("Filebin server starting...")
 
 	// Start dispatcher that will handle all background processing
@@ -339,6 +344,7 @@ func main() {
 
 	router.HandleFunc("/admin", basicAuth(reqHandler(api.AdminDashboard))).Methods("GET", "HEAD")
 	router.HandleFunc("/admin/events", basicAuth(reqHandler(api.AdminEvents))).Methods("GET", "HEAD")
+	router.HandleFunc("/admin/tokens", basicAuth(reqHandler(api.AdminTokens))).Methods("GET", "HEAD")
 	router.HandleFunc("/admin/bins", basicAuth(reqHandler(api.AdminBins))).Methods("GET", "HEAD")
 	router.HandleFunc("/admin/counters", basicAuth(reqHandler(api.AdminCounters))).Methods("GET", "HEAD")
 	router.HandleFunc("/readme", reqHandler(api.Readme)).Methods("GET", "HEAD")
@@ -346,7 +352,10 @@ func main() {
 	router.HandleFunc("/", reqHandler(api.Upload)).Methods("POST")
 	router.HandleFunc("/archive/{bin:[A-Za-z0-9_-]+}/{format:[a-z]+}", reqHandler(api.FetchArchive)).Methods("GET", "HEAD")
 	router.HandleFunc("/album/{bin:[A-Za-z0-9_-]+}", reqHandler(api.FetchAlbum)).Methods("GET", "HEAD")
+
 	router.HandleFunc("/{bin:[A-Za-z0-9_-]+}", reqHandler(api.FetchBin)).Methods("GET", "HEAD")
+	router.HandleFunc("/{bin:[A-Za-z0-9_-]+}/", reqHandler(api.FetchBin)).Methods("GET", "HEAD")
+
 	router.HandleFunc("/{bin:[A-Za-z0-9_-]+}", reqHandler(api.DeleteBin)).Methods("DELETE")
 	router.HandleFunc("/{bin:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.FetchFile)).Methods("GET", "HEAD")
 	router.HandleFunc("/{bin:[A-Za-z0-9_-]+}/{filename:.+}", reqHandler(api.DeleteFile)).Methods("DELETE")
@@ -368,20 +377,29 @@ func main() {
 	}
 }
 
+func initctx() model.Context {
+	reqId := "r-" + tokens.RandomString(5)
+	var ctx = model.Context{}
+	ctx.TemplateBox = templateBox
+	ctx.StaticBox = staticBox
+	ctx.Baseurl = cfg.Baseurl
+	ctx.WorkQueue = WorkQueue
+	ctx.Backend = &backend
+	ctx.Metrics = &m
+	ctx.Events = &e
+	ctx.Tokens = &t
+
+	// Initialize logger for this request
+	ctx.Log = log.New(os.Stdout, reqId+" ", log.LstdFlags)
+	return ctx
+}
+
 func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration, model.Context)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now().UTC()
-		reqId := "r-" + generateReqId(5)
 
 		// Populate the context for this request here
-		var ctx = model.Context{}
-		ctx.TemplateBox = templateBox
-		ctx.StaticBox = staticBox
-		ctx.Baseurl = cfg.Baseurl
-		ctx.WorkQueue = WorkQueue
-		ctx.Backend = &backend
-		ctx.Metrics = &m
-		ctx.Events = &e
+		ctx := initctx()
 
 		if cfg.ClientAddrHeader == "" {
 			// Extract the IP address only
@@ -394,9 +412,6 @@ func reqHandler(fn func(http.ResponseWriter, *http.Request, config.Configuration
 		} else {
 			ctx.RemoteAddr = r.Header.Get(cfg.ClientAddrHeader)
 		}
-
-		// Initialize logger for this request
-		ctx.Log = log.New(os.Stdout, reqId+" ", log.LstdFlags)
 
 		ctx.Log.Println(r.Method + " " + r.RequestURI)
 		if r.Host != "" {

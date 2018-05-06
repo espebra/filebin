@@ -52,7 +52,7 @@ type File struct {
 	Bytes     int64     `json:"bytes"`
 	MIME      string    `json:"mime"`
 	CreatedAt time.Time `json:"created"`
-	Links     []link    `json:"links"`
+	Links     []Link    `json:"links"`
 
 	// Image specific attributes
 	DateTime  time.Time `json:"datetime,omitempty"`
@@ -60,7 +60,7 @@ type File struct {
 	Latitude  float64   `json:"latitude,omitempty"`
 }
 
-type link struct {
+type Link struct {
 	Rel  string `json:"rel"`
 	Href string `json:"href"`
 }
@@ -619,7 +619,7 @@ func (be *Backend) UploadFile(bin string, filename string, data io.ReadCloser) (
 
 	if !isDir(be.tempdir) {
 		if err := os.Mkdir(be.tempdir, 0700); err != nil {
-			be.Log.Println("Unable to create directory: " + be.tempdir + ":", err)
+			be.Log.Println("Unable to create directory: "+be.tempdir+":", err)
 			err := errors.New("Unable to save file")
 			return f, err
 		}
@@ -825,35 +825,35 @@ func (be *Backend) DeleteFile(bin string, filename string) (File, error) {
 	return f, nil
 }
 
-func (be *Backend) GenerateLinks(bin string, filename string) []link {
-	links := []link{}
+func (be *Backend) GenerateLinks(bin string, filename string) []Link {
+	links := []Link{}
 
 	// Links
-	fileLink := link{}
+	fileLink := Link{}
 	fileLink.Rel = "file"
 	fileLink.Href = be.baseurl + "/" + bin + "/" + filename
 	links = append(links, fileLink)
 
-	binLink := link{}
+	binLink := Link{}
 	binLink.Rel = "bin"
 	binLink.Href = be.baseurl + "/" + bin
 	links = append(links, binLink)
 
 	cachedir := filepath.Join(be.filedir, bin, ".cache")
 	if isFile(filepath.Join(cachedir, "115x115-"+filename)) {
-		thumbLink := link{}
+		thumbLink := Link{}
 		thumbLink.Rel = "thumbnail"
 		thumbLink.Href = be.baseurl + "/" + bin + "/" + filename + "?width=115&height=115"
 		links = append(links, thumbLink)
 	}
 
 	if isFile(filepath.Join(cachedir, "1140x0-"+filename)) {
-		albumItemLink := link{}
+		albumItemLink := Link{}
 		albumItemLink.Rel = "album item"
 		albumItemLink.Href = be.baseurl + "/" + bin + "/" + filename + "?width=1140"
 		links = append(links, albumItemLink)
 
-		albumLink := link{}
+		albumLink := Link{}
 		albumLink.Rel = "album"
 		albumLink.Href = be.baseurl + "/album/" + bin
 		links = append(links, albumLink)
