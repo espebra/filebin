@@ -201,6 +201,8 @@ func Upload(w http.ResponseWriter, r *http.Request, cfg config.Configuration, ct
 	ctx.WorkQueue <- j
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Filename", f.Filename)
+	w.Header().Set("Bin", f.Bin)
 
 	var status = 201
 	output.JSONresponse(w, status, f, ctx)
