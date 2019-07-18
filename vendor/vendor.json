@@ -33,22 +33,22 @@
 			"revisionTime": "2016-06-23T01:40:21Z"
 		},
 		{
-			"checksumSHA1": "iIUYZyoanCQQTUaWsu8b+iOSPt4=",
+			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
 			"path": "github.com/gorilla/context",
-			"revision": "aed02d124ae4a0e94fea4541c8effd05bf0c8296",
-			"revisionTime": "2016-05-25T20:33:19Z"
+			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
+			"revisionTime": "2016-08-17T18:46:32Z"
 		},
 		{
-			"checksumSHA1": "flNRZk3oyHmsux8UsGbj7ziYtUo=",
+			"checksumSHA1": "XOY0t65siat4bLbC4VCmBA9dE7Y=",
 			"path": "github.com/gorilla/handlers",
-			"revision": "66e6c6f01d8da976ee113437745ca029c2b585a6",
-			"revisionTime": "2016-04-10T18:53:17Z"
+			"revision": "2b8556b16671de6e753c3eccf2aa763f3c55848a",
+			"revisionTime": "2018-04-16T20:39:09Z"
 		},
 		{
-			"checksumSHA1": "H5f7qNqZl8N83s9cyC7Q1eWgAtI=",
+			"checksumSHA1": "UgeTyV3+iIwmYB23arP3MbwS+Go=",
 			"path": "github.com/gorilla/mux",
-			"revision": "9fa818a44c2bf1396a17f9d5a3c0f6dd39d2ff8e",
-			"revisionTime": "2016-06-05T23:35:21Z"
+			"revision": "ded0c29b24f96f46cf349e6701b099db601cf8ec",
+			"revisionTime": "2018-05-01T03:11:36Z"
 		},
 		{
 			"checksumSHA1": "6nmAJBw2phU9MUmkUnqFvbO5urg=",

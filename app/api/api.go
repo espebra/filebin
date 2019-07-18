@@ -230,6 +230,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
+	w.Header().Set("Bin", bin)
 	b, err := ctx.Backend.GetBinMetaData(bin)
 	if err != nil {
 		ctx.Log.Println(err)
@@ -248,6 +249,7 @@ func FetchFile(w http.ResponseWriter, r *http.Request, cfg config.Configuration,
 		return
 	}
 
+	w.Header().Set("Filename", filename)
 	f, err := ctx.Backend.GetFileMetaData(bin, filename)
 	if err != nil {
 		ctx.Log.Println(err)
