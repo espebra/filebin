@@ -529,6 +529,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 	event.Update("Format: "+format, 0)
 	defer event.Done()
 
+	w.Header().Set("Bin", bin)
 	b, err := ctx.Backend.GetBinMetaData(bin)
 	if err != nil {
 		ctx.Log.Println(err)
