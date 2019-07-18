@@ -17,6 +17,7 @@ import (
 	"io/ioutil"
 	"math"
 
+	"golang.org/x/image/ccitt"
 	"golang.org/x/image/tiff/lzw"
 )
 
@@ -33,13 +34,6 @@ type UnsupportedError string
 
 func (e UnsupportedError) Error() string {
 	return "tiff: unsupported feature: " + string(e)
-}
-
-// An InternalError reports that an internal error was encountered.
-type InternalError string
-
-func (e InternalError) Error() string {
-	return "tiff: internal error: " + string(e)
 }
 
 var errNoPixels = FormatError("not enough pixel data")
@@ -117,9 +111,10 @@ func (d *decoder) ifdUint(p []byte) (u []uint, err error) {
 	return u, nil
 }
 
-// parseIFD decides whether the the IFD entry in p is "interesting" and
-// stows away the data in the decoder.
-func (d *decoder) parseIFD(p []byte) error {
+// parseIFD decides whether the IFD entry in p is "interesting" and
+// stows away the data in the decoder. It returns the tag number of the
+// entry and an error, if any.
+func (d *decoder) parseIFD(p []byte) (int, error) {
 	tag := d.byteOrder.Uint16(p[0:2])
 	switch tag {
 	case tBitsPerSample,
@@ -135,20 +130,23 @@ func (d *decoder) parseIFD(p []byte) error {
 		tTileOffsets,
 		tTileByteCounts,
 		tImageLength,
-		tImageWidth:
+		tImageWidth,
+		tFillOrder,
+		tT4Options,
+		tT6Options:
 		val, err := d.ifdUint(p)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		d.features[int(tag)] = val
 	case tColorMap:
 		val, err := d.ifdUint(p)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		numcolors := len(val) / 3
 		if len(val)%3 != 0 || numcolors <= 0 || numcolors > 256 {
-			return FormatError("bad ColorMap length")
+			return 0, FormatError("bad ColorMap length")
 		}
 		d.palette = make([]color.Color, numcolors)
 		for i := 0; i < numcolors; i++ {
@@ -166,15 +164,15 @@ func (d *decoder) parseIFD(p []byte) error {
 		// must terminate the import process gracefully.
 		val, err := d.ifdUint(p)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		for _, v := range val {
 			if v != 1 {
-				return UnsupportedError("sample format")
+				return 0, UnsupportedError("sample format")
 			}
 		}
 	}
-	return nil
+	return int(tag), nil
 }
 
 // readBits reads n bits from the internal buffer starting at the current offset.
@@ -269,6 +267,9 @@ func (d *decoder) decode(dst image.Image, xmin, ymin, xmax, ymax int) error {
 						v = 0xffff - v
 					}
 					img.SetGray16(x, y, color.Gray16{v})
+				}
+				if rMaxX == img.Bounds().Max.X {
+					d.off += 2 * (xmax - img.Bounds().Max.X)
 				}
 			}
 		} else {
@@ -428,17 +429,24 @@ func newDecoder(r io.Reader) (*decoder, error) {
 		return nil, err
 	}
 
+	prevTag := -1
 	for i := 0; i < len(p); i += ifdLen {
-		if err := d.parseIFD(p[i : i+ifdLen]); err != nil {
+		tag, err := d.parseIFD(p[i : i+ifdLen])
+		if err != nil {
 			return nil, err
 		}
+		if tag <= prevTag {
+			return nil, FormatError("tags are not sorted in ascending order")
+		}
+		prevTag = tag
 	}
 
 	d.config.Width = int(d.firstVal(tImageWidth))
 	d.config.Height = int(d.firstVal(tImageLength))
 
 	if _, ok := d.features[tBitsPerSample]; !ok {
-		return nil, FormatError("BitsPerSample tag missing")
+		// Default is 1 per specification.
+		d.features[tBitsPerSample] = []uint{1}
 	}
 	d.bpp = d.firstVal(tBitsPerSample)
 	switch d.bpp {
@@ -534,6 +542,13 @@ func DecodeConfig(r io.Reader) (image.Config, error) {
 		return image.Config{}, err
 	}
 	return d.config, nil
+}
+
+func ccittFillOrder(tiffFillOrder uint) ccitt.Order {
+	if tiffFillOrder == 2 {
+		return ccitt.LSB
+	}
+	return ccitt.MSB
 }
 
 // Decode reads a TIFF image from r and returns it as an image.Image.
@@ -641,6 +656,16 @@ func Decode(r io.Reader) (img image.Image, err error) {
 					d.buf = make([]byte, n)
 					_, err = d.r.ReadAt(d.buf, offset)
 				}
+			case cG3:
+				inv := d.firstVal(tPhotometricInterpretation) == pWhiteIsZero
+				order := ccittFillOrder(d.firstVal(tFillOrder))
+				r := ccitt.NewReader(io.NewSectionReader(d.r, offset, n), order, ccitt.Group3, blkW, blkH, &ccitt.Options{Invert: inv, Align: false})
+				d.buf, err = ioutil.ReadAll(r)
+			case cG4:
+				inv := d.firstVal(tPhotometricInterpretation) == pWhiteIsZero
+				order := ccittFillOrder(d.firstVal(tFillOrder))
+				r := ccitt.NewReader(io.NewSectionReader(d.r, offset, n), order, ccitt.Group4, blkW, blkH, &ccitt.Options{Invert: inv, Align: false})
+				d.buf, err = ioutil.ReadAll(r)
 			case cLZW:
 				r := lzw.NewReader(io.NewSectionReader(d.r, offset, n), lzw.MSB, 8)
 				d.buf, err = ioutil.ReadAll(r)

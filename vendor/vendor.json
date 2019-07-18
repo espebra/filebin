@@ -3,61 +3,189 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "3eH5XenKCK28s5fpbAeQoPGT3D0=",
+			"path": "archive/tar",
+			"revision": ""
+		},
+		{
+			"path": "archive/zip",
+			"revision": ""
+		},
+		{
+			"path": "bufio",
+			"revision": ""
+		},
+		{
+			"path": "bytes",
+			"revision": ""
+		},
+		{
+			"path": "compress/flate",
+			"revision": ""
+		},
+		{
+			"path": "compress/gzip",
+			"revision": ""
+		},
+		{
+			"path": "compress/zlib",
+			"revision": ""
+		},
+		{
+			"path": "context",
+			"revision": ""
+		},
+		{
+			"path": "debug/elf",
+			"revision": ""
+		},
+		{
+			"path": "debug/macho",
+			"revision": ""
+		},
+		{
+			"path": "debug/pe",
+			"revision": ""
+		},
+		{
+			"path": "encoding/base64",
+			"revision": ""
+		},
+		{
+			"path": "encoding/binary",
+			"revision": ""
+		},
+		{
+			"path": "encoding/json",
+			"revision": ""
+		},
+		{
+			"path": "errors",
+			"revision": ""
+		},
+		{
+			"path": "flag",
+			"revision": ""
+		},
+		{
+			"path": "fmt",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "DA5wi7OE5QGqEWca4T2nETDW7+c=",
 			"path": "github.com/GeertJohan/go.rice",
-			"revision": "0f3f5fde32fd1f755632a3d31ba2ec6d449e387b",
-			"revisionTime": "2016-01-23T21:41:58Z"
+			"revision": "c880e3cd4dd81db36b423e83dc0aeea4dca93774",
+			"revisionTime": "2019-04-30T23:09:23Z"
 		},
 		{
-			"checksumSHA1": "xECV8VmnSwtMPugLqB1OAXwOs48=",
+			"checksumSHA1": "kzWQMYn9+nBemUeQ0RPOTBiUkT8=",
 			"path": "github.com/GeertJohan/go.rice/embedded",
-			"revision": "0f3f5fde32fd1f755632a3d31ba2ec6d449e387b",
-			"revisionTime": "2016-01-23T21:41:58Z"
+			"revision": "c880e3cd4dd81db36b423e83dc0aeea4dca93774",
+			"revisionTime": "2019-04-30T23:09:23Z"
 		},
 		{
-			"checksumSHA1": "8i+beEgcVf0q/I7lTqo2ERZM/OU=",
+			"checksumSHA1": "/6IiNvwhKwTaYCdjjBU6a8aRGcw=",
 			"path": "github.com/daaku/go.zipexe",
-			"revision": "a5fe2436ffcb3236e175e5149162b41cd28bd27d",
-			"revisionTime": "2015-03-29T02:31:25Z"
+			"revision": "74d766ac1dde7458348221869a7d1e7e5fa0597e",
+			"revisionTime": "2019-05-07T16:23:45Z"
 		},
 		{
-			"checksumSHA1": "OwFJcAb9f/J0e4JDKfzkm/SiniU=",
+			"checksumSHA1": "wRzZUdWExUF5I5Gk7vVdvg/pj/E=",
 			"path": "github.com/disintegration/imaging",
-			"revision": "d8bbae1de109b518dabc98c6c1633eb358c148a4",
-			"revisionTime": "2016-02-28T07:34:35Z"
+			"revision": "465faf0892b5c7b3325643b0e47282e1331672e7",
+			"revisionTime": "2019-06-02T12:04:07Z"
 		},
 		{
-			"checksumSHA1": "/FDxiBMqDvQ0ldqUPVDzGxTGJU8=",
+			"checksumSHA1": "FrFUyTbM2HweMAfdLEig956GBK0=",
 			"path": "github.com/dustin/go-humanize",
-			"revision": "fef948f2d241bd1fd0631108ecc2c9553bae60bf",
-			"revisionTime": "2016-06-23T01:40:21Z"
+			"revision": "9f541cc9db5d55bce703bd99987c9d5cb8eea45e",
+			"revisionTime": "2018-06-22T23:30:57Z"
 		},
 		{
-			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
+			"checksumSHA1": "S6K8tNBO5zVgCtIlsRzzGr8dFos=",
+			"path": "github.com/espebra/filebin",
+			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
+			"revisionTime": "2019-07-18T11:33:27Z"
+		},
+		{
+			"checksumSHA1": "0Ie8B/ZGp9pESAIqYSIPj3LP8E0=",
+			"path": "github.com/espebra/filebin/app/api",
+			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
+			"revisionTime": "2019-07-18T11:33:27Z"
+		},
+		{
+			"checksumSHA1": "Xi5nud1UgVOfLIUjKEjv9QJkzB4=",
+			"path": "github.com/espebra/filebin/app/backend/fs",
+			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
+			"revisionTime": "2019-07-18T11:33:27Z"
+		},
+		{
+			"checksumSHA1": "mb+Wo8NV2JLP/MRApW/mBUabEH8=",
+			"path": "github.com/espebra/filebin/app/config",
+			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
+			"revisionTime": "2019-07-18T11:33:27Z"
+		},
+		{
+			"checksumSHA1": "1qtu3HGHVsWJmk4bXqUwMsX6QTc=",
+			"path": "github.com/espebra/filebin/app/events",
+			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
+			"revisionTime": "2019-07-18T11:33:27Z"
+		},
+		{
+			"checksumSHA1": "N+c5Cwcvcbir7aUuCcNVxXK7xdI=",
+			"path": "github.com/espebra/filebin/app/metrics",
+			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
+			"revisionTime": "2019-07-18T11:33:27Z"
+		},
+		{
+			"checksumSHA1": "KCBMMPDFQUsx0JEs/tFlEAljJts=",
+			"path": "github.com/espebra/filebin/app/model",
+			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
+			"revisionTime": "2019-07-18T11:33:27Z"
+		},
+		{
+			"checksumSHA1": "Eu/wsiF5bR+fcxxinGSroCBHZv4=",
+			"path": "github.com/espebra/filebin/app/output",
+			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
+			"revisionTime": "2019-07-18T11:33:27Z"
+		},
+		{
+			"checksumSHA1": "vlsRc7NjV0xcLe516t+TNbOzjXU=",
+			"path": "github.com/espebra/filebin/app/shared",
+			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
+			"revisionTime": "2019-07-18T11:33:27Z"
+		},
+		{
+			"checksumSHA1": "3X1ZEuKEwq4ivMqLXN2NjXDxlaQ=",
+			"path": "github.com/espebra/filebin/app/tokens",
+			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
+			"revisionTime": "2019-07-18T11:33:27Z"
+		},
+		{
+			"checksumSHA1": "+PxqmkI2nRpC4gQzV65XyCHvdcM=",
 			"path": "github.com/gorilla/context",
-			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
-			"revisionTime": "2016-08-17T18:46:32Z"
+			"revision": "8559d4a6b87e4f517ec1846eb90a192b8748cc89",
+			"revisionTime": "2019-06-27T02:46:05Z"
 		},
 		{
-			"checksumSHA1": "XOY0t65siat4bLbC4VCmBA9dE7Y=",
+			"checksumSHA1": "VmMMJYCsFw4+S3V7hon94aFUO+k=",
 			"path": "github.com/gorilla/handlers",
-			"revision": "2b8556b16671de6e753c3eccf2aa763f3c55848a",
-			"revisionTime": "2018-04-16T20:39:09Z"
+			"revision": "415c4810185c26aa35ca0315470d77697000794b",
+			"revisionTime": "2019-07-09T14:40:06Z"
 		},
 		{
-			"checksumSHA1": "UgeTyV3+iIwmYB23arP3MbwS+Go=",
+			"checksumSHA1": "2Iy16w6c+4oMD8TtobbO0qsCrDo=",
 			"path": "github.com/gorilla/mux",
-			"revision": "ded0c29b24f96f46cf349e6701b099db601cf8ec",
-			"revisionTime": "2018-05-01T03:11:36Z"
+			"revision": "d83b6ffe499a29cc05fc977988d0392851779620",
+			"revisionTime": "2019-07-01T20:26:33Z"
 		},
 		{
-			"checksumSHA1": "6nmAJBw2phU9MUmkUnqFvbO5urg=",
+			"checksumSHA1": "1dbdS+ADojoCJS8oY8pVJs3say0=",
 			"path": "github.com/kardianos/osext",
-			"revision": "29ae4ffbc9a6fe9fb2bc5029050ce6996ea1d3bc",
-			"revisionTime": "2015-12-22T15:32:29Z"
+			"revision": "2bc1f35cddc0cc527b4bc3dce8578fc2a6c11384",
+			"revisionTime": "2019-02-22T17:33:26Z"
 		},
 		{
-			"checksumSHA1": "A/Zl7n+NZrzHDK7sdJG0xL2S/FE=",
+			"checksumSHA1": "l6EC85ae4bAo+LT6GlejMwFms1I=",
 			"path": "github.com/rwcarlsen/goexif/exif",
 			"revision": "41dad3aa083329f3f672b7095a9ea8a0c384bbe8",
 			"revisionTime": "2014-12-22T21:16:34Z"
@@ -69,22 +197,164 @@
 			"revisionTime": "2014-12-22T21:16:34Z"
 		},
 		{
-			"checksumSHA1": "UD/pejajPyS7WaWVXq2NU1eK4Ic=",
+			"checksumSHA1": "cXokCvyFg5J/JpxYNKB5JSqJH7g=",
 			"path": "golang.org/x/image/bmp",
-			"revision": "c348254d65821a0aaca538bf5e7774bb522c1dec",
-			"revisionTime": "2016-07-15T23:11:08Z"
+			"revision": "d6a02ce849c95fa57d9927fab7b6d9071876dfe0",
+			"revisionTime": "2019-07-03T07:13:20Z"
 		},
 		{
-			"checksumSHA1": "ctyyddkXAz6xBcMGo2Brocz1iuY=",
+			"checksumSHA1": "a1jyUCnDJaCWVzCjX4X8q/fk+OE=",
+			"path": "golang.org/x/image/ccitt",
+			"revision": "d6a02ce849c95fa57d9927fab7b6d9071876dfe0",
+			"revisionTime": "2019-07-03T07:13:20Z"
+		},
+		{
+			"checksumSHA1": "LWXccfH7Vg8OOjRd4UhwEMtOLFk=",
 			"path": "golang.org/x/image/tiff",
-			"revision": "c348254d65821a0aaca538bf5e7774bb522c1dec",
-			"revisionTime": "2016-07-15T23:11:08Z"
+			"revision": "d6a02ce849c95fa57d9927fab7b6d9071876dfe0",
+			"revisionTime": "2019-07-03T07:13:20Z"
 		},
 		{
-			"checksumSHA1": "Xnm81x3lWS6xRxSthJuLt+fpfi0=",
+			"checksumSHA1": "PF6VjvpNpOdR8epWH1Liyy7x1Qg=",
 			"path": "golang.org/x/image/tiff/lzw",
-			"revision": "c348254d65821a0aaca538bf5e7774bb522c1dec",
-			"revisionTime": "2016-07-15T23:11:08Z"
+			"revision": "d6a02ce849c95fa57d9927fab7b6d9071876dfe0",
+			"revisionTime": "2019-07-03T07:13:20Z"
+		},
+		{
+			"path": "html/template",
+			"revision": ""
+		},
+		{
+			"path": "image",
+			"revision": ""
+		},
+		{
+			"path": "image/color",
+			"revision": ""
+		},
+		{
+			"path": "image/gif",
+			"revision": ""
+		},
+		{
+			"path": "image/jpeg",
+			"revision": ""
+		},
+		{
+			"path": "image/png",
+			"revision": ""
+		},
+		{
+			"path": "io",
+			"revision": ""
+		},
+		{
+			"path": "io/ioutil",
+			"revision": ""
+		},
+		{
+			"path": "log",
+			"revision": ""
+		},
+		{
+			"path": "math",
+			"revision": ""
+		},
+		{
+			"path": "math/big",
+			"revision": ""
+		},
+		{
+			"path": "math/rand",
+			"revision": ""
+		},
+		{
+			"path": "net",
+			"revision": ""
+		},
+		{
+			"path": "net/http",
+			"revision": ""
+		},
+		{
+			"path": "net/url",
+			"revision": ""
+		},
+		{
+			"path": "os",
+			"revision": ""
+		},
+		{
+			"path": "os/exec",
+			"revision": ""
+		},
+		{
+			"path": "path",
+			"revision": ""
+		},
+		{
+			"path": "path/filepath",
+			"revision": ""
+		},
+		{
+			"path": "regexp",
+			"revision": ""
+		},
+		{
+			"path": "runtime",
+			"revision": ""
+		},
+		{
+			"path": "runtime/debug",
+			"revision": ""
+		},
+		{
+			"path": "sort",
+			"revision": ""
+		},
+		{
+			"path": "strconv",
+			"revision": ""
+		},
+		{
+			"path": "strings",
+			"revision": ""
+		},
+		{
+			"path": "sync",
+			"revision": ""
+		},
+		{
+			"path": "sync/atomic",
+			"revision": ""
+		},
+		{
+			"path": "syscall",
+			"revision": ""
+		},
+		{
+			"path": "testing",
+			"revision": ""
+		},
+		{
+			"path": "time",
+			"revision": ""
+		},
+		{
+			"path": "unicode",
+			"revision": ""
+		},
+		{
+			"path": "unicode/utf16",
+			"revision": ""
+		},
+		{
+			"path": "unicode/utf8",
+			"revision": ""
+		},
+		{
+			"path": "unsafe",
+			"revision": ""
 		}
 	],
 	"rootPath": "github.com/espebra/filebin"
