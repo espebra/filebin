@@ -465,6 +465,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 		http.Error(w, "Invalid bin", 400)
 		return
 	}
+	w.Header().Set("Bin", bin)
 
 	event := ctx.Events.New(ctx.RemoteAddr, []string{"bin", "view"}, bin, "")
 	defer event.Done()
