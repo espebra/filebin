@@ -492,6 +492,7 @@ func FetchBin(w http.ResponseWriter, r *http.Request, cfg config.Configuration, 
 
 	if cfg.HotLinking == false {
 		ctx.Token = ctx.Tokens.Generate()
+		w.Header().Set("Token", ctx.Token)
 		for i, f := range b.Files {
 			b.Files[i].Links = UpdateLinks(f.Links, ctx.Token)
 		}
