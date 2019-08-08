@@ -101,66 +101,6 @@
 			"revisionTime": "2018-06-22T23:30:57Z"
 		},
 		{
-			"checksumSHA1": "S6K8tNBO5zVgCtIlsRzzGr8dFos=",
-			"path": "github.com/espebra/filebin",
-			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
-			"revisionTime": "2019-07-18T11:33:27Z"
-		},
-		{
-			"checksumSHA1": "0Ie8B/ZGp9pESAIqYSIPj3LP8E0=",
-			"path": "github.com/espebra/filebin/app/api",
-			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
-			"revisionTime": "2019-07-18T11:33:27Z"
-		},
-		{
-			"checksumSHA1": "Xi5nud1UgVOfLIUjKEjv9QJkzB4=",
-			"path": "github.com/espebra/filebin/app/backend/fs",
-			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
-			"revisionTime": "2019-07-18T11:33:27Z"
-		},
-		{
-			"checksumSHA1": "mb+Wo8NV2JLP/MRApW/mBUabEH8=",
-			"path": "github.com/espebra/filebin/app/config",
-			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
-			"revisionTime": "2019-07-18T11:33:27Z"
-		},
-		{
-			"checksumSHA1": "1qtu3HGHVsWJmk4bXqUwMsX6QTc=",
-			"path": "github.com/espebra/filebin/app/events",
-			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
-			"revisionTime": "2019-07-18T11:33:27Z"
-		},
-		{
-			"checksumSHA1": "N+c5Cwcvcbir7aUuCcNVxXK7xdI=",
-			"path": "github.com/espebra/filebin/app/metrics",
-			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
-			"revisionTime": "2019-07-18T11:33:27Z"
-		},
-		{
-			"checksumSHA1": "KCBMMPDFQUsx0JEs/tFlEAljJts=",
-			"path": "github.com/espebra/filebin/app/model",
-			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
-			"revisionTime": "2019-07-18T11:33:27Z"
-		},
-		{
-			"checksumSHA1": "Eu/wsiF5bR+fcxxinGSroCBHZv4=",
-			"path": "github.com/espebra/filebin/app/output",
-			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
-			"revisionTime": "2019-07-18T11:33:27Z"
-		},
-		{
-			"checksumSHA1": "vlsRc7NjV0xcLe516t+TNbOzjXU=",
-			"path": "github.com/espebra/filebin/app/shared",
-			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
-			"revisionTime": "2019-07-18T11:33:27Z"
-		},
-		{
-			"checksumSHA1": "3X1ZEuKEwq4ivMqLXN2NjXDxlaQ=",
-			"path": "github.com/espebra/filebin/app/tokens",
-			"revision": "613c49db8500b8a17c7e00121d43ed8bd2d2fb88",
-			"revisionTime": "2019-07-18T11:33:27Z"
-		},
-		{
 			"checksumSHA1": "+PxqmkI2nRpC4gQzV65XyCHvdcM=",
 			"path": "github.com/gorilla/context",
 			"revision": "8559d4a6b87e4f517ec1846eb90a192b8748cc89",
