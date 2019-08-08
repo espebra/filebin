@@ -555,6 +555,7 @@ func FetchArchive(w http.ResponseWriter, r *http.Request, cfg config.Configurati
 			// Token not set or invalid
 			status := 200
 			ctx.Token = ctx.Tokens.Generate()
+			w.Header().Set("Token", ctx.Token)
 			output.HTMLresponse(w, "invalidtokenarchive", status, b, ctx)
 			return
 		}
