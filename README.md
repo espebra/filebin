@@ -305,6 +305,8 @@ Downloading a file is as easy as specifying the ``bin`` and the ``filename`` in 
 $ curl https://filebin.example.com/custombin/myfile
 ```
 
+Note that if hot linking is disabled, then a token is introduced as a query parameter that makes the URL non-deterministic. A side effect is that this makes it harder to use the API to download files.
+
 ### Delete file
 
 |			| Value			|
