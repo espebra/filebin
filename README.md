@@ -2,7 +2,9 @@
 
 ![Viewing a bin](doc/screenshot-web-interface-bin.png)
 
-Filebin is a web application that facilitates convenient file sharing over the web. It is the software behind [https://filebin.net](https://filebin.net).
+Filebin is a web application that facilitates convenient file sharing on the web. It was the software used at [https://filebin.net](https://filebin.net) earlier.
+
+**NOTE:** Active development has moved to [https://github.com/espebra/filebin2](https://github.com/espebra/filebin2), and this repository is mostly kept for reference and archive reasons.
 
 ## Table of contents
 
